@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __date__ = '15 Dec 2014'
 
 
@@ -399,8 +399,12 @@ class App(Frame):
         Frame.__init__(self, master)
 
         font = tkFont.nametofont("TkDefaultFont")
+        font.config(family="Arial")
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
+        print self.default_font
+        print self.default_font_size
+        self.font = (self.default_font, self.default_font_size)
 
         style = Style()
         #style.configure("Green.TLabel", foreground="green3")
@@ -494,9 +498,9 @@ class App(Frame):
 
 
         self.general_frame_left = Frame(self.general_frame)
-        self.general_frame_left.grid(row=0, column=0, sticky="N")
+        self.general_frame_left.grid(row=0, column=0, sticky="W")
         self.general_frame_right = Frame(self.general_frame)
-        self.general_frame_right.grid(row=0, column=1, padx=(10, 0), sticky="N")
+        self.general_frame_right.grid(row=0, column=1, padx=(10, 3), sticky="W")
 
         for row, x in enumerate(self.general):
             if row in [1, 4]:
@@ -507,7 +511,7 @@ class App(Frame):
                 label = Label(self.general_frame_left, text=x, style="Green.TLabel")
             label['font'] = (self.default_font, self.default_font_size,
                                "bold")
-            label.grid(row=row, column=0, sticky="E", padx=(0, 3))
+            label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label)
             var = StringVar()
             var.trace("w", self.change_callback)
@@ -515,7 +519,7 @@ class App(Frame):
             if row == 1:
                 spinbox = Spinbox(self.general_frame_left, from_=1, to=999,
                           width=3, justify="right", textvariable=var,
-                          state="readonly")
+                          state="readonly", font=self.font)
                 spinbox.grid(row=row, column=1, sticky="W")
                 self.general_widgets.append(spinbox)
             elif row in (0, 2, 3, 7, 8):
@@ -526,7 +530,8 @@ class App(Frame):
                 #[chr(x) for x in range(127)],
                 #49, '%S', '%P')
                 combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
-                                                validate=validate, validatecommand=vcmd)
+                                                validate=validate, validatecommand=vcmd,
+                                                font=self.font)
 
                 if row == 0:
                     projects = self.config.keys()
@@ -548,7 +553,7 @@ class App(Frame):
                     width = 11
                 entry = Entry(self.general_frame_left, width=width,
                               textvariable=var, validate=validate,
-                              validatecommand=vcmd)
+                              validatecommand=vcmd, font=self.font)
                 #if row == 4:
                     #entry.bind('<T>', self.autofill_date_callback)
                 entry.grid(row=row, column=1, sticky="W")
@@ -559,7 +564,7 @@ class App(Frame):
         notes_label.grid(row=0, column=0, sticky="N")
         notes_label['font'] = (self.default_font, self.default_font_size,
                                "bold")
-        notes_container = FixedSizeFrame(self.general_frame_right, 299, 220)
+        notes_container = FixedSizeFrame(self.general_frame_right, 299, 206)
         notes_container.grid(row=1, column=0, sticky="N")
         notes = AutoScrollbarText(notes_container, wrap=NONE)
         notes.grid(row=0, column=0, sticky="N")
@@ -620,7 +625,7 @@ class App(Frame):
         self.save_button.grid(row=0, column=0, sticky="")
         self.load_button = Button(self.button_frame, text="Load",
                                   command=self.load, state="enabled")
-        self.load_button.grid(row=1, column=0, sticky="")
+        self.load_button.grid(row=1, column=0, sticky="", pady=3)
         self.go_button = Button(self.button_frame, text="Archive",
                                 state="disabled", command=self.archive)
         self.go_button.grid(row=2, column=0, sticky="")
@@ -669,7 +674,7 @@ class App(Frame):
         self.scanning_add = Button(self.bottom_frame,
                                    text="Add Measurement",
                                    command=self.new_measurement)
-        self.scanning_add.grid(row=1)
+        self.scanning_add.grid(row=1, pady=(10,0))
 
 
     def new_measurement(self, *args):
@@ -693,8 +698,8 @@ class App(Frame):
         var1.trace("w", self.change_callback)
         spinbox = Spinbox(self.measurements_frame.interior, from_=1, to=99,
                           width=2, justify="right",
-                          textvariable=var1)
-        spinbox.grid(row=value, column=0, sticky="W")
+                          textvariable=var1, font=self.font)
+        spinbox.grid(row=value, column=0, sticky="W", padx=3)
         scanning_widgets.append(spinbox)
         var2 = StringVar()
         var2.trace("w", self.change_callback)
@@ -711,7 +716,8 @@ class App(Frame):
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
-                            textvariable=var2, width=10, state="readonly")
+                            textvariable=var2, width=10, state="readonly",
+                            font=self.font)
         combobox.set_completion_list(["anatomical", "functional", "misc"])
         combobox.current(0)
         combobox.grid(row=value, column=1, sticky="")
@@ -725,8 +731,9 @@ class App(Frame):
                 "0123456789", 4, '%S', '%P')
         vols = Entry(self.measurements_frame.interior, width=5,
                        justify="right", textvariable=var3,
-                       validate=validate, validatecommand=vcmd)
-        vols.grid(row=value, column=2, sticky="")
+                       validate=validate, validatecommand=vcmd,
+                       font=self.font)
+        vols.grid(row=value, column=2, sticky="", padx=3)
         scanning_widgets.append(vols)
         var4 = StringVar()
         var4.trace("w", self.change_callback)
@@ -739,8 +746,8 @@ class App(Frame):
         #        49, '%S', '%P')
         name = AutocompleteCombobox(self.measurements_frame.interior,
                                     textvariable=var4, validate=validate,
-                                    validatecommand=vcmd)
-        name.grid(row=value, column=3, sticky="")
+                                    validatecommand=vcmd, font=self.font)
+        name.grid(row=value, column=3, sticky="", padx=(0, 3))
         scanning_widgets.append(name)
         #container1 = FixedSizeFrame(self.measurements_frame.interior, 198, 53)
         #container1.grid(row=value, column=4, sticky="NSE", pady=3)
@@ -1504,6 +1511,8 @@ class HelpDialogue:
 
 root = Tk()
 
+style = Style()
+style.theme_use("clam")
 root.resizable(False, False)
 root.option_add('*tearOff', FALSE)
 app = App(master=root)
