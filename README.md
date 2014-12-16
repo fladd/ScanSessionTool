@@ -16,7 +16,7 @@ Download
 The Scan Session Tool is a Python script and hence runs wherever Python and
 TKinter are installed.
 
-Binay versions can be downloaded from [the release page](https://github.com/fladd/ScanSessionTool/releases/edit/v0.4.0).
+Binay versions can be downloaded from [the release page](https://github.com/fladd/ScanSessionTool/releases/latest).
 
 
 Documentation
