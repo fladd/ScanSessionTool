@@ -1457,7 +1457,6 @@ class HelpDialogue:
 
 
 root = Tk()
-
 style = Style()
 style.theme_use("default")
 root.resizable(False, False)
