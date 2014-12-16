@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.3.1'
-__date__ = '15 Dec 2014'
+__version__ = '0.4.0'
+__date__ = '16 Dec 2014'
 
 
 import os
@@ -16,160 +16,6 @@ from ScrolledText import ScrolledText
 import tkFont
 import tkFileDialog
 import tkMessageBox
-
-
-docs = """
-+ - - - - - - - - - - - - - - Scan Session Tool - - - - - - - - - - - - - - +
-|                                                                           |
-|        A tool for MR scan session documentation and data archiving        |
-|                                                                           |
-|             Author: Florian Krause <Florian.Krause@fladd.de>              |
-|                                                                           |
-+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-
-
-
-=================================== About ===================================
-
-The Scan Session Tool is a graphical application for documenting (f)MRI scan
-sessions and automatized data archiving. Information about the scan session
-itself, used forms and documents, as well as the single measurements can be
-entered and saved into a protocol file. This information can furthermore be
-used to copy acquired data (DICOM images, stimulation protocols, logfiles,
-Turbo Brain Voyager files) into a specific hierarchical folder structure for
-unified archiving purposes.
-
-
-
-=================================== Usage ===================================
-
-The user interface is organized into three different content areas, each hol-
-ding different information about the scan session, as well as an additional
-control area for saving and loading session information and for automatically
-archiving acquired data, based on the session information.
-
-
------------------------ The "General Information" area ----------------------
-
-This area provides input fields for basic information about the scan session.
-Some of the fields allow for a selection of pre-specified values taken from a
-config file (see below), while others take freely typed characters.
-Fields that are marked with a red label, are mandatory and need to be filled
-in.  Fields that are marked with an orange label are automatically filled
-in, but need to be checked.
-The following fields are available:
-    "Project"        - The project identifier
-                       (free-type and selection)
-    "Group"          - The group identifier
-                       (free-type and selection)
-    "Subject No."    - The subject number
-                       (1-99)
-    "Session"        - The session identifier
-                       (free-type and selection)
-    "Date"           - The date of the scan session
-                       (free-type, auto-filled)
-    "Booked Time"    - The time period the scanner was booked
-                       (free-type)
-    "Actual Time"    - The time period the scanner was actually used
-                       (free-type)
-    "Certified User" - The responsible user
-                       (free-type and selection)
-    "Backup Person"  - An additional person
-                       (free-type and selection)
-    "Notes"          - Any additional notes about the session
-                       (free-type)
-
-
---------------------------- The "Documents" area ----------------------------
-
-This area provides checkboxes to specify which forms and documents have been
-collected from the participant. Additional documents can be specified in a
-configuration file (see "Config File" section).
-The following checkboxes are available:
-    "MR Safety Screening Form"            - The (f)MRI screening from provi-
-                                            ded by the scanning institution
-    "Participation Informed Consent Form" - The official (f)MRI written con-
-                                            sent form
-
-
-------------------------- The "Measurements" area ---------------------------
-
-This area provides several input fields for each measurement of the session.
-When starting the application, only one (empty) measurement is shown. Click-
-ing on "Add Measurement" will create additional measurements. Fields that are
-marked with a red label, are mandatory and need to be filled in.Fields that
-are marked with an orange label are automatically filled in, but need to be
-checked.
-The following input fields are available per measurement:
-    "No"                   - The number of the measurement
-                             (1-99)
-    "Type"                 - "anatomical", "functional" or "misc"
-                             (selection)
-    "Vols"                 - The number of volumes of the measurement
-                             (free-type)
-    "Name"                 - The name of the measurement
-                             (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected logfiles
-                             (free-type)
-                             (Please note that a stimulation protocol mask
-                             will be included automatically, based on the
-                             session information, and will be replaced by
-                             the found files matching this mask)
-    "Comments"             - Any additional comments about the measurement
-                             (free-type)
-
-
------------------------------ The control area ------------------------------
-
-The control area consists of the following three buttons:
-"Save"    - Saves the entered session information into a text file
-"Load"    - Loads previously saved information from a text file
-"Archive" - Copies acquired data from specified location into a timestamped
-            sub-folder <~Archiveyyymmdd>. Please note that all data is
-            expected to be within the specified folder. That is, all DICOM
-            files (*.dcm OR *.IMA; no sub-folders!), all stimulation protocols,
-            all logfiles as well as all Turbo Brain Voyager files (all *.tbv
-            files in a folder called 'TBVFiles').
-            The data will be copied into the following folder hierarchy:
-            DICOMs -->
-              <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/<DICOM>/
-            Logfiles -->
-              <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/
-            Turbo Brain Voyager files -->
-             <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/TBV/
-            Scan Session Protocol -->
-              <Project>/<Project>_<Subject[Group]>_Session_ScanProtocol.txt
-
-
-
-================================ Config File ================================
-
-A configuration file can be created to pre-define the values to be used as
-selection options for the "Group", "Session", "Certified User", "Backup
-Person", the measurement "Name" on a per project basis, as well as additional
-items in the "Documents" section. The Scan Session Tool will look for a
-configuration file with the name "sst.cfg" located in the same directory as
-the application itself.
-The following syntax is used:
-
-Project: Project1
-Groups: Group1, Group2
-Sessions: Sess1, Sess2
-Measurements Anatomical: Localizer, Anatomy
-Measurements Functional: Run1, Run2, Run3
-Users: User1, User2, User3
-Backups: User1, User2, User3
-Documents: Pre-Scan Questionnaire, Post-Scan Questionnaire
-
-Project: Project2
-Groups: GroupA, GroupB
-Sessions: SessA, SessB
-Measurements Anatomical: Localizer, MPRAGE
-Measurements Functional: RunA, RunB, RunC
-Users: UserA, UserB, UserC
-Backups: UserA, UserB, UserC
-Documents: Participation Reimbursement Form
-"""
 
 
 def replace(file_path, pattern, subst):
@@ -261,11 +107,11 @@ class VerticalScrolledFrame(Frame):
 
         # create a canvas object and a vertical scrollbar for scrolling it
         self.vscrollbar = Scrollbar(self, orient=VERTICAL)
-        self.vscrollbar.pack(fill=Y, side=RIGHT, expand=FALSE)
+        self.vscrollbar.pack(fill=Y, side=RIGHT, expand=TRUE)
         self.canvas = Canvas(self, bd=0, highlightthickness=0,
                         yscrollcommand=self.vscrollbar.set,
                         width=self.winfo_reqwidth(),
-                        height=self.winfo_reqheight())
+                        height=self.winfo_reqheight(), background="grey")
         self.canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
         self.vscrollbar.config(command=self.canvas.yview)
 
@@ -274,7 +120,10 @@ class VerticalScrolledFrame(Frame):
         self.canvas.yview_moveto(0)
 
         # create a frame inside the canvas which will be scrolled with it
-        self.interior = Frame(self.canvas, width=self.winfo_reqwidth())
+        style = Style()
+        style.configure("Grey.TFrame", background="darkgrey")
+        self.interior = Frame(self.canvas, width=self.winfo_reqwidth(),
+                              style="Grey.TFrame")
         self.interior.grid_rowconfigure(0, weight=1)
         self.interior.grid_columnconfigure(0, weight=1)
         self.interior_id = self.canvas.create_window(0, 0,
@@ -393,6 +242,17 @@ class AutocompleteCombobox(Combobox):
             # No need for up/down, we'll jump to the popup
             # list at the position of the autocompletion
 
+class Spinbox(Entry):
+    def __init__(self, master=None, **kw):
+        s = Style()
+        Entry.__init__(self, master, "ttk::spinbox", **kw)
+
+    def current(self, newindex=None):
+        return self.tk.call(self._w, 'current', newindex)
+
+    def set(self, value):
+        return self.tk.call(self._w, 'set', value)
+
 
 class App(Frame):
     def __init__(self, master=None):
@@ -402,16 +262,20 @@ class App(Frame):
         font.config(family="Arial")
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
-        print self.default_font
-        print self.default_font_size
         self.font = (self.default_font, self.default_font_size)
 
         style = Style()
-        #style.configure("Green.TLabel", foreground="green3")
-        style.configure("Orange.TLabel", foreground="orange2")
-        style.configure("Red.TLabel", foreground="red1")
         style.configure("Blue.TLabel", foreground="blue")
         style.configure("Grey.TLabel", foreground="darkgrey")
+        style.configure("Header.TLabel", background="darkgrey")
+        style.configure("Header.TFrame", background="darkgrey")
+        style.configure("Red.TCombobox", fieldbackground="red")
+        style.configure("Orange.TCombobox", fieldbackground="orange")
+        style.map("Orange.TCombobox", fieldbackground=[("readonly", "orange")])
+        style.configure("Red.TEntry", fieldbackground="red")
+        style.configure("Orange.TEntry", fieldbackground="orange")
+        style.configure("Orange.TSpinbox", fieldbackground="orange")
+        style.map("Orange.TSpinbox", fieldbackground=[("disabled", "orange")])
 
         self.menubar = Menu(master)
         if platform.system() == "Darwin":
@@ -438,6 +302,10 @@ class App(Frame):
                                    command=self.new_measurement,
                                    accelerator="{0}-M".format(modifier))
         self.master.bind("<{0}-m>".format(modifier), self.new_measurement)
+        self.edit_menu.add_command(label="Delete Measurement",
+                                   command=self.del_measurement,
+                                   accelerator="{0}-D".format(modifier))
+        self.master.bind("<{0}-d>".format(modifier), self.del_measurement)
         self.help_menu = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.help_menu, label="Help")
         self.help_menu.add_command(
@@ -498,28 +366,24 @@ class App(Frame):
 
 
         self.general_frame_left = Frame(self.general_frame)
-        self.general_frame_left.grid(row=0, column=0, sticky="W")
+        self.general_frame_left.grid(row=0, column=0, sticky="W", padx=10)
         self.general_frame_right = Frame(self.general_frame)
-        self.general_frame_right.grid(row=0, column=1, padx=(10, 3), sticky="W")
+        self.general_frame_right.grid(row=0, column=1, padx=10, sticky="W")
 
         for row, x in enumerate(self.general):
-            if row in [1, 4]:
-                label = Label(self.general_frame_left, text=x, style="Orange.TLabel")
-            elif row in [0, 3]:
-                label = Label(self.general_frame_left, text=x, style="Red.TLabel")
-            else:
-                label = Label(self.general_frame_left, text=x, style="Green.TLabel")
-            label['font'] = (self.default_font, self.default_font_size,
-                               "bold")
+            label = Label(self.general_frame_left, text=x)
+            #label['font'] = (self.default_font, self.default_font_size,
+            #                   "bold")
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label)
             var = StringVar()
             var.trace("w", self.change_callback)
             self.general_vars.append(var)
             if row == 1:
+                var.set(1)
                 spinbox = Spinbox(self.general_frame_left, from_=1, to=999,
                           width=3, justify="right", textvariable=var,
-                          state="readonly", font=self.font)
+                          state="readonly", font=self.font, style="Orange.TSpinbox")
                 spinbox.grid(row=row, column=1, sticky="W")
                 self.general_widgets.append(spinbox)
             elif row in (0, 2, 3, 7, 8):
@@ -529,9 +393,14 @@ class App(Frame):
                 #vcmd = (self.master.register(self.validate),
                 #[chr(x) for x in range(127)],
                 #49, '%S', '%P')
-                combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
-                                                validate=validate, validatecommand=vcmd,
-                                                font=self.font)
+                if row in (0, 3):
+                    combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
+                                                    validate=validate, validatecommand=vcmd,
+                                                    font=self.font, style="Red.TCombobox")
+                else:
+                    combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
+                                                    validate=validate, validatecommand=vcmd,
+                                                    font=self.font)
 
                 if row == 0:
                     projects = self.config.keys()
@@ -544,27 +413,33 @@ class App(Frame):
                     validate = "key"
                     vcmd = (self.master.register(self.validate),
                             "0123456789-", 10, '%S', '%P')
-                    width = 11
+                    width = 10
                     self.autofill_date_callback()
                 elif row in (5, 6):
                     validate = "key"
                     vcmd = (self.master.register(self.validate),
                             "0123456789:-", 11, '%S', '%P')
-                    width = 11
-                entry = Entry(self.general_frame_left, width=width,
-                              textvariable=var, validate=validate,
-                              validatecommand=vcmd, font=self.font)
+                    width = 10
+                if row == 4:
+                    entry = Entry(self.general_frame_left, width=width,
+                                  textvariable=var, validate=validate,
+                                  validatecommand=vcmd, font=self.font,
+                                  style="Orange.TEntry")
+                else:
+                    entry = Entry(self.general_frame_left, width=width,
+                                  textvariable=var, validate=validate,
+                                  validatecommand=vcmd, font=self.font)
                 #if row == 4:
                     #entry.bind('<T>', self.autofill_date_callback)
                 entry.grid(row=row, column=1, sticky="W")
                 self.general_widgets.append(entry)
 
-        notes_label = Label(self.general_frame_right, text="Notes",
+        notes_label = Label(self.general_frame_right, text="Notes:",
                             style="Green.TLabel")
-        notes_label.grid(row=0, column=0, sticky="N")
-        notes_label['font'] = (self.default_font, self.default_font_size,
-                               "bold")
-        notes_container = FixedSizeFrame(self.general_frame_right, 299, 206)
+        notes_label.grid(row=0, column=0, sticky="W")
+        #notes_label['font'] = (self.default_font, self.default_font_size,
+        #                       "bold")
+        notes_container = FixedSizeFrame(self.general_frame_right, 299, 186)
         notes_container.grid(row=1, column=0, sticky="N")
         notes = AutoScrollbarText(notes_container, wrap=NONE)
         notes.grid(row=0, column=0, sticky="N")
@@ -646,7 +521,7 @@ class App(Frame):
             var = IntVar()
             var.trace("w", self.change_callback)
             check = Checkbutton(self.documents_frame, text=x, variable=var)
-            check.grid(sticky="W")
+            check.grid(sticky="W", padx=10)
             self.documents_vars.append(var)
 
         self.bottom_frame = Frame(self)
@@ -662,33 +537,65 @@ class App(Frame):
         self.measurements_frame1 = LabelFrame(self.bottom_frame,
                                               text='Measurements',
                                               labelwidget=measurements_label)
-        self.measurements_frame1.grid(row=0, sticky="WE")
+        self.measurements_frame1.grid_rowconfigure(1, weight=1)
+        self.measurements_frame1.grid(row=0, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame1)
         self.measurements_frame = VerticalScrolledFrame(
-            self.measurements_frame1, height=315, width=985)
+            self.measurements_frame1, height=295, width=989)
         self.measurements_frame.interior.grid_columnconfigure(0, weight=1)
-        self.measurements_frame.grid(row=0, sticky="WENS")
+        self.measurements_frame.interior.grid_rowconfigure(0, weight=1)
+        self.measurements_frame.grid(row=1, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame)
         self.nofocus_widgets.append(self.measurements_frame.interior)
         self.nofocus_widgets.append(self.measurements_frame.canvas)
-        self.scanning_add = Button(self.bottom_frame,
-                                   text="Add Measurement",
+        add_del_frame = Frame(self.measurements_frame1)
+        add_del_frame.grid(row=2, pady=(10, 10))
+        self.scanning_add = Button(add_del_frame,
+                                   text="+", width=3,
                                    command=self.new_measurement)
-        self.scanning_add.grid(row=1, pady=(10,0))
+        self.scanning_add.grid(row=0, column=0, padx=5)
+        self.scanning_del = Button(add_del_frame,
+                                   text="-", width=3,
+                                   command=self.del_measurement)
+        self.scanning_del.grid(row=0, column=1, padx=5)
+        self.measurements_frame.canvas.bind("<Double-Button-1>",
+                                            lambda x: self.new_measurement())
 
-
-    def new_measurement(self, *args):
+        label_frame = Frame(self.measurements_frame1)
+        label_frame.grid(row=0, columnspan=6, sticky="NS")
         for column, x in enumerate(self.measurement):
-            if column in [0, 1, 4]:
-                label = Label(self.measurements_frame.interior, text=x, style="Orange.TLabel")
-            elif column in [2, 3]:
-                label = Label(self.measurements_frame.interior, text=x, style="Red.TLabel")
-            else:
-                label = Label(self.measurements_frame.interior, text=x, style="Green.TLabel")
-            label.grid(row=0, column=column)
+            label = Label(label_frame, text=x)
+            if column == 0:
+                label.grid(row=0, column=column, padx=(18, 0), pady=(3, 3))
+            elif column == 1:
+                label.grid(row=0, column=column, padx=(45, 0))
+            elif column == 2:
+                label.grid(row=0, column=column, padx=(39, 0))
+            elif column == 3:
+                label.grid(row=0, column=column, padx=(76, 0))
+            elif column == 4:
+                label.grid(row=0, column=column, padx=(195, 0))
+            elif column == 5:
+                label.grid(row=0, column=column, padx=(243, 130))
+
             label['font'] = (self.default_font, self.default_font_size,
                              "bold")
             label.bind('<Button-1>', lambda x: app.master.focus())
+        self.new_measurement()
+
+
+    def new_measurement(self, *args):
+        #for column, x in enumerate(self.measurement):
+        #    label = Label(self.measurements_frame.interior, text=x)
+        #    if column == 0:
+        #        label.grid(row=0, column=column, padx=(10, 2))
+        #    elif column == len(self.measurements) - 1:
+        #        label.grid(row=0, column=column, padx=(2, 10))
+        #    else:
+        #        label.grid(row=0, column=column, padx=2)
+        #    label['font'] = (self.default_font, self.default_font_size,
+        #                     "bold")
+        #    label.bind('<Button-1>', lambda x: app.master.focus())
         value = len(self.measurements) + 1
         scanning_vars = []
         scanning_widgets = []
@@ -697,9 +604,10 @@ class App(Frame):
         var1.set(value)
         var1.trace("w", self.change_callback)
         spinbox = Spinbox(self.measurements_frame.interior, from_=1, to=99,
-                          width=2, justify="right",
-                          textvariable=var1, font=self.font)
-        spinbox.grid(row=value, column=0, sticky="W", padx=3)
+                          width=2, justify="right", state="readonly",
+                          textvariable=var1, font=self.font,
+                          style="Orange.TSpinbox")
+        spinbox.grid(row=value, column=0, sticky="W", padx=(10, 2))
         scanning_widgets.append(spinbox)
         var2 = StringVar()
         var2.trace("w", self.change_callback)
@@ -717,10 +625,10 @@ class App(Frame):
         #            value="misc").pack(anchor="w")
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
                             textvariable=var2, width=10, state="readonly",
-                            font=self.font)
+                            font=self.font, style="Orange.TCombobox")
         combobox.set_completion_list(["anatomical", "functional", "misc"])
         combobox.current(0)
-        combobox.grid(row=value, column=1, sticky="")
+        combobox.grid(row=value, column=1, sticky="", padx=2)
         scanning_widgets.append(combobox)
 
         var3 = StringVar()
@@ -729,11 +637,11 @@ class App(Frame):
         validate = "key"
         vcmd = (self.master.register(self.validate),
                 "0123456789", 4, '%S', '%P')
-        vols = Entry(self.measurements_frame.interior, width=5,
+        vols = Entry(self.measurements_frame.interior, width=4,
                        justify="right", textvariable=var3,
                        validate=validate, validatecommand=vcmd,
-                       font=self.font)
-        vols.grid(row=value, column=2, sticky="", padx=3)
+                       font=self.font, style="Red.TEntry")
+        vols.grid(row=value, column=2, sticky="", padx=2)
         scanning_widgets.append(vols)
         var4 = StringVar()
         var4.trace("w", self.change_callback)
@@ -746,8 +654,9 @@ class App(Frame):
         #        49, '%S', '%P')
         name = AutocompleteCombobox(self.measurements_frame.interior,
                                     textvariable=var4, validate=validate,
-                                    validatecommand=vcmd, font=self.font)
-        name.grid(row=value, column=3, sticky="", padx=(0, 3))
+                                    validatecommand=vcmd, font=self.font,
+                                    style="Red.TCombobox")
+        name.grid(row=value, column=3, sticky="", padx=2)
         scanning_widgets.append(name)
         #container1 = FixedSizeFrame(self.measurements_frame.interior, 198, 53)
         #container1.grid(row=value, column=4, sticky="NSE", pady=3)
@@ -756,8 +665,10 @@ class App(Frame):
         #scanning_vars.append(prt_file)
         #scanning_widgets.append(prt_file)
         container2 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
-        container2.grid(row=value, column=4, sticky="NSE", pady=3)
-        logfiles = AutoScrollbarText(container2, wrap=NONE)
+        container2.grid(row=value, column=4, sticky="NSE", pady=3, padx=2)
+        scanning_widgets.append(container2)
+        logfiles = AutoScrollbarText(container2, wrap=NONE, background="orange",
+                                     highlightbackground="orange")
         logfiles.bind('<KeyRelease>', self.change_callback)
         #logfiles.frame.bind('<Enter>',
         #                lambda event: self.text_mouseover_callback(True))
@@ -767,7 +678,8 @@ class App(Frame):
         logfiles.grid()
         scanning_widgets.append(logfiles)
         container3 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
-        container3.grid(row=value, column=5, sticky="NSE", pady=3, padx=3)
+        container3.grid(row=value, column=5, sticky="NSE", pady=3, padx=(2, 10))
+        scanning_widgets.append(container3)
         text = AutoScrollbarText(container3, wrap=NONE)
         text.bind('<KeyRelease>', self.change_callback)
         #text.frame.bind('<Enter>',
@@ -784,12 +696,13 @@ class App(Frame):
         self.change_callback(str(var2))  # Update Names
         self.prt_files.append("")
 
-    def del_measurement(self):
+    def del_measurement(self, *args):
         for s in self.measurements_widgets[-1]:
             s.grid_remove()
             del s
         self.measurements_widgets.pop()
         self.measurements.pop()
+        self.change_callback(None)
 
     def add_additional_documents(self):
         current_project = self.general_widgets[0].get()
@@ -798,7 +711,7 @@ class App(Frame):
                 var = IntVar()
                 var.trace("w", self.change_callback)
                 check = Checkbutton(self.documents_frame, text=x, variable=var)
-                check.grid(sticky="W")
+                check.grid(sticky="W", padx=10)
                 self.documents.append(x)
                 self.documents_vars.append(var)
                 self.additional_documents.append(x)
@@ -881,6 +794,22 @@ class App(Frame):
         else:
             self.master.unbind("<Control-a>")
 
+    def enable_minus(self):
+        self.scanning_del["state"] = "enabled"
+        self.edit_menu.entryconfigure("Delete Measurement", state="normal")
+        if platform.system() == "Darwin":
+            self.master.bind("<Command-d>", self.del_measurement)
+        else:
+            self.master.bind("<Control-d>", self.del_measurement)
+
+    def disable_minus(self):
+        self.scanning_del["state"] = "disabled"
+        self.edit_menu.entryconfigure("Delete Measurement", state="disabled")
+        if platform.system() == "Darwin":
+            self.master.unbind("<Command-d>")
+        else:
+            self.master.unbind("<Control-d>")
+
     def quit_callback(self, *args):
         if self.save_button["state"] == "enabled":
             if tkMessageBox.askyesno("Save?", "Save before quitting?"):
@@ -903,6 +832,21 @@ class App(Frame):
                 self.enable_archive()
             else:
                 self.disable_archive()
+        except:
+            pass
+
+        # Check if deleting measurement is possible
+        try:
+            if len(self.measurements) > 1 and \
+                self.measurements[-1][2].get() == "" and \
+                self.measurements[-1][3].get() == "" and \
+                self.measurements_widgets[-1][5].get(
+                        1.0, END).strip("\n") == "" and \
+                self.measurements_widgets[-1][-1].get(
+                        1.0, END).strip("\n") == "":
+                    self.enable_minus()
+            else:
+                self.disable_minus()
         except:
             pass
 
@@ -1069,7 +1013,6 @@ class App(Frame):
         f.write("\n")
         states = ("[ ]", "[x]")
         for pos, label in enumerate(self.documents):
-            print label
             try:
                 value = int(self.documents_vars[pos].get())
             except:
@@ -1267,7 +1210,7 @@ class App(Frame):
                         session_folder = os.path.join(subject_folder, session)
                         if not os.path.exists(session_folder):
                             os.makedirs(session_folder)
-                        type_folder = os.path.join(session_folder, type)
+                        type_folder = os.path.join(session_folder, type[:4])
                         if not os.path.exists(type_folder):
                             os.makedirs(type_folder)
                         name_folder = os.path.join(type_folder, name)
@@ -1394,7 +1337,7 @@ class App(Frame):
                             shutil.copyfile(
                                 s, os.path.join(folder, project, group,
                                                 "S" + repr(subject).zfill(2),
-                                                session, type, name, "DICOM",
+                                                session, type[:4], name, "DICOM",
                                                 os.path.split(s)[-1]))
                     except:
                         warnings += "\nError copying DICOMs for Measurement " \
@@ -1429,7 +1372,7 @@ class App(Frame):
                                                              "S" + repr(
                                                                  subject).zfill(
                                                                  2),
-                                                             session, type, name,
+                                                             session, type[:4], name,
                                                              os.path.split(file_)[-1]))
                                     if "*" in logfile:
                                         new = original.replace(
@@ -1495,7 +1438,11 @@ class HelpDialogue:
         top.title("Help")
         self.text = ScrolledText(top, width=77)
         self.text.pack()
-
+        try:
+            with open("README.txt") as f:
+                docs = f.read()
+        except:
+            docs = "README.txt not found!"
         self.text.insert(END, docs)
         self.text["state"] = "disabled"
 
@@ -1512,7 +1459,7 @@ class HelpDialogue:
 root = Tk()
 
 style = Style()
-style.theme_use("clam")
+style.theme_use("default")
 root.resizable(False, False)
 root.option_add('*tearOff', FALSE)
 app = App(master=root)
