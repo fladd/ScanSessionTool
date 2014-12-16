@@ -259,7 +259,10 @@ class App(Frame):
         Frame.__init__(self, master)
 
         font = tkFont.nametofont("TkDefaultFont")
-        font.config(family="Arial")
+        if platform.system() == "Windows":
+            font.config(family="Arial", size=11)
+        else:
+            font.config(family="Arial")
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
         self.font = (self.default_font, self.default_font_size)
@@ -459,21 +462,21 @@ class App(Frame):
                            justify="center", style="Blue.TLabel")
         self.title1.grid(row=0)
         self.title1['font'] = (self.default_font,
-                              self.default_font_size + 12,
+                              self.default_font_size + 10,
                               "bold")
         self.nofocus_widgets.append(self.title1)
         self.title2 = Label(self.logo, text="Session",
                            justify="center", style="Blue.TLabel")
         self.title2.grid(row=1)
         self.title2['font'] = (self.default_font,
-                              self.default_font_size + 12,
+                              self.default_font_size + 10,
                               "bold")
         self.nofocus_widgets.append(self.title2)
         self.title3 = Label(self.logo, text="Tool",
                            justify="center", style="Blue.TLabel")
         self.title3.grid(row=2)
         self.title3['font'] = (self.default_font,
-                              self.default_font_size + 12,
+                              self.default_font_size + 10,
                               "bold")
         self.nofocus_widgets.append(self.title3)
         self.version1 = Label(self.logo,
