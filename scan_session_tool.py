@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 __date__ = '16 Dec 2014'
 
 
@@ -158,6 +158,7 @@ Groups: Group1, Group2
 Sessions: Sess1, Sess2
 Measurements Anatomical: Localizer, Anatomy
 Measurements Functional: Run1, Run2, Run3
+Measurements Misc: Run1Incomplete
 Users: User1, User2, User3
 Backups: User1, User2, User3
 Documents: Pre-Scan Questionnaire, Post-Scan Questionnaire
@@ -167,6 +168,7 @@ Groups: GroupA, GroupB
 Sessions: SessA, SessB
 Measurements Anatomical: Localizer, MPRAGE
 Measurements Functional: RunA, RunB, RunC
+Measurements Misc: RunAIncomplete
 Users: UserA, UserB, UserC
 Backups: UserA, UserB, UserC
 Documents: Participation Reimbursement Form
@@ -1077,7 +1079,7 @@ class App(Frame):
                                                 "measurements": {
                                                     "anatomical": [],
                                                     "functional": [],
-                                                    "incomplete": []}}
+                                                    "misc": []}}
                     elif line.startswith("Groups:"):
                         self.config[project]['groups'] = \
                             [x.strip() for x in line[7:].strip().split(",")]
@@ -1103,9 +1105,9 @@ class App(Frame):
                             [x.strip() for x in line[24:].strip().split(",")]
                         self.config[project]["measurements"]["functional"].sort()
                     elif line.startswith("Measurements Incomplete:"):
-                        self.config[project]["measurements"]["incomplete"] = \
+                        self.config[project]["measurements"]["misc"] = \
                             [x.strip() for x in line[24:].strip().split(",")]
-                        self.config[project]["measurements"]["incomplete"].sort()
+                        self.config[project]["measurements"]["misc"].sort()
                     elif line.startswith("Documents:"):
                         self.config[project]["documents"] = \
                             [x.strip() for x in line[10:].strip().split(",")]
@@ -1248,12 +1250,25 @@ class App(Frame):
                         measurement = True
                     else:
                         try:
-                            self.add_additional_documents()
+                            #self.add_additional_documents()
                             check = line[1]
                             if check == " ":
                                 value = 0
                             elif check == "x":
                                 value = 1
+
+                            x = line[3:].strip()
+                            if line.startswith("[") and not x in self.documents:
+                                var = IntVar()
+                                var.trace("w", self.change_callback)
+                                check = Checkbutton(self.documents_frame, text=x, variable=var)
+                                check.grid(sticky="W", padx=10)
+                                self.documents.append(x)
+                                self.documents_vars.append(var)
+                                self.additional_documents.append(x)
+                                self.additional_documents_vars.append(var)
+                                self.additional_documents_widgets.append(check)
+
                             self.documents_vars[current_document].set(value)
                             current_document += 1
                         except:
@@ -1313,8 +1328,8 @@ class App(Frame):
             self.disable_archive()
             warnings = "\n\n\n"
             project = self.general_vars[0].get()
-            group = self.general_vars[1].get()
-            subject = int(self.general_vars[2].get())
+            subject = int(self.general_vars[1].get())
+            group = self.general_vars[2].get()
             session = self.general_vars[3].get()
             timestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
             folder = os.path.join(d, "~Archive"+timestamp)
