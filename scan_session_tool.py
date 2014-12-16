@@ -523,9 +523,9 @@ class App(Frame):
 
 
         self.general_frame_left = Frame(self.general_frame)
-        self.general_frame_left.grid(row=0, column=0, sticky="W", padx=10)
+        self.general_frame_left.grid(row=0, column=0, sticky="N", padx=10)
         self.general_frame_right = Frame(self.general_frame)
-        self.general_frame_right.grid(row=0, column=1, padx=10, sticky="W")
+        self.general_frame_right.grid(row=0, column=1, padx=10, sticky="N")
 
         for row, x in enumerate(self.general):
             label = Label(self.general_frame_left, text=x)
