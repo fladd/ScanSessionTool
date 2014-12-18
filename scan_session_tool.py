@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.4.1'
-__date__ = '16 Dec 2014'
+__version__ = '0.5.0'
+__date__ = '18 Dec 2014'
 
 
 import os
@@ -130,8 +130,7 @@ The control area consists of the following three buttons:
             files (*.dcm OR *.IMA; no sub-folders!), all stimulation protocols,
             all logfiles as well as all Turbo Brain Voyager files (all *.tbv
             files in a folder called 'TBVFiles').
-            The data will be copied into the following folder hierarchy (with
-            the <Type> directories shortened to "anat", "func", and "misc"):
+            The data will be copied into the following folder hierarchy:
             DICOMs -->
               <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/<DICOM>/
             Logfiles -->
@@ -296,22 +295,25 @@ class VerticalScrolledFrame(Frame):
         os = platform.system()
         self.bind_ids = []
         if os == "Linux":
-            self.bind_ids.append(self.canvas.bind_all("<4>",
+            self.bind_ids.append(self.vscrollbar.bind_all("<4>",
                                                       self._on_mousewheel))
-            self.bind_ids.append(self.canvas.bind_all("<5>",
+            self.bind_ids.append(self.vscrollbar.bind_all("<5>",
                                                       self._on_mousewheel))
         else:
-            self.bind_ids.append(self.canvas.bind_all("<MouseWheel>",
+            self.bind_ids.append(self.vscrollbar.bind_all("<MouseWheel>",
                                                       self._on_mousewheel))
 
     def unbind_mouse_wheel(self, *args):
-        for x in self.bind_ids:
-            os = platform.system()
-            if os == "Linux":
-                self.canvas.unbind("<4>", x)
-                self.canvas.unbind("<5>", x)
-            else:
-                self.canvas.unbind("<MouseWheel>", x)
+        try:
+            for x in self.bind_ids:
+                os = platform.system()
+                if os == "Linux":
+                    self.vscrollbar.unbind("<4>", x)
+                    self.vscrollbar.unbind("<5>", x)
+                else:
+                    self.vscrollbar.unbind("<MouseWheel>", x)
+        except:
+            pass
 
     # track changes to the canvas and frame width and sync them,
     # also updating the scrollbar
@@ -424,17 +426,19 @@ class App(Frame):
         self.font = (self.default_font, self.default_font_size)
 
         style = Style()
-        style.configure("Blue.TLabel", foreground="blue")
+        self.red = "#fc625d"
+        self.orange = "#fdbc40"
+        style.configure("Blue.TLabel", foreground="royalblue")
         style.configure("Grey.TLabel", foreground="darkgrey")
         style.configure("Header.TLabel", background="darkgrey")
         style.configure("Header.TFrame", background="darkgrey")
-        style.configure("Red.TCombobox", fieldbackground="red")
-        style.configure("Orange.TCombobox", fieldbackground="orange")
-        style.map("Orange.TCombobox", fieldbackground=[("readonly", "orange")])
-        style.configure("Red.TEntry", fieldbackground="red")
-        style.configure("Orange.TEntry", fieldbackground="orange")
-        style.configure("Orange.TSpinbox", fieldbackground="orange")
-        style.map("Orange.TSpinbox", fieldbackground=[("disabled", "orange")])
+        style.configure("Red.TCombobox", fieldbackground=self.red)
+        style.configure("Orange.TCombobox", fieldbackground=self.orange)
+        style.map("Orange.TCombobox", fieldbackground=[("readonly", self.orange)])
+        style.configure("Red.TEntry", fieldbackground=self.red)
+        style.configure("Orange.TEntry", fieldbackground=self.orange)
+        style.configure("Orange.TSpinbox", fieldbackground=self.orange)
+        style.map("Orange.TSpinbox", fieldbackground=[("disabled", self.orange)])
 
         self.menubar = Menu(master)
         if platform.system() == "Darwin":
@@ -725,7 +729,7 @@ class App(Frame):
         for column, x in enumerate(self.measurement):
             label = Label(label_frame, text=x)
             if column == 0:
-                label.grid(row=0, column=column, padx=(18, 0), pady=(3, 3))
+                label.grid(row=0, column=column, padx=(13, 0), pady=(3, 3))
             elif column == 1:
                 label.grid(row=0, column=column, padx=(45, 0))
             elif column == 2:
@@ -745,16 +749,16 @@ class App(Frame):
 
     def new_measurement(self, *args):
         #for column, x in enumerate(self.measurement):
-        #    label = Label(self.measurements_frame.interior, text=x)
-        #    if column == 0:
-        #        label.grid(row=0, column=column, padx=(10, 2))
-        #    elif column == len(self.measurements) - 1:
-        #        label.grid(row=0, column=column, padx=(2, 10))
-        #    else:
-        #        label.grid(row=0, column=column, padx=2)
-        #    label['font'] = (self.default_font, self.default_font_size,
-        #                     "bold")
-        #    label.bind('<Button-1>', lambda x: app.master.focus())
+            #label = Label(self.measurements_frame.interior, text=x)
+            #if column == 0:
+                #label.grid(row=0, column=column, padx=(10, 2))
+            #elif column == len(self.measurements) - 1:
+                #label.grid(row=0, column=column, padx=(2, 10))
+            #else:
+                #label.grid(row=0, column=column, padx=2)
+            #label['font'] = (self.default_font, self.default_font_size,
+                             #"bold")
+            #label.bind('<Button-1>', lambda x: app.master.focus())
         value = len(self.measurements) + 1
         scanning_vars = []
         scanning_widgets = []
@@ -826,8 +830,8 @@ class App(Frame):
         container2 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
         container2.grid(row=value, column=4, sticky="NSE", pady=3, padx=2)
         scanning_widgets.append(container2)
-        logfiles = AutoScrollbarText(container2, wrap=NONE, background="orange",
-                                     highlightbackground="orange")
+        logfiles = AutoScrollbarText(container2, wrap=NONE, background=self.orange,
+                                     highlightbackground=self.orange)
         logfiles.bind('<KeyRelease>', self.change_callback)
         #logfiles.frame.bind('<Enter>',
         #                lambda event: self.text_mouseover_callback(True))
@@ -850,8 +854,10 @@ class App(Frame):
         scanning_widgets.append(text)
         self.measurements.append(scanning_vars)
         self.measurements_widgets.append(scanning_widgets)
-        #if value == 6:
-        #    self.measurements_frame.bind_mouse_wheel()
+        if value == 6:
+            self.measurements_frame.bind_mouse_wheel()
+        else:
+            self.measurements_frame.unbind_mouse_wheel()
         self.change_callback(str(var2))  # Update Names
         self.prt_files.append("")
 
@@ -1139,7 +1145,7 @@ class App(Frame):
     def save(self, filename=None, *args):
         """Save the data."""
 
-        if type(filename) is  not str:
+        if filename is None:
             filename = self.get_filename()
             f = tkFileDialog.asksaveasfile(mode='w', defaultextension='txt',
                                            initialfile=filename)
@@ -1319,294 +1325,412 @@ class App(Frame):
 
             self.disable_save()
 
+    def set_title(self, status=None):
+        if status is None:
+            self.master.title('Scan Session Tool {0}'.format(__version__))
+        else:
+            self.master.title('Scan Session Tool {0} ({1})'.format(
+                __version__, status))
+
+    def _archive_run(self, d, dialogue):
+        warnings = "\n\n\n"
+        project = self.general_vars[0].get()
+        subject = int(self.general_vars[1].get())
+        group = self.general_vars[2].get()
+        session = self.general_vars[3].get()
+        timestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
+        folder = os.path.join(d, "~Archive"+timestamp)
+        if not os.path.exists(folder):
+            try:
+                os.makedirs(folder)
+            except:
+                warnings += "\nError creating project directory\n"
+        for measurement in self.measurements:
+            number = int(measurement[0].get())
+            type = measurement[1].get()
+            try:
+                vols = int(measurement[2].get())
+            except:
+                vols = 0
+            name = measurement[3].get()
+            scans = []
+            for f in glob.glob(os.path.join(d, "*.dcm")):
+                if int(os.path.split(f)[-1].split("_")[1]) == number:
+                    scans.append(f)
+            if len(scans) == 0:
+                for f in glob.glob(os.path.join(d, "*.IMA")):
+                    if int(os.path.split(f)[-1].split(".")[3]) == number:
+                        scans.append(f)
+            if name == "":
+                warnings += "\nError copying images for measurement {0}:\n" \
+                           "    'Name' not specified\n".format(number)
+            if vols == 0:
+                warnings += "\nError copying images for measurement {0}:\n" \
+                           "    'Vols' not specified\n".format(number)
+            elif scans == []:
+                warnings += "\nError copying images for measurement {0}:\n" \
+                            "    No images found\n".format(
+                    number)
+            elif len(scans) != vols:
+                warnings += "\nError copying images for measurement {0}:" \
+                            "    'Vols' unequals number of images\n".format(
+                    number)
+            else:
+                try:
+                    project_folder = os.path.join(folder, project)
+                    if not os.path.exists(project_folder):
+                        os.makedirs(project_folder)
+                    group_folder = os.path.join(project_folder, group)
+                    if not os.path.exists(group_folder):
+                        os.makedirs(group_folder)
+                    subject_folder = os.path.join(group_folder,
+                                                  "S" + repr(
+                                                      subject).zfill(2))
+                    if not os.path.exists(subject_folder):
+                        os.makedirs(subject_folder)
+                    session_folder = os.path.join(subject_folder, session)
+                    if not os.path.exists(session_folder):
+                        os.makedirs(session_folder)
+                    type_folder = os.path.join(session_folder, type)
+                    if not os.path.exists(type_folder):
+                        os.makedirs(type_folder)
+                    name_folder = os.path.join(type_folder, name)
+                    if not os.path.exists(name_folder):
+                        os.makedirs(name_folder)
+                except:
+                    warnings += "\nError creating directory structure for " \
+                                "measurement {0}\n".format(number)
+                    shutil.rmtree(dicom_folder)
+
+                if os.path.isdir(os.path.join(d, "TBVFiles")):
+                    dialogue.status.set(
+                       "Archiving measurement {0} of {1}\n\n".format(
+                           measurement[0].get(), len(self.measurements)) +
+                       "(Copying TBV files...)")
+                    dialogue.update()
+                    try:
+                        # TBV files
+                        tbv_folder = os.path.join(name_folder, "TBV")
+                        if not os.path.exists(tbv_folder):
+                            os.makedirs(tbv_folder)
+                        if name == "Anatomy":
+                            # Anatomy
+                            for file in glob.glob(
+                                    os.path.join(d, "TBVFiles/Anatomy/*")):
+                                if not file.endswith("dcm"):
+                                    dialogue.update()
+                                    shutil.copy(os.path.abspath(file),
+                                                tbv_folder)
+                        else:
+                            # Run
+                            for file in glob.glob(
+                                    os.path.join(d, "TBVFiles/*.tbv")):
+                                dialogue.update()
+
+                                f = open(file)
+                                content = f.read()
+                                start = content.find("DicomFirstVolumeNr:")
+                                end = content.find("\n", start)
+                                if int(content[start:end].split(
+                                        " ")[-1]) == number:
+                                    start = content.find("TargetFolder:")
+                                    end = content.find("\n", start)
+                                    target_folder = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("WatchFolder:")
+                                    end = content.find("\n", start)
+                                    watch_folder = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("StimulationProtocol:")
+                                    end = content.find("\n", start)
+                                    stimulation_protocol = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("ContrastFile:")
+                                    end = content.find("\n", start)
+                                    contrast_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("FMRVMRAlignVMRPosFile:")
+                                    end = content.find("\n", start)
+                                    pos_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("ACPCTransformationFile:")
+                                    end = content.find("\n", start)
+                                    acpc_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("TalairachCerebrumBorderFile:")
+                                    end = content.find("\n", start)
+                                    tal_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("TalairachVMRFile:")
+                                    end = content.find("\n", start)
+                                    vmr_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    f.close()
+                                    # Copy files
+                                    shutil.copy(os.path.abspath(file), tbv_folder)
+                                    for elem in os.listdir(
+                                        os.path.join(d, "TBVFiles",
+                                                     target_folder)):
+                                        dialogue.update()
+                                        shutil.copy(
+                                            os.path.join(d, "TBVFiles",
+                                                         target_folder,
+                                                         elem),
+                                                         tbv_folder)
+                                    if stimulation_protocol != "":
+                                        shutil.copy(
+                                            os.path.join(d, "TBVFiles",
+                                                         stimulation_protocol),
+                                            tbv_folder)
+                                    if contrast_file != "":
+                                        shutil.copy(
+                                            os.path.join(d, "TBVFiles",
+                                                         contrast_file),
+                                            tbv_folder)
+
+                                    # Adapt TBV file
+                                    replace(os.path.join(
+                                        tbv_folder, os.path.split(file)[-1]),
+                                            target_folder, "./")
+                                    replace(os.path.join(
+                                        tbv_folder, os.path.split(file)[-1]),
+                                            watch_folder, "./../DICOM/")
+                                    for x in [pos_file, acpc_file, tal_file, vmr_file]:
+                                        dialogue.update()
+                                        replace(os.path.join(
+                                            tbv_folder, os.path.split(file)[-1]),
+                                                x, os.path.join(
+                                                "../../../anatomical/Anatomy/TBV/",
+                                                os.path.split(x)[-1]))
+                        if os.listdir(tbv_folder) == []:
+                            shutil.rmtree(tbv_folder)
+                    except:
+                        warnings += "\nError copying Turbo Brain Voyager files " \
+                                    "for measurement {0}\n".format(number)
+                        shutil.rmtree(tbv_folder)
+
+                dialogue.status.set(
+                       "Archiving measurement {0} of {1}\n\n".format(
+                           measurement[0].get(), len(self.measurements)) +
+                       "(Copying images...)")
+                dialogue.update()
+                try:
+                    # DICOMs
+                    dicom_folder = os.path.join(name_folder, "DICOM")
+                    if not os.path.exists(dicom_folder):
+                        os.makedirs(dicom_folder)
+                    for s in scans:
+                        dialogue.update()
+                        shutil.copyfile(
+                            s, os.path.join(folder, project, group,
+                                            "S" + repr(subject).zfill(2),
+                                            session, type, name, "DICOM",
+                                            os.path.split(s)[-1]))
+                except:
+                    warnings += "\nError copying images for measurement " \
+                                "{0}:\n    Filesystem error\n".format(number)
+                    shutil.rmtree(dicom_folder)
+
+            # Logfiles
+            if type != "anatomical":
+                dialogue.status.set(
+                       "Archiving measurement {0} of {1}\n\n".format(
+                           measurement[0].get(), len(self.measurements)) +
+                       "(Copying logfiles...)")
+                dialogue.update()
+                try:
+                    original = measurement[4].get(1.0, END)
+                    logfiles = original.split("\n")
+                    logfiles = [x.strip() for x in logfiles if x != ""]
+                    for logfile in logfiles:
+                        if "*" in logfile:
+                            replaced = []
+                        try:
+                            if logfile != "" and not os.path.isdir(logfile):
+                                files = glob.glob(os.path.join(d,
+                                                               logfile))
+                                if files == []:
+                                    raise Exception
+                                for file_ in files:
+                                    if not os.path.isdir(file_):
+                                        dialogue.update()
+                                        if "*" in logfile:
+                                            replaced.append(
+                                                os.path.split(file_)[-1])
+                                        shutil.copyfile(
+                                            file_,
+                                            os.path.join(folder,
+                                                         project,
+                                                         group,
+                                                         "S" + repr(
+                                                             subject).zfill(
+                                                             2),
+                                                         session, type, name,
+                                                         os.path.split(file_)[-1]))
+                                if "*" in logfile:
+                                    new = original.replace(
+                                        logfile, "\n".join(replaced))
+                                    measurement[4].delete(1.0, END)
+                                    measurement[4].insert(1.0, new)
+
+                        except:
+                           warnings += "\nError copying logfiles " \
+                               "for measurement {0}:\n    '{1}' not " \
+                               "found\n".format(number, logfile)
+
+                except:
+                    warnings += "\nError copying logfiles " \
+                               "for measurement {0}\n".format(number)
+
+        message = "Archived to: {0}".format(os.path.abspath(folder))
+
+        # Try general TBV files
+        dialogue.status.set("Archiving general TBV files\n\n(Copying...)")
+        dialogue.update()
+        if os.path.isdir(os.path.join(d, "TBVFiles")):
+            try:
+                func_folder = os.path.join(folder, project, group,
+                                           "S" + repr(subject).zfill(2),
+                                           session, "functional")
+                for file in glob.glob(os.path.join(d, "TBVFiles/*")):
+                    if file.endswith("roi") or file.endswith("voi"):
+                        dialogue.update()
+                        shutil.copy(os.path.abspath(file), func_folder)
+            except:
+                warnings += "\nError copying general Turbo Brain Voyager files\n"
+        else:
+            warnings += "\nNo Turbo Brain Voyager files found\n"
+
+        # Try general documents
+        dialogue.status.set("Archiving general documents\n\n(Copying...)")
+        dialogue.update()
+        try:
+            all_documents = 0
+            sess_folder = os.path.join(folder, project, group,
+                                       "S" + repr(subject).zfill(2),
+                                       session)
+            for file in glob.glob(os.path.join(d, "*")):
+                if file.endswith("pdf") or file.endswith("doc") \
+                    or file.endswith("txt") and not os.path.isdir(file):
+                    dialogue.update()
+                    all_documents += 1
+                    shutil.copy(os.path.abspath(file), sess_folder)
+            if all_documents == 0:
+                warnings += "\nNo general documents found\n"
+        except:
+            warnings += "\nError copying general documents\n"
+
+        dialogue.status.set("Done")
+        dialogue.update()
+
+        # Save scan protocol
+        path = os.path.join(folder, project, self.get_filename() + ".txt")
+        self.save(path)
+
+        # Confirm archiving
+        message += warnings
+        return message
+
+
     def archive(self, *args):
         """Archive the data."""
 
         d = tkFileDialog.askdirectory(
             title="Select directory containing all data")
         if d is not "":
-            self.disable_archive()
-            warnings = "\n\n\n"
-            project = self.general_vars[0].get()
-            subject = int(self.general_vars[1].get())
-            group = self.general_vars[2].get()
-            session = self.general_vars[3].get()
-            timestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
-            folder = os.path.join(d, "~Archive"+timestamp)
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-            for measurement in self.measurements:
-                number = int(measurement[0].get())
-                type = measurement[1].get()
-                try:
-                    vols = int(measurement[2].get())
-                except:
-                    vols = 0
-                name = measurement[3].get()
-                scans = []
-                for f in glob.glob(os.path.join(d, "*.dcm")):
-                    if int(os.path.split(f)[-1].split("_")[1]) == number:
-                        scans.append(f)
-                if len(scans) == 0:
-                    for f in glob.glob(os.path.join(d, "*.IMA")):
-                        if int(os.path.split(f)[-1].split(".")[3]) == number:
-                            scans.append(f)
-                if name == "":
-                    warnings += "\nError copying DICOMS for Measurement {0} " \
-                               "('Name' not specified)!\n".format(number)
-                    continue
-                if vols == 0:
-                    warnings += "\nError copying DICOMs for Measurement {0} " \
-                               "('Vols' not specified)!\n".format(number)
-                elif scans == []:
-                    warnings += "\nError copying DICOMs for Measurement {0} (" \
-                                "No images found)!\n".format(
-                        number)
-                elif len(scans) != vols:
-                    warnings += "\nError copying DICOMs for Measurement {0} ('" \
-                                "Vols' unequals number of images)!\n".format(
-                        number)
-                else:
-                    try:
-                        project_folder = os.path.join(folder, project)
-                        if not os.path.exists(project_folder):
-                            os.makedirs(project_folder)
-                        group_folder = os.path.join(project_folder, group)
-                        if not os.path.exists(group_folder):
-                            os.makedirs(group_folder)
-                        subject_folder = os.path.join(group_folder,
-                                                      "S" + repr(
-                                                          subject).zfill(2))
-                        if not os.path.exists(subject_folder):
-                            os.makedirs(subject_folder)
-                        session_folder = os.path.join(subject_folder, session)
-                        if not os.path.exists(session_folder):
-                            os.makedirs(session_folder)
-                        type_folder = os.path.join(session_folder, type[:4])
-                        if not os.path.exists(type_folder):
-                            os.makedirs(type_folder)
-                        name_folder = os.path.join(type_folder, name)
-                        if not os.path.exists(name_folder):
-                            os.makedirs(name_folder)
-                    except:
-                        warnings += "\nError creating folder structure for " \
-                                    "measurement {0}!\n".format(number)
-                        shutil.rmtree(dicom_folder)
+            self.master.protocol("WM_DELETE_WINDOW", lambda x: None)
+            self.set_title("Busy")
+            dialogue = BusyDialogue(self.master)
+            dialogue.status.set("Busy")
+            dialogue.top.update()
+            message = self._archive_run(d, dialogue)
+            dialogue.destroy()
+            self.set_title()
+            self.master.protocol("WM_DELETE_WINDOW", app.quit_callback)
+            #tkMessageBox.showinfo(title="Done", message=message)
+            errors = MessageDialogue(self.master, message)
+            errors.show()
 
-                    if os.path.isdir(os.path.join(d, "TBVFiles")):
-                        try:
-                            # TBV files
-                            tbv_folder = os.path.join(name_folder, "TBV")
-                            if not os.path.exists(tbv_folder):
-                                os.makedirs(tbv_folder)
 
-                            if name == "Anatomy":
-                                # Anatomy
-                                for file in glob.glob(
-                                        os.path.join(d, "TBVFiles/Anatomy/*")):
-                                    if not file.endswith("dcm"):
-                                        shutil.copy(os.path.abspath(file),
-                                                    tbv_folder)
-                            else:
-                                # Run
-                                for file in glob.glob(
-                                        os.path.join(d, "TBVFiles/*.tbv")):
-                                    f = open(file)
-                                    content = f.read()
-                                    start = content.find("DicomFirstVolumeNr:")
-                                    end = content.find("\n", start)
-                                    if int(content[start:end].split(
-                                            " ")[-1]) == number:
-                                        start = content.find("TargetFolder:")
-                                        end = content.find("\n", start)
-                                        target_folder = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("WatchFolder:")
-                                        end = content.find("\n", start)
-                                        watch_folder = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("StimulationProtocol:")
-                                        end = content.find("\n", start)
-                                        stimulation_protocol = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("ContrastFile:")
-                                        end = content.find("\n", start)
-                                        contrast_file = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("FMRVMRAlignVMRPosFile:")
-                                        end = content.find("\n", start)
-                                        pos_file = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("ACPCTransformationFile:")
-                                        end = content.find("\n", start)
-                                        acpc_file = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("TalairachCerebrumBorderFile:")
-                                        end = content.find("\n", start)
-                                        tal_file = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        start = content.find("TalairachVMRFile:")
-                                        end = content.find("\n", start)
-                                        vmr_file = \
-                                            content[start:end].split(
-                                                " ")[-1].strip("\r").strip('"')
-                                        f.close()
+class BusyDialogue:
 
-                                        # Copy files
-                                        shutil.copy(os.path.abspath(file), tbv_folder)
-                                        for elem in os.listdir(
-                                            os.path.join(d, "TBVFiles",
-                                                         target_folder)):
-                                            shutil.copy(
-                                                os.path.join(d, "TBVFiles",
-                                                             target_folder,
-                                                             elem),
-                                                             tbv_folder)
-                                        if stimulation_protocol != "":
-                                            shutil.copy(
-                                                os.path.join(d, "TBVFiles",
-                                                             stimulation_protocol),
-                                                tbv_folder)
-                                        if contrast_file != "":
-                                            shutil.copy(
-                                                os.path.join(d, "TBVFiles",
-                                                             contrast_file),
-                                                tbv_folder)
+    def __init__(self, master):
+        self.master = master
+        top = self.top = Toplevel(master)
+        top.transient(master)
+        top.grab_set()
+        top.focus_set()
+        top.protocol("WM_DELETE_WINDOW", lambda x: None)
+        top.overrideredirect(1)
+        style = Style()
+        style.configure("Black.TFrame", background="#49d042")
+        style.configure("White.TLabel", background="#49d042")
+        self.frame = FixedSizeFrame(top, width=300, height=100,
+                                    style="Black.TFrame")
+        self.frame.grid()
+        self.status = StringVar()
+        self.label = Label(self.frame, textvariable=self.status,
+                           style="White.TLabel", justify=CENTER)
+        self.label['font'] = (app.default_font, app.default_font_size, "bold")
+        self.label.grid(padx=10, pady=10)
 
-                                        # Adapt TBV file
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                target_folder, "./")
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                watch_folder, "./../DICOM/")
-                                        for x in [pos_file, acpc_file, tal_file, vmr_file]:
-                                            replace(os.path.join(
-                                                tbv_folder, os.path.split(file)[-1]),
-                                                    x, os.path.join(
-                                                    "../../../anatomical/Anatomy/TBV/",
-                                                    os.path.split(x)[-1]))
-                            if os.listdir(tbv_folder) == []:
-                                shutil.rmtree(tbv_folder)
-                        except:
-                            warnings += "\nError copying Turbo Brain Voyager files " \
-                                        "for Measurement {0}!\n".format(number)
-                            shutil.rmtree(tbv_folder)
+        top.update_idletasks()
+        dx = master.winfo_width() / 2 - top.winfo_width() / 2
+        dy = master.winfo_height() / 2 - top.winfo_height() / 2
+        top.geometry("+%d+%d" % (master.winfo_rootx() + dx,
+                                 master.winfo_rooty() + dy))
 
-                    try:
-                        # DICOMs
-                        dicom_folder = os.path.join(name_folder, "DICOM")
-                        if not os.path.exists(dicom_folder):
-                            os.makedirs(dicom_folder)
-                        for s in scans:
-                            shutil.copyfile(
-                                s, os.path.join(folder, project, group,
-                                                "S" + repr(subject).zfill(2),
-                                                session, type[:4], name, "DICOM",
-                                                os.path.split(s)[-1]))
-                    except:
-                        warnings += "\nError copying DICOMs for Measurement " \
-                                    "{0} (filesystem error)!\n".format(number)
-                        shutil.rmtree(dicom_folder)
+    def update(self):
+        self.top.update()
 
-                # Logfiles
-                if type != "anatomical":
-                    try:
-                        original = measurement[4].get(1.0, END)
-                        logfiles = original.split("\n")
-                        logfiles = [x.strip() for x in logfiles if x != ""]
-                        for logfile in logfiles:
-                            if "*" in logfile:
-                                replaced = []
-                            try:
-                                if logfile != "" and not os.path.isdir(logfile):
-                                    files = glob.glob(os.path.join(d,
-                                                                   logfile))
-                                    if files == []:
-                                        raise Exception
-                                    for file_ in files:
-                                        if not os.path.isdir(file_):
-                                            if "*" in logfile:
-                                                replaced.append(
-                                                    os.path.split(file_)[-1])
-                                            shutil.copyfile(
-                                                file_,
-                                                os.path.join(folder,
-                                                             project,
-                                                             group,
-                                                             "S" + repr(
-                                                                 subject).zfill(
-                                                                 2),
-                                                             session, type[:4], name,
-                                                             os.path.split(file_)[-1]))
-                                    if "*" in logfile:
-                                        new = original.replace(
-                                            logfile, "\n".join(replaced))
-                                        measurement[4].delete(1.0, END)
-                                        measurement[4].insert(1.0, new)
+    def destroy(self):
+        self.top.destroy()
 
-                            except:
-                               warnings += "\nError copying Logfiles " \
-                                   "for Measurement {0} ('{1}' not " \
-                                   "found)!\n".format(number, logfile)
 
-                    except:
-                        warnings += "\nError copying Logfiles " \
-                                   "for Measurement {0}!\n".format(number)
+class MessageDialogue:
 
-            message = "Data archiving is finished!"
+    def __init__(self, master, message):
+        self.master = master
+        top = self.top = Toplevel(master, background="grey85")
+        top.title("Archiving Report")
+        top.transient(master)
+        top.grab_set()
+        top.focus_set()
 
-            # Try general TBV files
-            if os.path.isdir(os.path.join(d, "TBVFiles")):
-                try:
-                    func_folder = os.path.join(folder, project, group,
-                                               "S" + repr(subject).zfill(2),
-                                               session, "functional")
-                    for file in glob.glob(os.path.join(d, "TBVFiles/*")):
-                        if file.endswith("roi") or file.endswith("voi"):
-                            shutil.copy(os.path.abspath(file), func_folder)
-                except:
-                    warnings += "\nError copying general Turbo Brain Voyager files!\n"
-            else:
-                warnings += "\nNo Turbo Brain Voyager files found!\n"
+        self.text = ScrolledText(top, width=77)
+        self.text.pack()
+        self.text.insert(END, message)
+        self.text["state"] = "disabled"
 
-            # Try general documents
-            try:
-                all_documents = 0
-                sess_folder = os.path.join(folder, project, group,
-                                           "S" + repr(subject).zfill(2),
-                                           session)
-                for file in glob.glob(os.path.join(d, "*")):
-                    if file.endswith("pdf") or file.endswith("doc") \
-                        or file.endswith("txt") and not os.path.isdir(file):
-                        all_documents += 1
-                        shutil.copy(os.path.abspath(file), sess_folder)
-                if all_documents == 0:
-                    warnings += "\nNo general documents found!"
-            except:
-                warnings += "\nError copying general documents!"
+        b = Button(top, text="OK", command=self.ok)
+        b.pack(pady=10)
 
-            # Save scan protocol
-            path = os.path.join(folder, project, self.get_filename() + ".txt")
-            self.save(path)
+        #top.update_idletasks()
+        #dx = master.winfo_width() / 2 - top.winfo_width() / 2
+        #dy = master.winfo_height() / 2 - top.winfo_height() / 2
+        #top.geometry("+%d+%d" % (master.winfo_rootx() + dx,
+        #                         master.winfo_rooty() + dy))
 
-            # Confirm archiving
-            message += warnings
-            tkMessageBox.showinfo(title="Done", message=message)
+    def show(self):
+        self.master.wait_window(self.top)
+
+    def ok(self):
+        self.top.destroy()
 
 
 class HelpDialogue:
 
     def __init__(self, master):
         self.master = master
-        top = self.top = Toplevel(master)
+        top = self.top = Toplevel(master, background="grey85")
         top.title("Help")
         self.text = ScrolledText(top, width=77)
         self.text.pack()
@@ -1615,6 +1739,12 @@ class HelpDialogue:
 
         b = Button(top, text="OK", command=self.ok)
         b.pack(pady=5)
+
+        #top.update_idletasks()
+        #dx = master.winfo_width() / 2 - top.winfo_width() / 2
+        #dy = master.winfo_height() / 2 - top.winfo_height() / 2
+        #top.geometry("+%d+%d" % (master.winfo_rootx() + dx,
+        #                         master.winfo_rooty() + dy))
 
     def ok(self):
         self.top.destroy()
@@ -1629,7 +1759,9 @@ style.theme_use("default")
 root.resizable(False, False)
 root.option_add('*tearOff', FALSE)
 app = App(master=root)
-app.master.title('Scan Session Tool {0}'.format(__version__))
+root.option_add('*Dialog.msg.font', '{0} {1}'.format(app.default_font,
+                                                     app.default_font_size-6))
+app.set_title()
 if platform.system() == "Darwin":
     root.bind('<Command-q>', app.quit_callback)
 root.bind('<Escape>', lambda x: app.master.focus())
