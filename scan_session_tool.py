@@ -417,8 +417,9 @@ class App(Frame):
         Frame.__init__(self, master)
 
         font = tkFont.nametofont("TkDefaultFont")
-        if platform.system() == "Windows":
-            font.config(size=11)
+        font.config(family="Arial", size=-13)
+        print font.cget("family")
+        print font.actual()
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
         self.font = (self.default_font, self.default_font_size)
@@ -529,7 +530,7 @@ class App(Frame):
         self.nofocus_widgets.append(self.top_frame)
         general_label = Label(self.top_frame, text="General Information")
         general_label['font'] = (self.default_font,
-                                 self.default_font_size + 2,
+                                 self.default_font_size - 2,
                                  "bold")
         self.nofocus_widgets.append(general_label)
         self.general_frame = LabelFrame(self.top_frame,
@@ -551,8 +552,7 @@ class App(Frame):
 
         for row, x in enumerate(self.general):
             label = Label(self.general_frame_left, text=x)
-            #label['font'] = (self.default_font, self.default_font_size,
-            #                   "bold")
+            label['font'] = (self.default_font, self.default_font_size)
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label)
             var = StringVar()
@@ -616,8 +616,7 @@ class App(Frame):
         notes_label = Label(self.general_frame_right, text="Notes:",
                             style="Green.TLabel")
         notes_label.grid(row=0, column=0, sticky="W")
-        #notes_label['font'] = (self.default_font, self.default_font_size,
-        #                       "bold")
+        notes_label['font'] = (self.default_font, self.default_font_size)
         notes_container = FixedSizeFrame(self.general_frame_right, 299, 186)
         notes_container.grid(row=1, column=0, sticky="N")
         notes = AutoScrollbarText(notes_container, wrap=NONE)
@@ -638,34 +637,34 @@ class App(Frame):
                            justify="center", style="Blue.TLabel")
         self.title1.grid(row=0)
         self.title1['font'] = (self.default_font,
-                              self.default_font_size + 8,
+                              self.default_font_size - 10,
                               "bold")
         self.nofocus_widgets.append(self.title1)
         self.title2 = Label(self.logo, text="Session",
                            justify="center", style="Blue.TLabel")
         self.title2.grid(row=1)
         self.title2['font'] = (self.default_font,
-                              self.default_font_size + 8,
+                              self.default_font_size - 10,
                               "bold")
         self.nofocus_widgets.append(self.title2)
         self.title3 = Label(self.logo, text="Tool",
                            justify="center", style="Blue.TLabel")
         self.title3.grid(row=2)
         self.title3['font'] = (self.default_font,
-                              self.default_font_size + 8,
+                              self.default_font_size - 10,
                               "bold")
         self.nofocus_widgets.append(self.title3)
         self.version1 = Label(self.logo,
                              text="Version {0}".format(__version__),
                              style="Grey.TLabel")
         self.version1.grid(row=3)
-        self.version1['font'] = (self.default_font, self.default_font_size - 2)
+        self.version1['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version1)
         self.version2 = Label(self.logo,
                              text="({0})".format(__date__),
                              style="Grey.TLabel")
         self.version2.grid(row=4)
-        self.version2['font'] = (self.default_font, self.default_font_size - 2)
+        self.version2['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version2)
         self.help = Button(self.logo, text="?", width=1,
                            command=lambda: HelpDialogue(self.master).show())
@@ -686,7 +685,7 @@ class App(Frame):
 
         documents_label = Label(self.top_frame, text="Documents")
         documents_label['font'] = (self.default_font,
-                                   self.default_font_size + 2,
+                                   self.default_font_size - 2,
                                    "bold")
         self.nofocus_widgets.append(documents_label)
         self.documents_frame = LabelFrame(self.top_frame, text='Documents',
@@ -710,7 +709,7 @@ class App(Frame):
         self.nofocus_widgets.append(self.bottom_frame)
         measurements_label = Label(self.bottom_frame, text="Measurements")
         measurements_label['font'] = (self.default_font,
-                                      self.default_font_size + 2,
+                                      self.default_font_size - 2,
                                       "bold")
         self.nofocus_widgets.append(measurements_label)
         self.measurements_frame1 = LabelFrame(self.bottom_frame,
@@ -747,15 +746,15 @@ class App(Frame):
             if column == 0:
                 label.grid(row=0, column=column, padx=(18, 0), pady=(3, 3))
             elif column == 1:
-                label.grid(row=0, column=column, padx=(46, 0))
+                label.grid(row=0, column=column, padx=(45, 0))
             elif column == 2:
-                label.grid(row=0, column=column, padx=(41, 0))
+                label.grid(row=0, column=column, padx=(39, 0))
             elif column == 3:
-                label.grid(row=0, column=column, padx=(77, 0))
+                label.grid(row=0, column=column, padx=(76, 0))
             elif column == 4:
-                label.grid(row=0, column=column, padx=(196, 0))
+                label.grid(row=0, column=column, padx=(195, 0))
             elif column == 5:
-                label.grid(row=0, column=column, padx=(246, 130))
+                label.grid(row=0, column=column, padx=(243, 130))
 
             label['font'] = (self.default_font, self.default_font_size,
                              "bold")
@@ -764,17 +763,17 @@ class App(Frame):
 
 
     def new_measurement(self, *args):
-        #for column, x in enumerate(self.measurement):
-            #label = Label(self.measurements_frame.interior, text=x)
-            #if column == 0:
-                #label.grid(row=0, column=column, padx=(10, 2))
-            #elif column == len(self.measurements) - 1:
-                #label.grid(row=0, column=column, padx=(2, 10))
-            #else:
-                #label.grid(row=0, column=column, padx=2)
-            #label['font'] = (self.default_font, self.default_font_size,
-                             #"bold")
-            #label.bind('<Button-1>', lambda x: app.master.focus())
+        for column, x in enumerate(self.measurement):
+            label = Label(self.measurements_frame.interior, text=x)
+            if column == 0:
+                label.grid(row=0, column=column, padx=(10, 2))
+            elif column == len(self.measurements) - 1:
+                label.grid(row=0, column=column, padx=(2, 10))
+            else:
+                label.grid(row=0, column=column, padx=2)
+            label['font'] = (self.default_font, self.default_font_size,
+                             "bold")
+            label.bind('<Button-1>', lambda x: app.master.focus())
         value = len(self.measurements) + 1
         scanning_vars = []
         scanning_widgets = []
