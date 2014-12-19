@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __date__ = '19 Dec 2014'
 
 
@@ -340,13 +340,13 @@ class VerticalScrolledFrame(Frame):
         os = platform.system()
         if os == "Linux":
             if event.num == 4:
-                self.canvas.yview_scroll(-1, "units")
+                self.canvas.yview_scroll(-2, "units")
             elif event.num == 5:
-                self.canvas.yview_scroll(1, "units")
+                self.canvas.yview_scroll(2, "units")
         elif os == "Darwin":
-            self.canvas.yview_scroll(-1*event.delta, "units")
+            self.canvas.yview_scroll(-2*event.delta, "units")
         elif os == "Windows":
-            self.canvas.yview_scroll(-1*(event.delta/120), "units")
+            self.canvas.yview_scroll(-2*(event.delta/120), "units")
 
 
 class AutocompleteCombobox(Combobox):
@@ -417,10 +417,6 @@ class App(Frame):
         Frame.__init__(self, master)
 
         font = tkFont.nametofont("TkDefaultFont")
-        if platform.system() == "Windows":
-            font.config(family="Arial", size=11)
-        else:
-            font.config(family="Arial")
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
         self.font = (self.default_font, self.default_font_size)
@@ -640,21 +636,21 @@ class App(Frame):
                            justify="center", style="Blue.TLabel")
         self.title1.grid(row=0)
         self.title1['font'] = (self.default_font,
-                              self.default_font_size + 10,
+                              self.default_font_size + 8,
                               "bold")
         self.nofocus_widgets.append(self.title1)
         self.title2 = Label(self.logo, text="Session",
                            justify="center", style="Blue.TLabel")
         self.title2.grid(row=1)
         self.title2['font'] = (self.default_font,
-                              self.default_font_size + 10,
+                              self.default_font_size + 8,
                               "bold")
         self.nofocus_widgets.append(self.title2)
         self.title3 = Label(self.logo, text="Tool",
                            justify="center", style="Blue.TLabel")
         self.title3.grid(row=2)
         self.title3['font'] = (self.default_font,
-                              self.default_font_size + 10,
+                              self.default_font_size + 8,
                               "bold")
         self.nofocus_widgets.append(self.title3)
         self.version1 = Label(self.logo,
@@ -721,8 +717,12 @@ class App(Frame):
         self.measurements_frame1.grid_rowconfigure(1, weight=1)
         self.measurements_frame1.grid(row=0, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame1)
+        if platform.system() == "Windows":
+            width = 953
+        else:
+            width = 989
         self.measurements_frame = VerticalScrolledFrame(
-            self.measurements_frame1, height=295, width=989)
+            self.measurements_frame1, height=295, width=width)
         self.measurements_frame.interior.grid_columnconfigure(0, weight=1)
         self.measurements_frame.interior.grid_rowconfigure(0, weight=1)
         self.measurements_frame.grid(row=1, sticky="WENS")
@@ -789,6 +789,10 @@ class App(Frame):
                           textvariable=var1, font=self.font,
                           style="Orange.TSpinbox")
         spinbox.grid(row=value, column=0, sticky="W", padx=(10, 2))
+        spinbox.bind('<Enter>',
+                     lambda event: self.mouseover_callback(True))
+        spinbox.bind('<Leave>',
+                     lambda event: self.mouseover_callback(False))
         scanning_widgets.append(spinbox)
         var2 = StringVar()
         var2.trace("w", self.change_callback)
@@ -810,6 +814,10 @@ class App(Frame):
         combobox.set_completion_list(["anatomical", "functional", "misc"])
         combobox.current(0)
         combobox.grid(row=value, column=1, sticky="", padx=2)
+        combobox.bind('<Enter>',
+                      lambda event: self.mouseover_callback(True))
+        combobox.bind('<Leave>',
+                      lambda event: self.mouseover_callback(False))
         scanning_widgets.append(combobox)
 
         var3 = StringVar()
@@ -838,6 +846,10 @@ class App(Frame):
                                     validatecommand=vcmd, font=self.font,
                                     style="Red.TCombobox")
         name.grid(row=value, column=3, sticky="", padx=2)
+        name.bind('<Enter>',
+                  lambda event: self.mouseover_callback(True))
+        name.bind('<Leave>',
+                        lambda event: self.mouseover_callback(False))
         scanning_widgets.append(name)
         #container1 = FixedSizeFrame(self.measurements_frame.interior, 198, 53)
         #container1.grid(row=value, column=4, sticky="NSE", pady=3)
@@ -851,10 +863,10 @@ class App(Frame):
         logfiles = AutoScrollbarText(container2, wrap=NONE, background=self.orange,
                                      highlightbackground=self.orange)
         logfiles.bind('<KeyRelease>', self.change_callback)
-        #logfiles.frame.bind('<Enter>',
-        #                lambda event: self.text_mouseover_callback(True))
-        #logfiles.frame.bind('<Leave>',
-        #                lambda event: self.text_mouseover_callback(False))
+        logfiles.frame.bind('<Enter>',
+                        lambda event: self.mouseover_callback(True))
+        logfiles.frame.bind('<Leave>',
+                        lambda event: self.mouseover_callback(False))
         scanning_vars.append(logfiles)  # Needs to be called with START, END!
         logfiles.grid()
         scanning_widgets.append(logfiles)
@@ -863,16 +875,16 @@ class App(Frame):
         scanning_widgets.append(container3)
         text = AutoScrollbarText(container3, wrap=NONE)
         text.bind('<KeyRelease>', self.change_callback)
-        #text.frame.bind('<Enter>',
-        #                lambda event: self.text_mouseover_callback(True))
-        #text.frame.bind('<Leave>',
-        #                lambda event: self.text_mouseover_callback(False))
+        text.frame.bind('<Enter>',
+                        lambda event: self.mouseover_callback(True))
+        text.frame.bind('<Leave>',
+                        lambda event: self.mouseover_callback(False))
         scanning_vars.append(text)  # Needs to be called with START, END!
         text.grid()
         scanning_widgets.append(text)
         self.measurements.append(scanning_vars)
         self.measurements_widgets.append(scanning_widgets)
-        if value == 6:
+        if value >= 6:
             self.measurements_frame.bind_mouse_wheel()
         else:
             self.measurements_frame.unbind_mouse_wheel()
@@ -928,7 +940,7 @@ class App(Frame):
         date = time.strftime("%Y-%m-%d", time.localtime())
         self.general_vars[4].set(date)
 
-    def text_mouseover_callback(self, mouseover):
+    def mouseover_callback(self, mouseover):
         if len(self.measurements) >= 6:
             if mouseover:
                 self.measurements_frame.unbind_mouse_wheel()
@@ -1771,22 +1783,21 @@ class HelpDialogue:
         self.master.wait_window(self.top)
 
 
-root = Tk()
-style = Style()
-style.theme_use("default")
-root.resizable(False, False)
-root.option_add('*tearOff', FALSE)
-app = App(master=root)
-root.option_add('*Dialog.msg.font', '{0} {1}'.format(app.default_font,
-                                                     app.default_font_size-6))
-app.set_title()
-if platform.system() == "Darwin":
-    root.bind('<Command-q>', app.quit_callback)
-root.bind('<Escape>', lambda x: app.master.focus())
-app.bind('<Button-1>', lambda x: app.master.focus())
-for label in app.nofocus_widgets:
-    label.bind('<Button-1>', lambda x: app.master.focus())
-root.protocol("WM_DELETE_WINDOW", app.quit_callback)
-app.general_widgets[0].focus()
-app.disable_save()
-app.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    style = Style()
+    style.theme_use("default")
+    root.resizable(False, False)
+    root.option_add('*tearOff', FALSE)
+    app = App(master=root)
+    app.set_title()
+    if platform.system() == "Darwin":
+        root.bind('<Command-q>', app.quit_callback)
+    root.bind('<Escape>', lambda x: app.master.focus())
+    app.bind('<Button-1>', lambda x: app.master.focus())
+    for label in app.nofocus_widgets:
+        label.bind('<Button-1>', lambda x: app.master.focus())
+    root.protocol("WM_DELETE_WINDOW", app.quit_callback)
+    app.general_widgets[0].focus()
+    app.disable_save()
+    app.mainloop()
