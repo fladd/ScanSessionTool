@@ -417,6 +417,8 @@ class App(Frame):
         Frame.__init__(self, master)
 
         font = tkFont.nametofont("TkDefaultFont")
+        if platform.system() == "Windows":
+            font.config(size=11)
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
         self.font = (self.default_font, self.default_font_size)
@@ -717,12 +719,8 @@ class App(Frame):
         self.measurements_frame1.grid_rowconfigure(1, weight=1)
         self.measurements_frame1.grid(row=0, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame1)
-        if platform.system() == "Windows":
-            width = 953
-        else:
-            width = 989
         self.measurements_frame = VerticalScrolledFrame(
-            self.measurements_frame1, height=295, width=width)
+            self.measurements_frame1, height=295, width=989)
         self.measurements_frame.interior.grid_columnconfigure(0, weight=1)
         self.measurements_frame.interior.grid_rowconfigure(0, weight=1)
         self.measurements_frame.grid(row=1, sticky="WENS")
