@@ -741,21 +741,21 @@ class App(Frame):
                                             lambda x: self.new_measurement())
 
         label_frame = Frame(self.measurements_frame1)
-        label_frame.grid(row=0, columnspan=6, sticky="NS")
+        label_frame.grid(row=0, columnspan=6, sticky="W")
         for column, x in enumerate(self.measurement):
             label = Label(label_frame, text=x)
             if column == 0:
-                label.grid(row=0, column=column, padx=(13, 0), pady=(3, 3))
+                label.grid(row=0, column=column, padx=(18, 0), pady=(3, 3))
             elif column == 1:
-                label.grid(row=0, column=column, padx=(45, 0))
+                label.grid(row=0, column=column, padx=(46, 0))
             elif column == 2:
-                label.grid(row=0, column=column, padx=(39, 0))
+                label.grid(row=0, column=column, padx=(41, 0))
             elif column == 3:
-                label.grid(row=0, column=column, padx=(76, 0))
+                label.grid(row=0, column=column, padx=(77, 0))
             elif column == 4:
-                label.grid(row=0, column=column, padx=(195, 0))
+                label.grid(row=0, column=column, padx=(196, 0))
             elif column == 5:
-                label.grid(row=0, column=column, padx=(243, 130))
+                label.grid(row=0, column=column, padx=(246, 130))
 
             label['font'] = (self.default_font, self.default_font_size,
                              "bold")
