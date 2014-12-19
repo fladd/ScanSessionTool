@@ -581,6 +581,9 @@ class App(Frame):
                                                     font=self.font, width=width,
                                                     style="Red.TCombobox")
                 else:
+                    width = 20
+                    if platform.system() == "Windows":
+                        width += 3
                     combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
                                                     validate=validate, validatecommand=vcmd,
                                                     font=self.font, width=width)
@@ -744,21 +747,33 @@ class App(Frame):
                                             lambda x: self.new_measurement())
 
         label_frame = Frame(self.measurements_frame1)
-        label_frame.grid(row=0, columnspan=6, sticky="NS")
+        label_frame.grid(row=0, columnspan=6, sticky="W")
         for column, x in enumerate(self.measurement):
             label = Label(label_frame, text=x)
             if column == 0:
-                label.grid(row=0, column=column, padx=(13, 0), pady=(3, 3))
+                label.grid(row=0, column=column, padx=(18, 0), pady=(3, 3))
             elif column == 1:
-                label.grid(row=0, column=column, padx=(45, 0))
+                p = 45
+                if platform.system() == "Windows":
+                    p += 1
+                label.grid(row=0, column=column, padx=(p, 0))
             elif column == 2:
                 label.grid(row=0, column=column, padx=(39, 0))
             elif column == 3:
+                p = 76
+                if platform.system() == "Windows":
+                    p -= 1
                 label.grid(row=0, column=column, padx=(76, 0))
             elif column == 4:
-                label.grid(row=0, column=column, padx=(195, 0))
+                p = 195
+                if platform.system() == "Windows":
+                    p += 2
+                label.grid(row=0, column=column, padx=(p, 0))
             elif column == 5:
-                label.grid(row=0, column=column, padx=(243, 130))
+                p = 243
+                if platform.system() == "Windows":
+                    p += 4
+                label.grid(row=0, column=column, padx=(p, 130))
 
             label['font'] = (self.default_font, self.default_font_size,
                              "bold")
@@ -767,17 +782,17 @@ class App(Frame):
 
 
     def new_measurement(self, *args):
-        for column, x in enumerate(self.measurement):
-            label = Label(self.measurements_frame.interior, text=x)
-            if column == 0:
-                label.grid(row=0, column=column, padx=(10, 2))
-            elif column == len(self.measurements) - 1:
-                label.grid(row=0, column=column, padx=(2, 10))
-            else:
-                label.grid(row=0, column=column, padx=2)
-            label['font'] = (self.default_font, self.default_font_size,
-                             "bold")
-            label.bind('<Button-1>', lambda x: app.master.focus())
+        #for column, x in enumerate(self.measurement):
+            #label = Label(self.measurements_frame.interior, text=x)
+            #if column == 0:
+                #label.grid(row=0, column=column, padx=(10, 2))
+            #elif column == len(self.measurements) - 1:
+                #label.grid(row=0, column=column, padx=(2, 10))
+            #else:
+                #label.grid(row=0, column=column, padx=2)
+            #label['font'] = (self.default_font, self.default_font_size,
+                             #"bold")
+            #label.bind('<Button-1>', lambda x: app.master.focus())
         value = len(self.measurements) + 1
         scanning_vars = []
         scanning_widgets = []
