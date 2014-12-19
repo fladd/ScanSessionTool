@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.0'
-__date__ = '18 Dec 2014'
+__version__ = '0.5.1'
+__date__ = '19 Dec 2014'
 
 
 import os
@@ -45,7 +45,7 @@ unified archiving purposes.
 
 The user interface is organized into three different content areas, each hol-
 ding different information about the scan session, as well as an additional
-control area for saving and loading session information and for automatically
+control area for opening and saving session information and for automatically
 archiving acquired data, based on the session information.
 
 
@@ -122,8 +122,8 @@ The following input fields are available per measurement:
 ----------------------------- The control area ------------------------------
 
 The control area consists of the following three buttons:
+"Open"    - Opens previously saved information from a text file
 "Save"    - Saves the entered session information into a text file
-"Load"    - Loads previously saved information from a text file
 "Archive" - Copies acquired data from specified location into a timestamped
             sub-folder <~Archiveyyymmdd>. Please note that all data is
             expected to be within the specified folder. That is, all DICOM
@@ -290,7 +290,6 @@ class VerticalScrolledFrame(Frame):
 
         return
 
-
     def bind_mouse_wheel(self, *args):
         os = platform.system()
         self.bind_ids = []
@@ -351,6 +350,7 @@ class VerticalScrolledFrame(Frame):
 
 
 class AutocompleteCombobox(Combobox):
+
     def set_completion_list(self, completion_list):
         self._completion_list = sorted(completion_list, key=str.lower)
         self._hits = []
@@ -452,11 +452,11 @@ class App(Frame):
             modifier = "Control"
         self.file_menu = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.file_menu, label="File")
+        self.file_menu.add_command(label="Open", command=self.open,
+                                   accelerator="{0}-O".format(modifier))
+        self.master.bind("<{0}-o>".format(modifier), self.open)
         self.file_menu.add_command(label="Save", command=self.save,
                                    accelerator="{0}-S".format(modifier))
-        self.file_menu.add_command(label="Load", command=self.load,
-                                   accelerator="{0}-L".format(modifier))
-        self.master.bind("<{0}-l>".format(modifier), self.load)
         self.file_menu.add_command(label="Archive", command=self.archive,
                                    accelerator="{0}-A".format(modifier))
         self.edit_menu = Menu(self.menubar)
@@ -469,11 +469,29 @@ class App(Frame):
                                    command=self.del_measurement,
                                    accelerator="{0}-D".format(modifier))
         self.master.bind("<{0}-d>".format(modifier), self.del_measurement)
+        self.edit_menu.add_command(
+            label="Scroll Measurements Up",
+            command=lambda: app.measurements_frame.canvas.yview_scroll(
+                -2, "units"),
+            accelerator="{0}-Up".format(modifier))
+        self.master.bind(
+            "<{0}-Up>".format(modifier),
+            lambda x: app.measurements_frame.canvas.yview_scroll(-2, "units"))
+        self.edit_menu.add_command(
+            label="Scroll Measurements Down",
+            command=lambda: app.measurements_frame.canvas.yview_scroll(
+                2, "units"),
+            accelerator="{0}-Down".format(modifier))
+        self.master.bind(
+            "<{0}-Down>".format(modifier),
+            lambda x: app.measurements_frame.canvas.yview_scroll(2, "units"))
         self.help_menu = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.help_menu, label="Help")
         self.help_menu.add_command(
             label="Scan Session Tool Help",
-            command=lambda: HelpDialogue(self.master).show())
+            command=lambda: HelpDialogue(self.master).show(),
+            accelerator="F1")
+        self.master.bind("<F1>", lambda x: HelpDialogue(self.master).show())
         master["menu"] = self.menubar
 
         master.rowconfigure(0, weight=1)
@@ -658,12 +676,12 @@ class App(Frame):
         self.button_frame = Frame(self.control_frame)
         self.button_frame.grid(row=1, column=0, padx=10)
         self.nofocus_widgets.append(self.button_frame)
+        self.open_button = Button(self.button_frame, text="Open",
+                                  command=self.open, state="enabled")
+        self.open_button.grid(row=0, column=0, sticky="")
         self.save_button = Button(self.button_frame, text="Save",
                                   command=self.save)
-        self.save_button.grid(row=0, column=0, sticky="")
-        self.load_button = Button(self.button_frame, text="Load",
-                                  command=self.load, state="enabled")
-        self.load_button.grid(row=1, column=0, sticky="", pady=3)
+        self.save_button.grid(row=1, column=0, sticky="", pady=3)
         self.go_button = Button(self.button_frame, text="Archive",
                                 state="disabled", command=self.archive)
         self.go_button.grid(row=2, column=0, sticky="")
@@ -1221,7 +1239,7 @@ class App(Frame):
         f.close()
         self.disable_save()
 
-    def load(self, *args):
+    def open(self, *args):
         """Load data."""
 
         f = tkFileDialog.askopenfile("r", filetypes=[("text files", "txt")])
