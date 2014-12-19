@@ -573,13 +573,17 @@ class App(Frame):
                 #[chr(x) for x in range(127)],
                 #49, '%S', '%P')
                 if row in (0, 3):
+                    width = 20
+                    if platform.system() == "Windows":
+                        width += 3
                     combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
                                                     validate=validate, validatecommand=vcmd,
-                                                    font=self.font, style="Red.TCombobox")
+                                                    font=self.font, width=width,
+                                                    style="Red.TCombobox")
                 else:
                     combobox = AutocompleteCombobox(self.general_frame_left, textvariable=var,
                                                     validate=validate, validatecommand=vcmd,
-                                                    font=self.font)
+                                                    font=self.font, width=width)
 
                 if row == 0:
                     projects = self.config.keys()
@@ -740,11 +744,11 @@ class App(Frame):
                                             lambda x: self.new_measurement())
 
         label_frame = Frame(self.measurements_frame1)
-        label_frame.grid(row=0, columnspan=6, sticky="W")
+        label_frame.grid(row=0, columnspan=6, sticky="NS")
         for column, x in enumerate(self.measurement):
             label = Label(label_frame, text=x)
             if column == 0:
-                label.grid(row=0, column=column, padx=(18, 0), pady=(3, 3))
+                label.grid(row=0, column=column, padx=(13, 0), pady=(3, 3))
             elif column == 1:
                 label.grid(row=0, column=column, padx=(45, 0))
             elif column == 2:
@@ -805,8 +809,11 @@ class App(Frame):
         #            value="functional").pack(anchor="w")
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
+        width = 10
+        if platform.system() == "Windows":
+            width += 2
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
-                            textvariable=var2, width=10, state="readonly",
+                            textvariable=var2, width=width, state="readonly",
                             font=self.font, style="Orange.TCombobox")
         combobox.set_completion_list(["anatomical", "functional", "misc"])
         combobox.current(0)
@@ -823,6 +830,7 @@ class App(Frame):
         validate = "key"
         vcmd = (self.master.register(self.validate),
                 "0123456789", 4, '%S', '%P')
+
         vols = Entry(self.measurements_frame.interior, width=4,
                        justify="right", textvariable=var3,
                        validate=validate, validatecommand=vcmd,
@@ -838,10 +846,13 @@ class App(Frame):
         #vcmd = (self.master.register(self.validate),
         #        [chr(x) for x in range(127)],
         #        49, '%S', '%P')
+        width = 20
+        if platform.system() == "Windows":
+            width += 3
         name = AutocompleteCombobox(self.measurements_frame.interior,
                                     textvariable=var4, validate=validate,
                                     validatecommand=vcmd, font=self.font,
-                                    style="Red.TCombobox")
+                                    style="Red.TCombobox", width=width)
         name.grid(row=value, column=3, sticky="", padx=2)
         name.bind('<Enter>',
                   lambda event: self.mouseover_callback(True))
