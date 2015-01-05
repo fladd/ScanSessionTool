@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.2'
-__date__ = '19 Dec 2014'
+__version__ = '0.5.3'
+__date__ = '05 Jan 2015'
 
 
 import os
@@ -148,8 +148,9 @@ A configuration file can be created to pre-define the values to be used as
 selection options for the "Group", "Session", "Certified User", "Backup
 Person", the measurement "Name" on a per project basis, as well as additional
 items in the "Documents" section. The Scan Session Tool will look for a
-configuration file with the name "sst.cfg" located in the same directory as
-the application itself.
+configuration file with the name "sst.cfg", located in the same directory as
+the application itself (does not work for the OS X compiled .app) or in the
+$HOME folder.
 The following syntax is used:
 
 Project: Project1
@@ -418,8 +419,6 @@ class App(Frame):
 
         font = tkFont.nametofont("TkDefaultFont")
         font.config(family="Arial", size=-13)
-        print font.cget("family")
-        print font.actual()
         self.default_font = font.cget("family")
         self.default_font_size = font.cget("size")
         self.font = (self.default_font, self.default_font_size)
@@ -1126,8 +1125,15 @@ class App(Frame):
     def load_config(self):
         """Load the config file."""
 
+        path = None
         if os.path.exists("sst.cfg"):
-            with open("sst.cfg") as f:
+            path = os.path.curdir
+        elif os.path.exists(os.path.join(os.path.expanduser("~"), "sst.cfg")):
+            path = os.path.expanduser("~")
+        else:
+            path = None
+        if path is not None:
+            with open(os.path.join(path, "sst.cfg")) as f:
                 for line in f:
                     if line.startswith("Project:"):
                         project = line[8:].strip()
