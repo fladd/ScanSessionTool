@@ -1,0 +1,25 @@
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0),
+    prodvers=(1, 0, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+    ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        '040904B0',
+        [StringStruct('FileDescription', 'A tool for MR scan session documentation and data archiving '),
+        StringStruct('FileVersion', '0.5.3'),
+        StringStruct('OriginalFilename', 'ScanSessionTool.exe'),
+        StringStruct('ProductName', 'Scan Session Tool'),
+        StringStruct('ProductVersion', '0.5.3')])
+      ]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)
