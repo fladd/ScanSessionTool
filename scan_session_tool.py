@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.4'
+__version__ = '0.5.5'
 __date__ = '09 Jan 2015'
 
 
@@ -1695,8 +1695,10 @@ class App(Frame):
 
         # Save scan protocol
         path = os.path.join(folder, project, self.get_filename() + ".txt")
-        self.save(path)
-
+        try:
+            self.save(path)
+        except:
+            warnings += "\nError saving scan protocol\n"
         # Confirm archiving
         message += warnings
         return message
