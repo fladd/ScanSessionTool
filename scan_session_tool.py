@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.3'
-__date__ = '05 Jan 2015'
+__version__ = '0.5.4'
+__date__ = '09 Jan 2015'
 
 
 import os
@@ -1294,6 +1294,9 @@ class App(Frame):
                 self.new_measurement()
             while len(self.measurements) > 1:
                 self.del_measurement()
+            self.general_widgets[-1].delete(1.0, END)
+            for m in self.measurements:
+                m[-1].delete(1.0, END)
             for linenr, line in enumerate(f):
                 if 3 <= linenr <= 11:
                     self.general_vars[linenr-3].set(line[30:].strip())
