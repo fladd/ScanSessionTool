@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.5'
-__date__ = '09 Jan 2015'
+__version__ = '0.5.6'
+__date__ = '19 Jan 2015'
 
 
 import os
@@ -212,12 +212,21 @@ class AutoScrollbarText(Text):
 
         kw.update({'yscrollcommand': self.set_yvbar})
         #kw.update({'xscrollcommand': self.set_xvbar})
-        Text.__init__(self, self.frame, **kw)
+        Text.__init__(self, self.frame, undo=True, **kw)
         self.grid(row=0, column=0, sticky="WENS")
         self.frame.grid_rowconfigure(0, weight=1)
         self.frame.grid_columnconfigure(0, weight=1)
         self.yvbar['command'] = self.yview
         #self.xvbar['command'] = self.xview
+
+        self.undo_history = 0
+        if platform.system() == "Darwin":
+            # OS X already binds undo itself
+            self.bind("<Command-z>", self.undo_dummy)
+            self.bind("<Command-Z>", self.redo)
+        else:
+            self.bind("<Control-z>", self.undo)
+            self.bind("<Control-Z>", self.redo)
 
         # Copy geometry methods of self.frame without overriding Text
         # methods -- hack!
@@ -228,6 +237,20 @@ class AutoScrollbarText(Text):
         for m in methods:
             if m[0] != '_' and m != 'config' and m != 'configure':
                 setattr(self, m, getattr(self.frame, m))
+
+    def undo(self, *args):
+        if self.edit_modified():
+            self.edit_undo()
+            self.undo_history += 1
+
+    def undo_dummy(self, *args):
+        if self.edit_modified():
+            self.undo_history += 1
+
+    def redo(self, *args):
+        if self.undo_history > 0:
+            self.edit_redo()
+            self.undo_history -= 1
 
     def set_yvbar(self, lo, hi):
         if float(lo) <= 0.0 and float(hi) >= 1.0:
