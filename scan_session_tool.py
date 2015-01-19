@@ -221,11 +221,10 @@ class AutoScrollbarText(Text):
 
         self.undo_history = 0
         if platform.system() == "Darwin":
-            # OS X already binds undo itself
             self.bind("<Command-z>", self.undo_dummy)
             self.bind("<Command-Z>", self.redo)
         else:
-            self.bind("<Control-z>", self.undo)
+            self.bind("<Control-z>", self.undo_dummy)
             self.bind("<Control-Z>", self.redo)
 
         # Copy geometry methods of self.frame without overriding Text
@@ -237,11 +236,6 @@ class AutoScrollbarText(Text):
         for m in methods:
             if m[0] != '_' and m != 'config' and m != 'configure':
                 setattr(self, m, getattr(self.frame, m))
-
-    def undo(self, *args):
-        if self.edit_modified():
-            self.edit_undo()
-            self.undo_history += 1
 
     def undo_dummy(self, *args):
         if self.edit_modified():
