@@ -1,8 +1,6 @@
 Scan Session Tool
 =================
 
-![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png "Screenshot of Scan Session Tool")
-
 About
 -----
 The Scan Session Tool is a graphical application for documenting (f)MRI scan
@@ -12,6 +10,8 @@ entered and saved into a protocol file. This information can furthermore be
 used to copy acquired data (DICOM images, stimulation protocols, logfiles,
 Turbo Brain Voyager files) into a specific hierarchical folder structure for
 unified archiving purposes.
+
+![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png "Screenshot of Scan Session Tool")
 
 Download
 --------
