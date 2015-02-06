@@ -3,7 +3,7 @@ Scan Session Tool
 
 ![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png =250x "Screenshot of Scan Session Tool")
 
-<img src="https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png" alt="ScanSessionTool_Screenshot.png" style="width:250">
+<img src="https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png" alt="ScanSessionTool_Screenshot.png" style="width:250px;">
 
 About
 -----
