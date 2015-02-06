@@ -1,6 +1,8 @@
 Scan Session Tool
 =================
 
+![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png "Screenshot of Scan Session Tool")
+
 About
 -----
 The Scan Session Tool is a graphical application for documenting (f)MRI scan
