@@ -1,7 +1,7 @@
 Scan Session Tool
 =================
 
-![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png "Screenshot of Scan Session Tool")
+![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png "Screenshot of Scan Session Tool" =250x)
 
 About
 -----
