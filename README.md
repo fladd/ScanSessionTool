@@ -11,8 +11,6 @@ used to copy acquired data (DICOM images, stimulation protocols, logfiles,
 Turbo Brain Voyager files) into a specific hierarchical folder structure for
 unified archiving purposes.
 
-![ScanSessionTool_Screenshot.png](https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png "Screenshot of Scan Session Tool")
-
 Download
 --------
 The Scan Session Tool is a Python script and hence runs wherever Python and
