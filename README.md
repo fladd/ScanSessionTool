@@ -1,1 +1,1 @@
-http://fladd.github.io/ScanSessionTool
+GitHub page for Scan Session Tool
