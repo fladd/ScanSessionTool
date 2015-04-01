@@ -12,9 +12,10 @@
   <body>
     <section class="page-header">
       <h1 class="project-name">Scan Session Tool</h1>
-      <h2 class="project-tagline">A tool for MR scan session documentation and data archiving</h2>
-      <a href="https://github.com/fladd/ScanSessionTool/releases/latest" class="btn">Download</a>
+      <h2 class="project-tagline">(f)MRI scan session documentation and data archiving</h2>
       <a href="https://github.com/fladd/ScanSessionTool" class="btn">View on GitHub</a>
+      <a href="https://github.com/fladd/ScanSessionTool/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/fladd/ScanSessionTool/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
@@ -26,21 +27,163 @@ used to copy acquired data (DICOM images, stimulation protocols, logfiles,
 Turbo Brain Voyager files) into a specific hierarchical folder structure for
 unified archiving purposes.</p>
 
+<p>The Scan Session Tool is written in <a href="http://www.python.org">Python</a>, using the <a href="http://tkinter.unpythonic.net/wiki/Tkinter">TKinter</a> GUI toolkit.</p>
+
 <p><img src="https://raw.githubusercontent.com/fladd/ScanSessionTool/master/ScanSessionTool_Screenshot.png" alt="ScanSessionTool_Screenshot.png" title="Screenshot of Scan Session Tool"></p>
 
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>Downloaded a desired format from the <a href="https://github.com/fladd/ScanSessionTool/releases/latest">release page</a>:</p>
+
+<ul>
+<li>An archive with the native Python script (<code>*.zip</code>; runs wherever Python and Tkinter are installed)</li>
+<li>A self-contained Windows version (<code>*.exe</code>; no Python installation needed)</li>
+<li>A self-contained OS X version (<code>*.app</code>; no Python installation needed)</li>
+</ul>
+
+<h1>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h1>
+
 <h2>
-<a id="download" class="anchor" href="#download" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<p>The Scan Session Tool is a Python script and hence runs wherever Python and
-TKinter are installed.</p>
+<p>The user interface is organized into three different content areas, each hol-
+ding different information about the scan session, as well as an additional
+control area for opening and saving session information and for automatically
+archiving acquired data, based on the session information.</p>
 
-<p>Binay versions can be downloaded from <a href="https://github.com/fladd/ScanSessionTool/releases/latest">the release page</a>.</p>
+<h3>
+<a id="the-general-information-area" class="anchor" href="#the-general-information-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "General Information" area</h3>
+
+<p>This area provides input fields for basic information about the scan session.
+Some of the fields allow for a selection of pre-specified values taken from a
+config file (see below), while others take freely typed characters.
+Fields that are marked with a red background, are mandatory and need to be
+filled in. Fields that are marked with an orange background are automatically
+filled in, but need to be checked.
+The following fields are available:</p>
+
+<pre><code>    "Project"        - The project identifier
+                       (free-type and selection)
+    "Group"          - The group identifier
+                       (free-type and selection)
+    "Subject No."    - The subject number
+                       (1-99)
+    "Session"        - The session identifier
+                       (free-type and selection)
+    "Date"           - The date of the scan session
+                       (free-type, auto-filled)
+    "Booked Time"    - The time period the scanner was booked
+                       (free-type)
+    "Actual Time"    - The time period the scanner was actually used
+                       (free-type)
+    "Certified User" - The responsible user
+                       (free-type and selection)
+    "Backup Person"  - An additional person
+                       (free-type and selection)
+    "Notes"          - Any additional notes about the session
+                       (free-type)
+</code></pre>
+
+<h3>
+<a id="the-documents-area" class="anchor" href="#the-documents-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "Documents" area</h3>
+
+<p>This area provides checkboxes to specify which forms and documents have been
+collected from the participant. Additional documents can be specified in a
+configuration file (see "Config File" section).
+The following checkboxes are available:</p>
+
+<pre><code>    "MR Safety Screening Form"            - The (f)MRI screening from provi-
+                                            ded by the scanning institution
+    "Participation Informed Consent Form" - The official (f)MRI written con-
+                                            sent form
+</code></pre>
+
+<h3>
+<a id="the-measurements-area" class="anchor" href="#the-measurements-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "Measurements" area</h3>
+
+<p>This area provides several input fields for each measurement of the session.
+When starting the application, only one (empty) measurement is shown. Click-
+ing on "Add Measurement" will create additional measurements. Fields that are
+marked with a red background, are mandatory and need to be filled in. Fields
+that are marked with an orange background are automatically filled in, but
+need to be checked.
+The following input fields are available per measurement:</p>
+
+<pre><code>    "No"                   - The number of the measurement
+                             (1-99)
+    "Type"                 - "anatomical", "functional" or "misc"
+                             (selection)
+    "Vols"                 - The number of volumes of the measurement
+                             (free-type)
+    "Name"                 - The name of the measurement
+                             (free-type, selection)
+    "Logfiles"             - A newline separated list of all connected logfiles
+                             (free-type)
+                             (Please note that a stimulation protocol mask
+                             will be included automatically, based on the
+                             session information, and will be replaced by
+                             the found files matching this mask)
+    "Comments"             - Any additional comments about the measurement
+                             (free-type)
+</code></pre>
+
+<h3>
+<a id="the-control-area" class="anchor" href="#the-control-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The control area</h3>
+
+<p>The control area consists of the following three buttons:</p>
+
+<pre><code>"Open"    - Opens previously saved information from a text file
+"Save"    - Saves the entered session information into a text file
+"Archive" - Copies acquired data from specified location into a timestamped
+            sub-folder &lt;~Archiveyyymmdd&gt;. Please note that all data is
+            expected to be within the specified folder. That is, all DICOM
+            files (*.dcm OR *.IMA; no sub-folders!), all stimulation protocols,
+            all logfiles as well as all Turbo Brain Voyager files (all *.tbv
+            files in a folder called 'TBVFiles').
+            The data will be copied into the following folder hierarchy:
+            DICOMs --&gt;
+              &lt;Project&gt;/&lt;Subject[Group]&gt;/&lt;Session&gt;/&lt;Type&gt;/&lt;Name&gt;/&lt;DICOM&gt;/
+            Logfiles --&gt;
+              &lt;Project&gt;/&lt;Subject[Group]&gt;/&lt;Session&gt;/&lt;Type&gt;/&lt;Name&gt;/
+            Turbo Brain Voyager files --&gt;
+             &lt;Project&gt;/&lt;Subject[Group]&gt;/&lt;Session&gt;/&lt;Type&gt;/&lt;Name&gt;/TBV/
+            Scan Session Protocol --&gt;
+              &lt;Project&gt;/&lt;Project&gt;_&lt;Subject[Group]&gt;_Session_ScanProtocol.txt
+</code></pre>
 
 <h2>
-<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
+<a id="config-file" class="anchor" href="#config-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Config File</h2>
 
-<p>The full documentation can be found from within the programme, by clicking on
-the "?" button, or by selecting "Scan Session Tool Help" from the Help menu.</p>
+<p>A configuration file can be created to pre-define the values to be used as
+selection options for the "Group", "Session", "Certified User", "Backup
+Person", the measurement "Name" on a per project basis, as well as additional
+items in the "Documents" section. The Scan Session Tool will look for a
+configuration file with the name "sst.cfg", located in the same directory as
+the application itself (does not work for the OS X compiled .app) or in the
+$HOME folder.
+The following syntax is used:</p>
+
+<pre><code>Project: Project1
+Groups: Group1, Group2
+Sessions: Sess1, Sess2
+Measurements Anatomical: Localizer, Anatomy
+Measurements Functional: Run1, Run2, Run3
+Measurements Misc: Run1Incomplete
+Users: User1, User2, User3
+Backups: User1, User2, User3
+Documents: Pre-Scan Questionnaire, Post-Scan Questionnaire
+Project: Project2
+Groups: GroupA, GroupB
+Sessions: SessA, SessB
+Measurements Anatomical: Localizer, MPRAGE
+Measurements Functional: RunA, RunB, RunC
+Measurements Misc: RunAIncomplete
+Users: UserA, UserB, UserC
+Backups: UserA, UserB, UserC
+Documents: Participation Reimbursement Form
+</code></pre>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/fladd/ScanSessionTool">Scan Session Tool</a> is maintained by <a href="https://github.com/fladd">fladd</a>.</span>
