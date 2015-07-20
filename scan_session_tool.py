@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.5.6'
-__date__ = '19 Jan 2015'
+__version__ = '0.6.0'
+__date__ = '20 Jul 2015'
 
 
 import os
@@ -16,6 +16,8 @@ from ScrolledText import ScrolledText
 import tkFont
 import tkFileDialog
 import tkMessageBox
+
+import yaml
 
 
 docs = """
@@ -146,32 +148,125 @@ The control area consists of the following three buttons:
 
 A configuration file can be created to pre-define the values to be used as
 selection options for the "Group", "Session", "Certified User", "Backup
-Person", the measurement "Name" on a per project basis, as well as additional
-items in the "Documents" section. The Scan Session Tool will look for a
-configuration file with the name "sst.cfg", located in the same directory as
-the application itself (does not work for the OS X compiled .app) or in the
-$HOME folder.
-The following syntax is used:
+Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
+project basis, as well as additional items in the "Documents" section.
+The Scan Session Tool will look for a configuration file with the name
+"sst.yaml", located in the same directory as the application itself (does not
+work for the OS X compiled .app) or in the $HOME folder.
 
-Project: Project1
-Groups: Group1, Group2
-Sessions: Sess1, Sess2
-Measurements Anatomical: Localizer, Anatomy
-Measurements Functional: Run1, Run2, Run3
-Measurements Misc: Run1Incomplete
-Users: User1, User2, User3
-Backups: User1, User2, User3
-Documents: Pre-Scan Questionnaire, Post-Scan Questionnaire
+The syntax is YAML. Here is an example:
 
-Project: Project2
-Groups: GroupA, GroupB
-Sessions: SessA, SessB
-Measurements Anatomical: Localizer, MPRAGE
-Measurements Functional: RunA, RunB, RunC
-Measurements Misc: RunAIncomplete
-Users: UserA, UserB, UserC
-Backups: UserA, UserB, UserC
-Documents: Participation Reimbursement Form
+Project 1:
+    Groups:
+        - Group1
+        - Group2
+
+    Sessions:
+        - Sess1
+        - Sess2
+
+    Users:
+        - User1
+        - User2
+
+    Backups:
+        - User1
+        - User2
+
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Documents:
+        - Pre-Scan Questionnaire
+        - Post-Scan Questionnaire
+
+    Measurements anatomical:
+        - Name:        Localizer
+          Vols:        3
+
+        - Name:        Anatomy
+          Vols:        192
+
+    Measurements functional:
+        - Name:        Run1
+          Vols:        300
+          Comments:    |
+                       Answer 1: 
+
+        - Name:        Run2
+          Vols:        400
+          Comments:    |
+                       Answer 2: 
+
+        - Name:        Run3
+          Vols:        200
+          Comments:    |
+                       Answer 3:
+
+    Measurements misc:
+        - Name:        Run1incomplete
+          Vols:
+          Comments:
+
+
+Project 2:
+    Groups:
+        - GroupA
+        - GroupB
+
+    Sessions:
+        - SessA
+        - SessB
+
+    Users:
+        - UserA
+        - UserB
+
+    Backups:
+        - UserA
+        - UserB
+
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Documents:
+        - Participation Reimbursement Form
+
+    Measurements anatomical:
+        - Name:        Localizer
+          Vols:        3
+
+        - Name:        MPRAGE
+          Vols:        192
+
+    Measurements functional:
+        - Name:        RunA
+          Vols:        300
+          Comments:    |
+                       Answer 1: 
+
+        - Name:        RunB
+          Vols:        400
+          Comments:    |
+                       Answer 2: 
+
+        - Name:        RunC
+          Vols:        200
+          Comments:    |
+                       Answer 3:
+
+    Measurements misc:
+        - Name:        RunAImcomplete
+          Vols:
+          Comments:
 """
 
 def replace(file_path, pattern, subst):
@@ -473,7 +568,7 @@ class App(Frame):
         self.file_menu.add_command(label="Save", command=self.save,
                                    accelerator="{0}-S".format(modifier))
         self.file_menu.add_command(label="Archive", command=self.archive,
-                                   accelerator="{0}-A".format(modifier))
+                                   accelerator="{0}-R".format(modifier))
         self.edit_menu = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.edit_menu, label="Edit")
         self.edit_menu.add_command(label="Add Measurement",
@@ -940,7 +1035,7 @@ class App(Frame):
 
     def add_additional_documents(self):
         current_project = self.general_widgets[0].get()
-        for row, x in enumerate(self.config[current_project]["documents"]):
+        for x in self.config[current_project]["Documents"]:
             if not x in self.documents:
                 var = IntVar()
                 var.trace("w", self.change_callback)
@@ -1016,17 +1111,17 @@ class App(Frame):
         self.go_button["state"] = "enabled"
         self.file_menu.entryconfigure("Archive", state="normal")
         if platform.system() == "Darwin":
-            self.master.bind("<Command-a>", self.archive)
+            self.master.bind("<Command-r>", self.archive)
         else:
-            self.master.bind("<Control-a>", self.archive)
+            self.master.bind("<Control-r>", self.archive)
 
     def disable_archive(self):
         self.go_button["state"] = "disabled"
         self.file_menu.entryconfigure("Archive", state="disabled")
         if platform.system() == "Darwin":
-            self.master.unbind("<Command-a>")
+            self.master.unbind("<Command-r>")
         else:
-            self.master.unbind("<Control-a>")
+            self.master.unbind("<Control-r>")
 
     def enable_minus(self):
         self.scanning_del["state"] = "enabled"
@@ -1057,6 +1152,12 @@ class App(Frame):
             pass
 
         current_project = self.general_vars[0].get()
+
+        # Update notes
+        if current_project != "":
+            notes = self.config[current_project]["Notes"]
+            if self.general_widgets[-1].get(1.0, END).strip() == "":
+                self.general_widgets[-1].insert(END, notes)
 
         # Check if archving is possible
         try:
@@ -1094,105 +1195,143 @@ class App(Frame):
             try:
                 t = self.measurements[idx][1].get()
                 self.measurements_widgets[idx][3].set_completion_list(
-                    self.config[current_project]["measurements"][t])
+                    [x["Name"] for x in self.config[current_project]["Measurements " + t]])
             except:
                 pass
 
-        # Adapt Protocol according to Measurement Name
+        # Adapt Vols, Protocol and Comments according to Measurement Name
         for idx, x in enumerate(self.measurements):
             try:
                 t = x[1].get()
                 n = x[3].get()
-                if t != "anatomical" and n != "":
-                    e = "*"
+                if n != "":
+                    try:
+                        id = [name for name in self.config[current_project]["Measurements " + t] if name["Name"] == n]
+                        try:
+                            vols = id[0]["Vols"]
+                            if self.measurements[idx][2].get() == "":
+                                self.measurements[idx][2].set(vols)
+                        except:
+                            pass
+                        try:
+                            comments = id[0]["Comments"]
+                            if self.measurements_widgets[idx][-1].get(1.0, END).strip() == "":
+                                self.measurements_widgets[idx][-1].insert(END, comments)
 
-                    prt = "_".join(self.get_filename().split("_")[:-2]) + \
-                          "_" + n + e
-                    if prt != self.prt_files[idx]:
-                        if self.prt_files[idx] == "":
-                            start = 1.0
-                        elif self.prt_files[idx] != "":
-                            start = x[4].search(self.prt_files[idx], 1.0,
-                                                stopindex=END)
-                            end = ".".join([start.split(".")[0],
-                                           repr(len(self.prt_files[idx]))])
-                            x[4].delete(start, end)
-                        x[4].insert(start, prt)
-                        self.prt_files[idx] = prt
+                        except:
+                            pass
+                    except:
+                        pass
+
+                    if t != "anatomical":
+                        e = "*"
+
+                        prt = "_".join(self.get_filename().split("_")[:-2]) + \
+                            "_" + n + e
+                        if prt != self.prt_files[idx]:
+                            if self.prt_files[idx] == "":
+                                start = 1.0
+                            elif self.prt_files[idx] != "":
+                                start = x[4].search(self.prt_files[idx], 1.0,
+                                                    stopindex=END)
+                                end = ".".join([start.split(".")[0],
+                                            repr(len(self.prt_files[idx]))])
+                                x[4].delete(start, end)
+                            x[4].insert(start, prt)
+                            self.prt_files[idx] = prt
             except:
                 pass
 
         if args[0] == str(self.general_vars[0]):
             try:
                 self.general_widgets[2].set_completion_list(
-                    self.config[current_project]["groups"])
+                    self.config[current_project]["Groups"])
                 self.general_widgets[3].set_completion_list(
-                    self.config[current_project]["sessions"])
+                    self.config[current_project]["Sessions"])
                 self.general_widgets[7].set_completion_list(
-                    self.config[current_project]["users"])
+                    self.config[current_project]["Users"])
                 self.general_widgets[8].set_completion_list(
-                    self.config[current_project]["backups"])
+                    self.config[current_project]["Backups"])
+                notes = self.config[current_project]["Notes"]
+                if self.general_widgets[-1].get(1.0, END).strip() == "":
+                    self.general_widgets[-1].insert(END, notes)
+
                 for index, m in enumerate(self.measurements_widgets):
                     t = self.measurements[index][1].get()
-                    m[3].set_completion_list(self.config[current_project]["measurements"][t])
+                    m[3].set_completion_list(
+                        [x["Name"] for x in self.config[current_project]["Measurements " + t]])
                 self.add_additional_documents()
             except:
                 self.del_additional_documents()
 
+            
     def load_config(self):
         """Load the config file."""
 
         path = None
-        if os.path.exists("sst.cfg"):
+        if os.path.exists("sst.yaml"):
             path = os.path.curdir
-        elif os.path.exists(os.path.join(os.path.expanduser("~"), "sst.cfg")):
+        elif os.path.exists(os.path.join(os.path.expanduser("~"), "sst.yaml")):
             path = os.path.expanduser("~")
         else:
             path = None
         if path is not None:
-            with open(os.path.join(path, "sst.cfg")) as f:
-                for line in f:
-                    if line.startswith("Project:"):
-                        project = line[8:].strip()
-                        self.config[project] = {"groups": [],
-                                                "sessions": [],
-                                                "users": [],
-                                                "backups": [],
-                                                "measurements": {
-                                                    "anatomical": [],
-                                                    "functional": [],
-                                                    "misc": []}}
-                    elif line.startswith("Groups:"):
-                        self.config[project]['groups'] = \
-                            [x.strip() for x in line[7:].strip().split(",")]
-                        self.config[project]["groups"].sort()
-                    elif line.startswith("Sessions:"):
-                        self.config[project]["sessions"] = \
-                            [x.strip() for x in line[9:].strip().split(",")]
-                        self.config[project]["sessions"].sort()
-                    elif line.startswith("Users:"):
-                        self.config[project]["users"] = \
-                            [x.strip() for x in line[6:].strip().split(",")]
-                        self.config[project]["users"].sort()
-                    elif line.startswith("Backups:"):
-                        self.config[project]["backups"] = \
-                            [x.strip() for x in line[8:].strip().split(",")]
-                        self.config[project]["backups"].sort()
-                    elif line.startswith("Measurements Anatomical:"):
-                        self.config[project]["measurements"]["anatomical"] = \
-                            [x.strip() for x in line[24:].strip().split(",")]
-                        self.config[project]["measurements"]["anatomical"].sort()
-                    elif line.startswith("Measurements Functional:"):
-                        self.config[project]["measurements"]["functional"] = \
-                            [x.strip() for x in line[24:].strip().split(",")]
-                        self.config[project]["measurements"]["functional"].sort()
-                    elif line.startswith("Measurements Incomplete:"):
-                        self.config[project]["measurements"]["misc"] = \
-                            [x.strip() for x in line[24:].strip().split(",")]
-                        self.config[project]["measurements"]["misc"].sort()
-                    elif line.startswith("Documents:"):
-                        self.config[project]["documents"] = \
-                            [x.strip() for x in line[10:].strip().split(",")]
+            with open(os.path.join(path, "sst.yaml")) as f:
+                self.config = yaml.safe_load(f)
+
+                # for line in f:
+                #     if line.startswith("Project:"):
+                #         project = line[8:].strip()
+                #         self.config[project] = {"groups": [],
+                #                                 "sessions": [],
+                #                                 "users": [],
+                #                                 "backups": [],
+                #                                 "info": "",
+                #                                 "measurements": {
+                #                                     "anatomical": {
+                #                                         "names": [],
+                #                                         "comment": ""},
+                #                                     "functional": {
+                #                                         "names": [],
+                #                                         "comment": ""},
+                #                                     "misc": {
+                #                                         "names": [],
+                #                                         "comment": ""}},
+                #                                 "documents": []}
+                #     elif line.startswith("Groups:"):
+                #         self.config[project]['groups'] = \
+                #             [x.strip() for x in line[7:].strip().split(",")]
+                #         self.config[project]["groups"].sort()
+                #     elif line.startswith("Sessions:"):
+                #         self.config[project]["sessions"] = \
+                #             [x.strip() for x in line[9:].strip().split(",")]
+                #         self.config[project]["sessions"].sort()
+                #     elif line.startswith("Users:"):
+                #         self.config[project]["users"] = \
+                #             [x.strip() for x in line[6:].strip().split(",")]
+                #         self.config[project]["users"].sort()
+                #     elif line.startswith("Backups:"):
+                #         self.config[project]["backups"] = \
+                #             [x.strip() for x in line[8:].strip().split(",")]
+                #         self.config[project]["backups"].sort()
+                #     elif line.startswith("Measurements Anatomical:"):
+                #         self.config[project]["measurements"]["anatomical"]["names"] = \
+                #             [x.strip() for x in line[24:].strip().split(",")]
+                #         self.config[project]["measurements"]["anatomical"]["names"].sort()
+                #         self.config[project]["measurements"]["anatomical"]["comment"] = line[9:].strip()
+                #     elif line.startswith("Measurements Functional:"):
+                #         self.config[project]["measurements"]["functional"]["names"] = \
+                #             [x.strip() for x in line[24:].strip().split(",")]
+                #         self.config[project]["measurements"]["functional"]["names"].sort()
+                #         self.config[project]["measurements"]["functional"]["comment"] = line[9:].strip()
+                #     elif line.startswith("Measurements Incomplete:"):
+                #         self.config[project]["measurements"]["misc"]["names"] = \
+                #             [x.strip() for x in line[24:].strip().split(",")]
+                #         self.config[project]["measurements"]["misc"]["names"].sort()
+                #         self.config[project]["measurements"]["misc"]["comment"] = line[9:].strip()
+                #     elif line.startswith("Documents:"):
+                #         self.config[project]["documents"] = \
+                #             [x.strip() for x in line[10:].strip().split(",")]
 
     def get_filename(self):
         proj = self.general_vars[0].get()
