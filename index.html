@@ -152,32 +152,125 @@ The following input fields are available per measurement:</p>
 
 <p>A configuration file can be created to pre-define the values to be used as
 selection options for the "Group", "Session", "Certified User", "Backup
-Person", the measurement "Name" on a per project basis, as well as additional
-items in the "Documents" section. The Scan Session Tool will look for a
-configuration file with the name "sst.cfg", located in the same directory as
-the application itself (does not work for the OS X compiled .app) or in the
-$HOME folder.
-The following syntax is used:</p>
+Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
+project basis, as well as additional items in the "Documents" section.
+The Scan Session Tool will look for a configuration file with the name
+"sst.yaml", located in the same directory as the application itself (does not
+work for the OS X compiled .app) or in the $HOME folder.</p>
 
-<pre><code>Project: Project1
-Groups: Group1, Group2
-Sessions: Sess1, Sess2
-Measurements Anatomical: Localizer, Anatomy
-Measurements Functional: Run1, Run2, Run3
-Measurements Misc: Run1Incomplete
-Users: User1, User2, User3
-Backups: User1, User2, User3
-Documents: Pre-Scan Questionnaire, Post-Scan Questionnaire
+<p>The syntax is YAML. Here is an example:</p>
 
-Project: Project2
-Groups: GroupA, GroupB
-Sessions: SessA, SessB
-Measurements Anatomical: Localizer, MPRAGE
-Measurements Functional: RunA, RunB, RunC
-Measurements Misc: RunAIncomplete
-Users: UserA, UserB, UserC
-Backups: UserA, UserB, UserC
-Documents: Participation Reimbursement Form
+<pre><code>Project 1:
+    Groups:
+        - Group1
+        - Group2
+
+    Sessions:
+        - Sess1
+        - Sess2
+
+    Users:
+        - User1
+        - User2
+
+    Backups:
+        - User1
+        - User2
+
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Documents:
+        - Pre-Scan Questionnaire
+        - Post-Scan Questionnaire
+
+    Measurements anatomical:
+        - Name:        Localizer
+          Vols:        3
+
+        - Name:        Anatomy
+          Vols:        192
+
+    Measurements functional:
+        - Name:        Run1
+          Vols:        300
+          Comments:    |
+                       Answer 1: 
+
+        - Name:        Run2
+          Vols:        400
+          Comments:    |
+                       Answer 2: 
+
+        - Name:        Run3
+          Vols:        200
+          Comments:    |
+                       Answer 3:
+
+    Measurements misc:
+        - Name:        Run1incomplete
+          Vols:
+          Comments:
+
+
+Project 2:
+    Groups:
+        - GroupA
+        - GroupB
+
+    Sessions:
+        - SessA
+        - SessB
+
+    Users:
+        - UserA
+        - UserB
+
+    Backups:
+        - UserA
+        - UserB
+
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Documents:
+        - Participation Reimbursement Form
+
+    Measurements anatomical:
+        - Name:        Localizer
+          Vols:        3
+
+        - Name:        MPRAGE
+          Vols:        192
+
+    Measurements functional:
+        - Name:        RunA
+          Vols:        300
+          Comments:    |
+                       Answer 1: 
+
+        - Name:        RunB
+          Vols:        400
+          Comments:    |
+                       Answer 2: 
+
+        - Name:        RunC
+          Vols:        200
+          Comments:    |
+                       Answer 3:
+
+    Measurements misc:
+        - Name:        RunAImcomplete
+          Vols:
+          Comments:
 </code></pre>
 
       <footer class="site-footer">
