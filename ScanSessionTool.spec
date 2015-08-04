@@ -17,5 +17,5 @@ exe = EXE(pyz,
           console=False )
 app = BUNDLE(exe,
              name='Scan Session Tool.app',
-             version='0.6.0',
+             version='0.6.1',
              icon=None)

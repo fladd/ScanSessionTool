@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.6.0'
-__date__ = '20 Jul 2015'
+__version__ = '0.6.1'
+__date__ = '4 Aug 2015'
 
 
 import os
@@ -195,12 +195,12 @@ Project 1:
         - Name:        Run1
           Vols:        300
           Comments:    |
-                       Answer 1: 
+                       Answer 1:
 
         - Name:        Run2
           Vols:        400
           Comments:    |
-                       Answer 2: 
+                       Answer 2:
 
         - Name:        Run3
           Vols:        200
@@ -251,12 +251,12 @@ Project 2:
         - Name:        RunA
           Vols:        300
           Comments:    |
-                       Answer 1: 
+                       Answer 1:
 
         - Name:        RunB
           Vols:        400
           Comments:    |
-                       Answer 2: 
+                       Answer 2:
 
         - Name:        RunC
           Vols:        200
@@ -1035,17 +1035,20 @@ class App(Frame):
 
     def add_additional_documents(self):
         current_project = self.general_widgets[0].get()
-        for x in self.config[current_project]["Documents"]:
-            if not x in self.documents:
-                var = IntVar()
-                var.trace("w", self.change_callback)
-                check = Checkbutton(self.documents_frame, text=x, variable=var)
-                check.grid(sticky="W", padx=10)
-                self.documents.append(x)
-                self.documents_vars.append(var)
-                self.additional_documents.append(x)
-                self.additional_documents_vars.append(var)
-                self.additional_documents_widgets.append(check)
+        try:
+            for x in self.config[current_project]["Documents"]:
+                if not x in self.documents:
+                    var = IntVar()
+                    var.trace("w", self.change_callback)
+                    check = Checkbutton(self.documents_frame, text=x, variable=var)
+                    check.grid(sticky="W", padx=10)
+                    self.documents.append(x)
+                    self.documents_vars.append(var)
+                    self.additional_documents.append(x)
+                    self.additional_documents_vars.append(var)
+                    self.additional_documents_widgets.append(check)
+        except:
+            pass
 
     def del_additional_documents(self):
         self.general_widgets[2].set_completion_list([])
@@ -1153,11 +1156,51 @@ class App(Frame):
 
         current_project = self.general_vars[0].get()
 
-        # Update notes
-        if current_project != "":
-            notes = self.config[current_project]["Notes"]
-            if self.general_widgets[-1].get(1.0, END).strip() == "":
-                self.general_widgets[-1].insert(END, notes)
+        # Update project
+        if args[0] == str(self.general_vars[0]):
+            self.del_additional_documents()
+            try:
+                if self.config[current_project]["Groups"] is not None:
+                    self.general_widgets[2].set_completion_list(
+                        self.config[current_project]["Groups"])
+            except:
+                pass
+            try:
+                if self.config[current_project]["Sessions"] is not None:
+                    self.general_widgets[3].set_completion_list(
+                        self.config[current_project]["Sessions"])
+            except:
+                pass
+            try:
+                if self.config[current_project]["Users"] is not None:
+                    self.general_widgets[7].set_completion_list(
+                        self.config[current_project]["Users"])
+            except:
+                pass
+            try:
+                if self.config[current_project]["Backups"] is not None:
+                    self.general_widgets[8].set_completion_list(
+                        self.config[current_project]["Backups"])
+            except:
+                pass
+            for index, m in enumerate(self.measurements_widgets):
+                try:
+                    t = self.measurements[index][1].get()
+                    m[3].set_completion_list(
+                        [x["Name"] for x in self.config[current_project]["Measurements " + t]])
+                except:
+                    pass
+            self.add_additional_documents()
+
+            # Update notes
+            if current_project != "":
+                try:
+                    notes = self.config[current_project]["Notes"]
+                    if notes is not None:
+                        self.general_widgets[-1].delete(1.0, END)
+                        self.general_widgets[-1].insert(END, notes)
+                except:
+                    pass
 
         # Check if archving is possible
         try:
@@ -1200,29 +1243,33 @@ class App(Frame):
                 pass
 
         # Adapt Vols, Protocol and Comments according to Measurement Name
-        for idx, x in enumerate(self.measurements):
+        names = [str(x[3]) for x in self.measurements]
+        try:
+            idx = names.index(args[0])
+        except:
+            idx = None
+        if idx is not None and current_project != "":
             try:
-                t = x[1].get()
-                n = x[3].get()
+                t = self.measurements[idx][1].get()
+                n = self.measurements[idx][3].get()
                 if n != "":
                     try:
                         id = [name for name in self.config[current_project]["Measurements " + t] if name["Name"] == n]
                         try:
                             vols = id[0]["Vols"]
-                            if self.measurements[idx][2].get() == "":
+                            if vols is not None:
                                 self.measurements[idx][2].set(vols)
                         except:
                             pass
                         try:
                             comments = id[0]["Comments"]
-                            if self.measurements_widgets[idx][-1].get(1.0, END).strip() == "":
+                            if comments is not None:
+                                self.measurements_widgets[idx][-1].delete(1.0, END)
                                 self.measurements_widgets[idx][-1].insert(END, comments)
-
                         except:
                             pass
                     except:
                         pass
-
                     if t != "anatomical":
                         e = "*"
 
@@ -1242,29 +1289,6 @@ class App(Frame):
             except:
                 pass
 
-        if args[0] == str(self.general_vars[0]):
-            try:
-                self.general_widgets[2].set_completion_list(
-                    self.config[current_project]["Groups"])
-                self.general_widgets[3].set_completion_list(
-                    self.config[current_project]["Sessions"])
-                self.general_widgets[7].set_completion_list(
-                    self.config[current_project]["Users"])
-                self.general_widgets[8].set_completion_list(
-                    self.config[current_project]["Backups"])
-                notes = self.config[current_project]["Notes"]
-                if self.general_widgets[-1].get(1.0, END).strip() == "":
-                    self.general_widgets[-1].insert(END, notes)
-
-                for index, m in enumerate(self.measurements_widgets):
-                    t = self.measurements[index][1].get()
-                    m[3].set_completion_list(
-                        [x["Name"] for x in self.config[current_project]["Measurements " + t]])
-                self.add_additional_documents()
-            except:
-                self.del_additional_documents()
-
-            
     def load_config(self):
         """Load the config file."""
 
@@ -1450,16 +1474,17 @@ class App(Frame):
                 self.new_measurement()
             while len(self.measurements) > 1:
                 self.del_measurement()
-            self.general_widgets[-1].delete(1.0, END)
             for m in self.measurements:
                 m[-1].delete(1.0, END)
             for linenr, line in enumerate(f):
                 if 3 <= linenr <= 11:
                     self.general_vars[linenr-3].set(line[30:].strip())
-                    self.del_additional_documents()
+                    if linenr == 3:
+                        self.del_additional_documents()
                 elif not measurement:
                     if not notes_block and line.startswith("........"):
                         notes_block = True
+                        self.general_widgets[-1].delete(1.0, END)
                     elif notes_block:
                         if line.startswith("........"):
                             notes_block = False
@@ -1528,6 +1553,8 @@ class App(Frame):
                     if line.startswith("........"):
                         if comments_block is False:
                             comments_block = True
+                            self.measurements[len(measurement_starts)-
+                                              1][-1].delete(1.0, END)
                         else:
                             comments_block = False
                     elif comments_block:
@@ -1579,6 +1606,9 @@ class App(Frame):
                 for f in glob.glob(os.path.join(d, "*.IMA")):
                     if int(os.path.split(f)[-1].split(".")[3]) == number:
                         scans.append(f)
+                    elif len(os.path.split(f)[-1].split(".")) > 11:
+                        if int(os.path.split(f)[-1].split(".")[-11]) == number:
+                            scans.append(f)
             if name == "":
                 warnings += "\nError copying images for measurement {0}:\n" \
                            "    'Name' not specified\n".format(number)
@@ -1671,6 +1701,11 @@ class App(Frame):
                                     contrast_file = \
                                         content[start:end].split(
                                             " ")[-1].strip("\r").strip('"')
+                                    start = content.find("IntraSessionMotionCorrectionFile:")
+                                    end = content.find("\n", start)
+                                    motion_correction_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
                                     start = content.find("FMRVMRAlignVMRPosFile:")
                                     end = content.find("\n", start)
                                     pos_file = \
@@ -1691,7 +1726,18 @@ class App(Frame):
                                     vmr_file = \
                                         content[start:end].split(
                                             " ")[-1].strip("\r").strip('"')
+                                    start = content.find("SRFFileLH:")
+                                    end = content.find("\n", start)
+                                    surface_l_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
+                                    start = content.find("SRFFileRH:")
+                                    end = content.find("\n", start)
+                                    surface_r_file = \
+                                        content[start:end].split(
+                                            " ")[-1].strip("\r").strip('"')
                                     f.close()
+
                                     # Copy files
                                     shutil.copy(os.path.abspath(file), tbv_folder)
                                     for elem in os.listdir(
@@ -1715,19 +1761,48 @@ class App(Frame):
                                             tbv_folder)
 
                                     # Adapt TBV file
-                                    replace(os.path.join(
-                                        tbv_folder, os.path.split(file)[-1]),
-                                            target_folder, "./")
-                                    replace(os.path.join(
-                                        tbv_folder, os.path.split(file)[-1]),
-                                            watch_folder, "./../DICOM/")
-                                    for x in [pos_file, acpc_file, tal_file, vmr_file]:
-                                        dialogue.update()
+                                    if target_folder != "":
                                         replace(os.path.join(
                                             tbv_folder, os.path.split(file)[-1]),
-                                                x, os.path.join(
-                                                "../../../anatomical/Anatomy/TBV/",
-                                                os.path.split(x)[-1]))
+                                                target_folder, "./")
+                                    if watch_folder != "":
+                                        replace(os.path.join(
+                                            tbv_folder, os.path.split(file)[-1]),
+                                                watch_folder, "./../DICOM/")
+                                    if stimulation_protocol != "":
+                                        replace(os.path.join(
+                                            tbv_folder, os.path.split(file)[-1]),
+                                                stimulation_protocol, "./" + os.path.split(stimulation_protocol)[-1])
+                                        for fmr_file in glob.glob(
+                                                os.path.join(tbv_folder, "*.fmr")):
+                                            f = open(fmr_file)
+                                            content = f.read()
+                                            start = content.find("ProtocolFile:")
+                                            end = content.find("\n", start)
+                                            fmr_protocol_file = \
+                                                content[start:end].split(
+                                                    " ")[-1].strip("\r").strip('"')
+                                            f.close()
+                                            replace(os.path.join(
+                                                tbv_folder, os.path.split(fmr_file)[-1]),
+                                                    fmr_protocol_file, "./" + os.path.split(stimulation_protocol)[-1])
+                                    if contrast_file != "":
+                                        replace(os.path.join(
+                                            tbv_folder, os.path.split(file)[-1]),
+                                                contrast_file, "./" + os.path.split(contrast_file)[-1])
+                                    if motion_correction_file != "":
+                                        split_ = os.path.split(motion_correction_file)
+                                        replace(os.path.join(
+                                            tbv_folder, os.path.split(file)[-1]),
+                                                motion_correction_file, "../../" + split_[-2] + "/TBV/" + split_[-1])
+                                    for x in [pos_file, acpc_file, tal_file, vmr_file, surface_l_file, surface_r_file]:
+                                        if x != "":
+                                            dialogue.update()
+                                            replace(os.path.join(
+                                                tbv_folder, os.path.split(file)[-1]),
+                                                    x, os.path.join(
+                                                    "../../../anatomical/Anatomy/TBV/",
+                                                    os.path.split(x)[-1]))
                         if os.listdir(tbv_folder) == []:
                             shutil.rmtree(tbv_folder)
                     except:
@@ -1836,8 +1911,11 @@ class App(Frame):
                                        "S" + repr(subject).zfill(2),
                                        session)
             for file in glob.glob(os.path.join(d, "*")):
-                if file.endswith("pdf") or file.endswith("doc") \
-                    or file.endswith("txt") and not os.path.isdir(file):
+                if os.path.splitext(file)[-1] in (".txt",
+                                                  ".pdf",
+                                                  ".odt"
+                                                  ".doc",
+                                                  ".docx"):
                     dialogue.update()
                     all_documents += 1
                     shutil.copy(os.path.abspath(file), sess_folder)
