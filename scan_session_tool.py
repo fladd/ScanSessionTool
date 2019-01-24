@@ -1,21 +1,30 @@
 #!/usr/bin/env python
 
-__version__ = '0.6.1'
-__date__ = '4 Aug 2015'
+__version__ = '0.6.2'
+__date__ = '24 Jan 2019'
 
 
+import sys
 import os
 import platform
 import time
 import glob
 import shutil
 from tempfile import mkstemp
-from Tkinter import *
-from ttk import *
-from ScrolledText import ScrolledText
-import tkFont
-import tkFileDialog
-import tkMessageBox
+if sys.version[0] == '3':
+    from tkinter import *
+    from tkinter.ttk import *
+    from tkinter import font as tkFont
+    from tkinter import filedialog as tkFileDialog
+    from tkinter import messagebox as tkMessageBox
+    from tkinter import scrolledtext as ScrolledText
+else:
+    from Tkinter import *
+    from ttk import *
+    import tkFont
+    import tkFileDialog
+    import tkMessageBox
+    from ScrolledText import ScrolledText
 
 import yaml
 
@@ -324,8 +333,9 @@ class AutoScrollbarText(Text):
 
         # Copy geometry methods of self.frame without overriding Text
         # methods -- hack!
-        text_meths = vars(Text).keys()
-        methods = vars(Pack).keys() + vars(Grid).keys() + vars(Place).keys()
+        text_meths = list(vars(Text).keys())
+        methods = list(vars(Pack).keys()) + list(vars(Grid).keys()) + \
+                list(vars(Place).keys())
         methods = set(methods).difference(text_meths)
 
         for m in methods:
@@ -610,8 +620,8 @@ class App(Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid(sticky="WENS")
         self.general = ("Project:",
-                        "Subject No.:",
-                        "Group:",
+                        "Subject:",
+                        #"Group:",
                         "Session:",
                         "Date:",
                         "Booked Time:",
@@ -665,25 +675,39 @@ class App(Frame):
             label = Label(self.general_frame_left, text=x)
             label['font'] = (self.default_font, self.default_font_size)
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
-            self.general_labels.append(label)
-            var = StringVar()
-            var.trace("w", self.change_callback)
-            self.general_vars.append(var)
-            if row == 1:
-                var.set(1)
-                spinbox = Spinbox(self.general_frame_left, from_=1, to=999,
-                          width=3, justify="right", textvariable=var,
+            self.general_labels.append(label) 
+            if row in (1, 2):
+                width = 10
+                if platform.system() == "Windows":
+                    width += 3
+                frame = Frame(self.general_frame_left, width=width) 
+                var1 = StringVar()
+                var1.trace("w", self.change_callback)
+                var1.set(1)
+                spinbox = Spinbox(frame, from_=1, to=999,
+                          width=3, justify="right", textvariable=var1,
                           state="readonly", font=self.font, style="Orange.TSpinbox")
-                spinbox.grid(row=row, column=1, sticky="W")
-                self.general_widgets.append(spinbox)
-            elif row in (0, 2, 3, 7, 8):
+                spinbox.grid(row=0, column=0, sticky="W")
+                var2 = StringVar()
+                var2.trace("w", self.change_callback)
+                combobox = AutocompleteCombobox(frame, textvariable=var2,
+                                                validate=validate, validatecommand=vcmd,
+                                                font=self.font)
+                combobox.grid(row=0, column=1, sticky="W")
+                self.general_vars.append([var1, var2])
+                self.general_widgets.append([spinbox, combobox])
+                frame.grid(row=row, column=1, sticky="W")
+            elif row in (0, 6, 7):
+                var = StringVar()
+                var.trace("w", self.change_callback)
+                self.general_vars.append(var)
                 validate = None
                 vcmd = None
                 #validate = "key"
                 #vcmd = (self.master.register(self.validate),
                 #[chr(x) for x in range(127)],
                 #49, '%S', '%P')
-                if row in (0, 3):
+                if row == 0:
                     width = 20
                     if platform.system() == "Windows":
                         width += 3
@@ -700,24 +724,27 @@ class App(Frame):
                                                     font=self.font, width=width)
 
                 if row == 0:
-                    projects = self.config.keys()
-                    projects.sort()
+                    projects = sorted(self.config.keys())
+                    #projects.sort()
                     combobox.set_completion_list(projects)
-                combobox.grid(row=row, column=1, sticky="W")
+                combobox.grid(row=row, column=1, sticky="EW")
                 self.general_widgets.append(combobox)
-            elif row in (4, 5, 6):
-                if row == 4:
+            elif row in (3, 4, 5):
+                var = StringVar()
+                var.trace("w", self.change_callback)
+                self.general_vars.append(var)
+                if row == 3:
                     validate = "key"
                     vcmd = (self.master.register(self.validate),
                             "0123456789-", 10, '%S', '%P')
                     width = 10
                     self.autofill_date_callback()
-                elif row in (5, 6):
+                elif row in (4, 5):
                     validate = "key"
                     vcmd = (self.master.register(self.validate),
                             "0123456789:-", 11, '%S', '%P')
                     width = 10
-                if row == 4:
+                if row == 3:
                     entry = Entry(self.general_frame_left, width=width,
                                   textvariable=var, validate=validate,
                                   validatecommand=vcmd, font=self.font,
@@ -1051,10 +1078,10 @@ class App(Frame):
             pass
 
     def del_additional_documents(self):
-        self.general_widgets[2].set_completion_list([])
-        self.general_widgets[3].set_completion_list([])
+        self.general_widgets[1][1].set_completion_list([])
+        self.general_widgets[2][1].set_completion_list([])
+        self.general_widgets[6].set_completion_list([])
         self.general_widgets[7].set_completion_list([])
-        self.general_widgets[8].set_completion_list([])
         for index, m in enumerate(self.measurements_widgets):
             t = self.measurements[index][1].get()
             m[3].set_completion_list([])
@@ -1075,7 +1102,7 @@ class App(Frame):
 
     def autofill_date_callback(self, *args):
         date = time.strftime("%Y-%m-%d", time.localtime())
-        self.general_vars[4].set(date)
+        self.general_vars[3].set(date)
 
     def mouseover_callback(self, mouseover):
         if len(self.measurements) >= 6:
@@ -1160,26 +1187,26 @@ class App(Frame):
         if args[0] == str(self.general_vars[0]):
             self.del_additional_documents()
             try:
-                if self.config[current_project]["Groups"] is not None:
-                    self.general_widgets[2].set_completion_list(
-                        self.config[current_project]["Groups"])
+                if self.config[current_project]["SubjectTypes"] is not None:
+                    self.general_widgets[1][1].set_completion_list(
+                        self.config[current_project]["SubjectTypes"])
             except:
                 pass
             try:
-                if self.config[current_project]["Sessions"] is not None:
-                    self.general_widgets[3].set_completion_list(
-                        self.config[current_project]["Sessions"])
+                if self.config[current_project]["SessionTypes"] is not None:
+                    self.general_widgets[2][1].set_completion_list(
+                        self.config[current_project]["SessionTypes"])
             except:
                 pass
             try:
                 if self.config[current_project]["Users"] is not None:
-                    self.general_widgets[7].set_completion_list(
+                    self.general_widgets[6].set_completion_list(
                         self.config[current_project]["Users"])
             except:
                 pass
             try:
                 if self.config[current_project]["Backups"] is not None:
-                    self.general_widgets[8].set_completion_list(
+                    self.general_widgets[7].set_completion_list(
                         self.config[current_project]["Backups"])
             except:
                 pass
@@ -1360,25 +1387,24 @@ class App(Frame):
     def get_filename(self):
         proj = self.general_vars[0].get()
         if proj == "":
-            proj = "Project"
-        group = self.general_vars[2].get()
-        if group != "":
-            group = "[{0}]".format(group)
-        subj = self.general_vars[1].get()
-        if subj == "":
-            subj = "Subj"
-        else:
-            subj = "S" + repr(int(subj)).zfill(2) + group
-        sess = self.general_vars[3].get()
-        if sess == "":
-            sess = "Sess"
-        date = self.general_vars[4].get()
+            proj = "Project" 
+        subj_nr = self.general_vars[1][0].get()
+        subj = "Sub" + repr(int(subj_nr)).zfill(3)
+        subj_type = self.general_vars[1][1].get()
+        if subj_type != "":
+            subj = "{0}-{1}".format(subj, subj_type)
+        ses_nr = self.general_vars[2][0].get()
+        ses = "Ses" + repr(int(ses_nr)).zfill(3)
+        ses_type = self.general_vars[2][1].get()
+        if ses_type != "":
+            ses = "{0}-{1}".format(ses, ses_type)
+        date = self.general_vars[3].get()
         if date == "":
             date = "Date"
         else:
-            data = "".join(date.split("-")[::-1])
-        filename = "{0}_{1}_{2}_ScanProtocol_{3}".format(proj, subj,
-                                                             sess, date)
+            date = "".join(date.split("-"))
+        filename = "{0}_{1}_{2}_ScanProtocol_{3}".format(proj, subj, ses,
+                                                         date)
         return filename
 
     def save(self, filename=None, *args):
@@ -1396,12 +1422,22 @@ class App(Frame):
         f.write("===================\n")
         f.write("\n")
         for pos, label in enumerate(self.general):
-            try:
-                value = self.general_vars[pos].get()
-            except:
-                value = ""
-            f.write("{0}{1}{2}\n".format(label, " "*(30-len(label)),
-                                         value))
+            if pos in (1,2):
+                try:
+                    value1 = self.general_vars[pos][0].get().zfill(3)
+                    value2 = " " + self.general_vars[pos][1].get()
+                except:
+                    value1 = "000"
+                    value2 = ""
+                f.write("{0}{1}{2}\n".format(label, " "*(30-len(label)),
+                                             value1 + value2))
+            else:
+                try:
+                    value = self.general_vars[pos].get()
+                except:
+                    value = ""
+                f.write("{0}{1}{2}\n".format(label, " "*(30-len(label)),
+                                             value))
         f.write("\nNotes")
         f.write("\n........")
         try:
@@ -1477,8 +1513,12 @@ class App(Frame):
             for m in self.measurements:
                 m[-1].delete(1.0, END)
             for linenr, line in enumerate(f):
-                if 3 <= linenr <= 11:
-                    self.general_vars[linenr-3].set(line[30:].strip())
+                if 3 <= linenr <= 10:
+                    if linenr in (4,5):
+                        self.general_vars[linenr-3][0].set(repr(int(line[30:33])))
+                        self.general_vars[linenr-3][1].set(line[34:].strip())
+                    else:
+                        self.general_vars[linenr-3].set(line[30:].strip())
                     if linenr == 3:
                         self.del_additional_documents()
                 elif not measurement:

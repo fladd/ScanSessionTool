@@ -1,11 +1,11 @@
-Project 1:
-    Groups:
+Project1:
+    SubjectTypes:
         - Group1
         - Group2
 
-    Sessions:
-        - Sess1
-        - Sess2
+    SessionTypes:
+        - Session1
+        - Session2
 
     Users:
         - User1
@@ -55,7 +55,7 @@ Project 1:
           Comments:
 
 
-Project 2:
+Project2:
     Groups:
         - GroupA
         - GroupB
