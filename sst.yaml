@@ -4,8 +4,8 @@ Project 1:
         - Group2
 
     SessionTypes:
-        - Sess1
-        - Sess2
+        - Session1
+        - Session2
 
     Users:
         - User1
