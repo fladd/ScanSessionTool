@@ -1305,9 +1305,9 @@ class App(Frame):
             except:
                 pass
             try:
-                if self.config[current_project]["Backups"] is not None:
+                if self.config[current_project]["Users"] is not None:
                     self.general_widgets[7].set_completion_list(
-                        self.config[current_project]["Backups"])
+                        self.config[current_project]["Users"])
             except:
                 pass
             for index, m in enumerate(self.measurements_widgets):
