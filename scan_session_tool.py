@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __version__ = '0.7.0'
-__date__ = '24 Jan 2019'
+__date__ = '21 Mar 2019'
 
 
 import sys
@@ -96,12 +96,12 @@ The following fields are available:
 
 --------------------------- The "Documents" area ----------------------------
 
-This area provides input fields for additional documents that are acquired du-
-ring the session, such as logfiles and behavioural data files, as well as 
+This area provides input fields for additional documents that are acquired
+during the session, such as logfiles and behavioural data files, as well as 
 questionnaires and forms that are filled in by the participant. The following
 input fields are available:
-    "Files"       - A newline separated list of all session logfiles and addi-
-                    tional documents; wildcard masks (*) will be completed
+    "Files"       - A newline separated list of all session logfiles and ad-
+                    ditional documents; wildcard masks (*) will be completed
                     during archiving
                     (free-type)
     "Checklist"   - Checkboxes to specify which forms and documents have been 
@@ -109,10 +109,10 @@ input fields are available:
                     be specified in a configuration file (see "Config File" 
                     section). The following checkboxes are available:
                     "MR Safety Screening Form"            - The (f)MRI scree-
-                                                            ning from provided 
-                                                            by the scanning 
-                                                            institution
-                    "Participation Informed Consent Form" - The official (f)MRI 
+                                                            ning from provi-
+                                                            ded by the scan-
+                                                            ning institution
+                    "Participation Informed Consent Form" - The official MRI 
                                                             written consent 
                                                             form
 
@@ -134,11 +134,11 @@ The following input fields are available per measurement:
                              (free-type)
     "Name"                 - The name of the measurement
                              (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected logfiles;
-                             wildcard masks (*) will be completed during
-                             archiving (please note that a stimulation protocol
-                             mask will be included automatically, based on the
-                             session information)
+    "Logfiles"             - A newline separated list of all connected
+                             logfiles; wildcard masks (*) will be completed
+                             during archiving (please note that a stimulation
+                             protocol mask will be included automatically,
+                             based on the session information)
                              (free-type)
     "Comments"             - Any additional comments about the measurement
                              (free-type)
@@ -153,21 +153,21 @@ The control area consists of the following three buttons:
             sub-folder <~Archiveyyymmdd>. Please note that all data is
             expected to be within the specified folder. That is, all DICOM
             files (*.dcm OR *.IMA; with or without sub-folders), all stimula-
-            tion protocols, all logfiles as well as all Turbo Brain Voyager 
+            tion protocols, all logfiles as well as all Turbo-BrainVoyager 
             files (all *.tbv files in a folder called 'TBVFiles').
             The data will be copied into the following folder hierarchy:
-            DICOMs -->
-              <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
-            BrainVoyager files (links only) -->
-            <Project>/<Subject>/<Session>/<BV>/
-            Logfiles -->
-              <Project>/<Subject>/<Session>/<Type>/<Name>/
-            Files -->
-              <Project>/<Subject>/<Session>/
-            Turbo-BrainVoyager files (links only) -->
-              <Project>/<Subject>/<Session>/<TBV>/
-            Scan Session Protocol -->
-              <Project>/<Subject>/<Session>/
+                DICOMs -->
+                  <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
+                BrainVoyager files (links only) -->
+                <Project>/<Subject>/<Session>/<BV>/
+                Logfiles -->
+                  <Project>/<Subject>/<Session>/<Type>/<Name>/
+                Files -->
+                  <Project>/<Subject>/<Session>/
+                Turbo-BrainVoyager files (links only) -->
+                  <Project>/<Subject>/<Session>/<TBV>/
+                Scan Session Protocol -->
+                  <Project>/<Subject>/<Session>/
 
 
 
@@ -177,10 +177,10 @@ A configuration file can be created to pre-define the values to be used as
 selection options for the "Subject", "Session", "Certified User", "Backup
 Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
 project basis, as well as additional items in the "Files" and "Checklist" 
-fields of the "Documents" section.The Scan Session Tool will look for a confi-
-guration file with the name "sst.yaml", located in the same directory as the 
-application itself (does not work for the OS X compiled .app) or in the $HOME 
-folder. 
+fields of the "Documents" section.The Scan Session Tool will look for a con-
+figuration file with the name "sst.yaml", located in the same directory as
+the application itself (does not work for the OS X compiled .app) or in the
+$HOME folder. 
 
 The syntax is YAML. Here is an example:
 
@@ -737,7 +737,7 @@ class App(Frame):
 
         for row, x in enumerate(self.general):
             label = Label(self.general_frame_left, text=x)
-            label['font'] = (self.default_font, self.default_font_size)
+            label['font'] = (self.default_font, self.default_font_size, "bold")
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label) 
             if row in (1, 2):
@@ -825,7 +825,7 @@ class App(Frame):
         notes_label = Label(self.general_frame_right, text="Notes:",
                             style="Green.TLabel")
         notes_label.grid(row=0, column=0, sticky="W")
-        notes_label['font'] = (self.default_font, self.default_font_size)
+        notes_label['font'] = (self.default_font, self.default_font_size, "bold")
         notes_container = FixedSizeFrame(self.general_frame_right, 299, 171)
         notes_container.grid(row=1, column=0, sticky="N")
         notes = AutoScrollbarText(notes_container, wrap=NONE)
@@ -902,8 +902,10 @@ class App(Frame):
         self.nofocus_widgets.append(self.documents_frame)
         files_label = Label(self.documents_frame, text="Files:")
         files_label.grid(row=0, sticky="W", padx=10)
+        files_label['font'] = (self.default_font, self.default_font_size, "bold")
+
         self.nofocus_widgets.append(files_label)
-        files_container = FixedSizeFrame(self.documents_frame, 299, 68)
+        files_container = FixedSizeFrame(self.documents_frame, 299, 53)  #68
         files_container.grid(row=1, sticky="NSEW", padx=10)
         self.nofocus_widgets.append(files_container)
         self.files = AutoScrollbarText(files_container, wrap=NONE, background=self.orange,
@@ -919,6 +921,7 @@ class App(Frame):
         self.nofocus_widgets.append(empty_label)
         checklist_label = Label(self.documents_frame, text="Checklist:")
         checklist_label.grid(row=3, sticky="W", padx=10)
+        checklist_label['font'] = (self.default_font, self.default_font_size, "bold")
         self.nofocus_widgets.append(checklist_label)
         self.documents_labels = []
         self.documents_checks = []
@@ -947,7 +950,7 @@ class App(Frame):
         self.measurements_frame1.grid(row=0, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame1)
         self.measurements_frame = VerticalScrolledFrame(
-            self.measurements_frame1, height=295, width=989)
+            self.measurements_frame1, height=295, width=1049) #989
         self.measurements_frame.interior.grid_columnconfigure(0, weight=1)
         self.measurements_frame.interior.grid_rowconfigure(0, weight=1)
         self.measurements_frame.grid(row=1, sticky="WENS")
@@ -1045,7 +1048,7 @@ class App(Frame):
         #            value="functional").pack(anchor="w")
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
-        width = 9
+        width = 18 #9
         if platform.system() == "Windows":
             width += 2
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
