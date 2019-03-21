@@ -47,9 +47,9 @@ The Scan Session Tool is a graphical application for documenting (f)MRI scan
 sessions and automatized data archiving. Information about the scan session
 itself, used forms and documents, as well as the single measurements can be
 entered and saved into a protocol file. This information can furthermore be
-used to copy acquired data (DICOM images, stimulation protocols, logfiles,
-Turbo Brain Voyager files) into a specific hierarchical folder structure for
-unified archiving purposes.
+used to copy acquired data (DICOM images as well as optional stimulation
+protocols, logfiles and Turbo-BrainVoyager files) into a specific
+hierarchical folder structure for unified archiving purposes.
 
 
 
@@ -96,12 +96,12 @@ The following fields are available:
 
 --------------------------- The "Documents" area ----------------------------
 
-This area provides input fields for additional documents that are acquired du-
-ring the session, such as logfiles and behavioural data files, as well as 
+This area provides input fields for additional documents that are acquired
+during the session, such as logfiles and behavioural data files, as well as 
 questionnaires and forms that are filled in by the participant. The following
 input fields are available:
-    "Files"       - A newline separated list of all session logfiles and addi-
-                    tional documents; wildcard masks (*) will be completed
+    "Files"       - A newline separated list of all session logfiles and ad-
+                    ditional documents; wildcard masks (*) will be completed
                     during archiving
                     (free-type)
     "Checklist"   - Checkboxes to specify which forms and documents have been 
@@ -109,10 +109,10 @@ input fields are available:
                     be specified in a configuration file (see "Config File" 
                     section). The following checkboxes are available:
                     "MR Safety Screening Form"            - The (f)MRI scree-
-                                                            ning from provided 
-                                                            by the scanning 
-                                                            institution
-                    "Participation Informed Consent Form" - The official (f)MRI 
+                                                            ning from provi-
+                                                            ded by the scan-
+                                                            ning institution
+                    "Participation Informed Consent Form" - The official MRI 
                                                             written consent 
                                                             form
 
@@ -134,11 +134,11 @@ The following input fields are available per measurement:
                              (free-type)
     "Name"                 - The name of the measurement
                              (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected logfiles;
-                             wildcard masks (*) will be completed during
-                             archiving (please note that a stimulation protocol
-                             mask will be included automatically, based on the
-                             session information)
+    "Logfiles"             - A newline separated list of all connected
+                             logfiles; wildcard masks (*) will be completed
+                             during archiving (please note that a stimulation
+                             protocol mask will be included automatically,
+                             based on the session information)
                              (free-type)
     "Comments"             - Any additional comments about the measurement
                              (free-type)
@@ -147,27 +147,28 @@ The following input fields are available per measurement:
 ----------------------------- The control area ------------------------------
 
 The control area consists of the following three buttons:
-"Open"    - Opens previously saved information from a text file
-"Save"    - Saves the entered session information into a text file
-"Archive" - Copies acquired data from specified location into a timestamped
-            sub-folder <~Archiveyyymmdd>. Please note that all data is
-            expected to be within the specified folder. That is, all DICOM
-            files (*.dcm OR *.IMA; with or without sub-folders), all stimula-
-            tion protocols, all logfiles as well as all Turbo Brain Voyager 
-            files (all *.tbv files in a folder called 'TBVFiles').
-            The data will be copied into the following folder hierarchy:
-            DICOMs -->
-              <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
-            BrainVoyager files (links only) -->
-            <Project>/<Subject>/<Session>/<BV>/
-            Logfiles -->
-              <Project>/<Subject>/<Session>/<Type>/<Name>/
-            Files -->
-              <Project>/<Subject>/<Session>/
-            Turbo-BrainVoyager files (links only) -->
-              <Project>/<Subject>/<Session>/<TBV>/
-            Scan Session Protocol -->
-              <Project>/<Subject>/<Session>/
+    "Open"    - Opens previously saved information from a text file
+    "Save"    - Saves the entered session information into a text file
+    "Archive" - Copies acquired data from specified location into a time-
+                stamped sub-folder <~Archiveyyymmdd>. Please note that all
+                data is expected to be within the specified folder. That is,
+                all DICOM files (*.dcm OR *.IMA; with or without sub-folders),
+                all stimulation protocols, all logfiles as well as all Turbo-
+                BrainVoyager files (all *.tbv files in a folder called
+                'TBVFiles').
+                The data will be copied into the following folder hierarchy:
+                    DICOMs -->
+                      <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
+                    BrainVoyager files (links only) -->
+                      <Project>/<Subject>/<Session>/<BV>/
+                    Logfiles -->
+                      <Project>/<Subject>/<Session>/<Type>/<Name>/
+                    Files -->
+                      <Project>/<Subject>/<Session>/
+                    Turbo-BrainVoyager files (links only) -->
+                      <Project>/<Subject>/<Session>/<TBV>/
+                    Scan Session Protocol -->
+                      <Project>/<Subject>/<Session>/
 
 
 
