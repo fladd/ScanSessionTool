@@ -868,12 +868,14 @@ class App(Frame):
                               "bold")
         self.nofocus_widgets.append(self.title3)
         self.version1 = Label(self.logo,
-                             text="Version {0}".format(__version__))  #, style="Grey.TLabel")
+                             text="Version {0}".format(__version__),
+                             style="Blue.TLabel")
         self.version1.grid(row=3)
         self.version1['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version1)
         self.version2 = Label(self.logo,
-                             text="({0})".format(__date__))  #, style="Grey.TLabel")
+                             text="({0})".format(__date__),
+                             style="Blue.TLabel")
         self.version2.grid(row=4)
         self.version2['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version2)
