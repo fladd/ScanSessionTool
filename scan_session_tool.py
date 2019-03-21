@@ -2116,6 +2116,7 @@ class HelpDialogue:
         self.master = master
         top = self.top = Toplevel(master, background="grey85")
         top.title("Help")
+        top.resizable(False, False)
         self.text = ScrolledText(top, width=77)
         self.text.pack()
         self.text.insert(END, docs)
