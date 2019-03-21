@@ -34,7 +34,8 @@ docs = """
 |                                                                           |
 |        A tool for MR scan session documentation and data archiving        |
 |                                                                           |
-|             Author: Florian Krause <Florian.Krause@fladd.de>              |
+|             Authors: Florian Krause <Florian.Krause@fladd.de>             |
+|                      Nikos Kogias <n.kogias@student.ru.nl>                |
 |                                                                           |
 + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
 
@@ -156,15 +157,17 @@ The control area consists of the following three buttons:
             files (all *.tbv files in a folder called 'TBVFiles').
             The data will be copied into the following folder hierarchy:
             DICOMs -->
-              <Project>/<Subject[Type]>/<Session[Type]>/<Type>/<Name>/<DICOM>/
+              <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
+            BrainVoyager files (links only) -->
+            <Project>/<Subject>/<Session>/<BV>/
             Logfiles -->
-              <Project>/<Subject[Type]>/<Session[Type]>/<Type>/<Name>/
+              <Project>/<Subject>/<Session>/<Type>/<Name>/
             Files -->
-              <Project>/<Subject[Type]>/<Session[Type]>/
-            Turbo Brain Voyager files -->
-              <Project>/<Subject[Type]>/<Session[Type]>/<TBV>/
+              <Project>/<Subject>/<Session>/
+            Turbo-BrainVoyager files (links only) -->
+              <Project>/<Subject>/<Session>/<TBV>/
             Scan Session Protocol -->
-              <Project>/<Subject[Type]>/<Session[Type]>/
+              <Project>/<Subject>/<Session>/
 
 
 
