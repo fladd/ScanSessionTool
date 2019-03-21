@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __version__ = '0.7.0'
-__date__ = '24 Jan 2019'
+__date__ = '21 Mar 2019'
 
 
 import sys
