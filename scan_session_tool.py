@@ -742,7 +742,7 @@ class App(Frame):
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label) 
             if row in (1, 2):
-                width = 14  #10
+                width = 13  #10
                 if platform.system() == "Windows":
                     width += 3
                 frame = Frame(self.general_frame_left)  #, width=width) 
@@ -752,7 +752,7 @@ class App(Frame):
                 spinbox = Spinbox(frame, from_=1, to=999, format="%03.0f",
                           width=3, justify="right", textvariable=var1,
                           state="readonly", font=self.font, style="Orange.TSpinbox")
-                spinbox.grid(row=0, column=0, sticky="W")
+                spinbox.grid(row=0, column=0, sticky="W", padx=(0,3))
                 var2 = StringVar()
                 var2.trace("w", self.change_callback)
                 combobox = AutocompleteCombobox(frame, textvariable=var2,
