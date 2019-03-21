@@ -19,20 +19,18 @@
     </section>
 
     <section class="main-content">
-      <p>The Scan Session Tool is a graphical application for documenting (f)MRI scan
-sessions and automatized data archiving. Information about the scan session
-itself, used forms and documents, as well as the single measurements can be
-entered and saved into a protocol file. This information can furthermore be
-used to copy acquired data (DICOM images, stimulation protocols, logfiles,
-Turbo Brain Voyager files) into a specific hierarchical folder structure for
-unified archiving purposes.</p>
+      <p>The Scan Session Tool is a graphical application for documenting (f)MRI scan sessions and automatized data archiving.
+         Information about the scan session itself, used forms and documents, as well as the single measurements can be entered
+         and saved into a protocol file. This information can furthermore be used to copy acquired data (DICOM images as well
+         as optional stimulation protocols, logfiles and TurboBrain Voyager files) into a specific hierarchical folder structure 
+         for unified archiving purposes.</p>
 
 <p><img src="https://raw.githubusercontent.com/fladd/ScanSessionTool/gh-pages/ScanSessionTool_Screenshot.png" alt="ScanSessionTool_Screenshot.png" title="Screenshot of Scan Session Tool"></p>
 
 <h1>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
 
-<p>The Scan Session Tool is a <a href="http://www.python.org">Python</a> script and will hence run wherever Python (and <a href="http://tkinter.unpythonic.net/wiki/Tkinter">TKinter</a>) are installed.</p>
+<p>The Scan Session Tool is a <a href="http://www.python.org">Python</a> script and will hence run wherever Python (and <a href="http://tkinter.unpythonic.net/wiki/Tkinter">TKinter</a> and <a href="https://pyyaml.org/">Pyyaml</a>) are installed.</p>
 
 <p>If Python cannot be installed, self-contained binary versions for Windows (.exe) and OS X (.app) are also available at the <a href="https://github.com/fladd/ScanSessionTool/releases/latest">release page</a>.</p>
 
@@ -60,11 +58,13 @@ The following fields are available:</p>
 
 <pre><code>    "Project"        - The project identifier
                        (free-type and selection)
-    "Group"          - The group identifier
+    "Subject"        - The subject number
+                       (001-999)
+                     - The subject identifier
                        (free-type and selection)
-    "Subject No."    - The subject number
-                       (1-99)
-    "Session"        - The session identifier
+    "Session"        - The session number
+                       (001-999)
+                     - The session identifier
                        (free-type and selection)
     "Date"           - The date of the scan session
                        (free-type, auto-filled)
@@ -78,6 +78,7 @@ The following fields are available:</p>
                        (free-type and selection)
     "Notes"          - Any additional notes about the session
                        (free-type)
+
 </code></pre>
 
 <h3>
@@ -88,10 +89,21 @@ collected from the participant. Additional documents can be specified in a
 configuration file (see "Config File" section).
 The following checkboxes are available:</p>
 
-<pre><code>    "MR Safety Screening Form"            - The (f)MRI screening from provi-
-                                            ded by the scanning institution
-    "Participation Informed Consent Form" - The official (f)MRI written con-
-                                            sent form
+<pre><code>    "Files"       - A newline separated list of all session logfiles and ad-
+                    ditional documents; wildcard masks (*) will be completed
+                    during archiving
+                    (free-type)
+    "Checklist"   - Checkboxes to specify which forms and documents have been 
+                    collected from the participant. Additional documents can 
+                    be specified in a configuration file (see "Config File" 
+                    section). The following checkboxes are available:
+                    "MR Safety Screening Form"            - The (f)MRI scree-
+                                                            ning from provi-
+                                                            ded by the scan-
+                                                            ning institution
+                    "Participation Informed Consent Form" - The official MRI 
+                                                            written consent 
+                                                            form
 </code></pre>
 
 <h3>
@@ -106,19 +118,19 @@ need to be checked.
 The following input fields are available per measurement:</p>
 
 <pre><code>    "No"                   - The number of the measurement
-                             (1-99)
+                             (001-999)
     "Type"                 - "anatomical", "functional" or "misc"
                              (selection)
     "Vols"                 - The number of volumes of the measurement
                              (free-type)
     "Name"                 - The name of the measurement
                              (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected logfiles
+    "Logfiles"             - A newline separated list of all connected
+                             logfiles; wildcard masks (*) will be completed
+                             during archiving (please note that a stimulation
+                             protocol mask will be included automatically,
+                             based on the session information)
                              (free-type)
-                             (Please note that a stimulation protocol mask
-                             will be included automatically, based on the
-                             session information, and will be replaced by
-                             the found files matching this mask)
     "Comments"             - Any additional comments about the measurement
                              (free-type)
 </code></pre>
@@ -128,23 +140,28 @@ The following input fields are available per measurement:</p>
 
 <p>The control area consists of the following three buttons:</p>
 
-<pre><code>"Open"    - Opens previously saved information from a text file
-"Save"    - Saves the entered session information into a text file
-"Archive" - Copies acquired data from specified location into a timestamped
-            sub-folder &lt;~Archiveyyymmdd&gt;. Please note that all data is
-            expected to be within the specified folder. That is, all DICOM
-            files (*.dcm OR *.IMA; no sub-folders!), all stimulation protocols,
-            all logfiles as well as all Turbo Brain Voyager files (all *.tbv
-            files in a folder called 'TBVFiles').
-            The data will be copied into the following folder hierarchy:
-            DICOMs --&gt;
-              &lt;Project&gt;/&lt;Subject[Group]&gt;/&lt;Session&gt;/&lt;Type&gt;/&lt;Name&gt;/&lt;DICOM&gt;/
-            Logfiles --&gt;
-              &lt;Project&gt;/&lt;Subject[Group]&gt;/&lt;Session&gt;/&lt;Type&gt;/&lt;Name&gt;/
-            Turbo Brain Voyager files --&gt;
-             &lt;Project&gt;/&lt;Subject[Group]&gt;/&lt;Session&gt;/&lt;Type&gt;/&lt;Name&gt;/TBV/
-            Scan Session Protocol --&gt;
-              &lt;Project&gt;/&lt;Project&gt;_&lt;Subject[Group]&gt;_Session_ScanProtocol.txt
+<pre><code>    "Open"    - Opens previously saved information from a text file
+    "Save"    - Saves the entered session information into a text file
+    "Archive" - Copies acquired data from specified location into a time-
+                stamped sub-folder <~Archiveyyymmdd>. Please note that all
+                data is expected to be within the specified folder. That is,
+                all DICOM files (*.dcm OR *.IMA; with or without sub-folders),
+                all stimulation protocols, all logfiles as well as all Turbo-
+                BrainVoyager files (all *.tbv files in a folder called
+                'TBVFiles').
+                The data will be copied into the following folder hierarchy:
+                    DICOMs -->
+                      <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
+                    BrainVoyager files (links only) -->
+                      <Project>/<Subject>/<Session>/<BV>/
+                    Logfiles -->
+                      <Project>/<Subject>/<Session>/<Type>/<Name>/
+                    Files -->
+                      <Project>/<Subject>/<Session>/
+                    Turbo-BrainVoyager files (links only) -->
+                      <Project>/<Subject>/<Session>/<TBV>/
+                    Scan Session Protocol -->
+                      <Project>/<Subject>/<Session>/
 </code></pre>
 
 <h2>
@@ -161,11 +178,11 @@ work for the OS X compiled .app) or in the $HOME folder.</p>
 <p>The syntax is YAML. Here is an example:</p>
 
 <pre><code>Project 1:
-    Groups:
+    SubjectTypes:
         - Group1
         - Group2
 
-    Sessions:
+    SessionTypes:
         - Sess1
         - Sess2
 
@@ -184,7 +201,10 @@ work for the OS X compiled .app) or in the $HOME folder.</p>
            Age:
            Gender: m[ ] f[ ]
 
-    Documents:
+    Files: 
+        - "*.txt"
+
+    Checklist: 
         - Pre-Scan Questionnaire
         - Post-Scan Questionnaire
 
@@ -199,12 +219,12 @@ work for the OS X compiled .app) or in the $HOME folder.</p>
         - Name:        Run1
           Vols:        300
           Comments:    |
-                       Answer 1: 
+                       Answer 1:
 
         - Name:        Run2
           Vols:        400
           Comments:    |
-                       Answer 2: 
+                       Answer 2:
 
         - Name:        Run3
           Vols:        200
@@ -218,11 +238,11 @@ work for the OS X compiled .app) or in the $HOME folder.</p>
 
 
 Project 2:
-    Groups:
+    SubjectTypes:
         - GroupA
         - GroupB
 
-    Sessions:
+    SessionTypes:
         - SessA
         - SessB
 
@@ -241,7 +261,10 @@ Project 2:
            Age:
            Gender: m[ ] f[ ]
 
-    Documents:
+    Files: 
+        - "*.txt"
+
+    Checklist:
         - Participation Reimbursement Form
 
     Measurements anatomical:
@@ -255,12 +278,12 @@ Project 2:
         - Name:        RunA
           Vols:        300
           Comments:    |
-                       Answer 1: 
+                       Answer 1:
 
         - Name:        RunB
           Vols:        400
           Comments:    |
-                       Answer 2: 
+                       Answer 2:
 
         - Name:        RunC
           Vols:        200
