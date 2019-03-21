@@ -868,14 +868,12 @@ class App(Frame):
                               "bold")
         self.nofocus_widgets.append(self.title3)
         self.version1 = Label(self.logo,
-                             text="Version {0}".format(__version__),
-                             style="Grey.TLabel")
+                             text="Version {0}".format(__version__))  #, style="Grey.TLabel")
         self.version1.grid(row=3)
         self.version1['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version1)
         self.version2 = Label(self.logo,
-                             text="({0})".format(__date__),
-                             style="Grey.TLabel")
+                             text="({0})".format(__date__))  #, style="Grey.TLabel")
         self.version2.grid(row=4)
         self.version2['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version2)
@@ -1756,10 +1754,9 @@ class App(Frame):
 
     def set_title(self, status=None):
         if status is None:
-            self.master.title('Scan Session Tool {0}'.format(__version__))
+            self.master.title('Scan Session Tool')
         else:
-            self.master.title('Scan Session Tool {0} ({1})'.format(
-                __version__, status))
+            self.master.title('Scan Session Tool ({1})'.format(status))
 
     def _archive_run(self, d, dialogue):
         warnings = "\n\n\n"
