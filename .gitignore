@@ -68,3 +68,7 @@ test_expyriment.py
 
 # Pyinstaller
 *.spec
+
+
+# Allow
+!ScanSessionTool.spec
