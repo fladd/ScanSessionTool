@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__ = '0.6.2'
+__version__ = '0.7.0'
 __date__ = '24 Jan 2019'
 
 
@@ -100,7 +100,8 @@ ring the session, such as logfiles and behavioural data files, as well as
 questionnaires and forms that are filled in by the participant. The following
 input fields are available:
     "Files"       - A newline separated list of all session logfiles and addi-
-                    tional documents.
+                    tional documents; wildcard masks (*) will be completed
+                    during archiving
                     (free-type)
     "Checklist"   - Checkboxes to specify which forms and documents have been 
                     collected from the participant. Additional documents can 
@@ -132,12 +133,12 @@ The following input fields are available per measurement:
                              (free-type)
     "Name"                 - The name of the measurement
                              (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected logfiles
+    "Logfiles"             - A newline separated list of all connected logfiles;
+                             wildcard masks (*) will be completed during
+                             archiving (please note that a stimulation protocol
+                             mask will be included automatically, based on the
+                             session information)
                              (free-type)
-                             (Please note that a stimulation protocol mask
-                             will be included automatically, based on the
-                             session information, and will be replaced by
-                             the found files matching this mask)
     "Comments"             - Any additional comments about the measurement
                              (free-type)
 
