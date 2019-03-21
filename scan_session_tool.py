@@ -687,10 +687,10 @@ class App(Frame):
                         #"Group:",
                         "Session:",
                         "Date:",
-                        "Booked Time:",
-                        "Actual Time:",
-                        "Certified User:",
-                        "Backup Person:")
+                        "Time A:",
+                        "Time B:",
+                        "User 1:",
+                        "User 2:")
         self.documents = ["MR Safety Screening Form",
                           "Participation Informed Consent Form"]
 
@@ -742,10 +742,10 @@ class App(Frame):
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label) 
             if row in (1, 2):
-                width = 10
+                width = 14  #10
                 if platform.system() == "Windows":
                     width += 3
-                frame = Frame(self.general_frame_left, width=width) 
+                frame = Frame(self.general_frame_left)  #, width=width) 
                 var1 = StringVar()
                 var1.trace("w", self.change_callback)
                 var1.set("001")
@@ -757,7 +757,7 @@ class App(Frame):
                 var2.trace("w", self.change_callback)
                 combobox = AutocompleteCombobox(frame, textvariable=var2,
                                                 validate=validate, validatecommand=vcmd,
-                                                font=self.font)
+                                                font=self.font, width=width)
                 combobox.grid(row=0, column=1, sticky="W")
                 self.general_vars.append([var1, var2])
                 self.general_widgets.append([spinbox, combobox])
@@ -792,7 +792,7 @@ class App(Frame):
                     projects = sorted(self.config.keys())
                     #projects.sort()
                     combobox.set_completion_list(projects)
-                combobox.grid(row=row, column=1, sticky="EW")
+                combobox.grid(row=row, column=1, sticky="W")
                 self.general_widgets.append(combobox)
             elif row in (3, 4, 5):
                 var = StringVar()
@@ -951,7 +951,7 @@ class App(Frame):
         self.measurements_frame1.grid(row=0, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame1)
         self.measurements_frame = VerticalScrolledFrame(
-            self.measurements_frame1, height=295, width=1049) #989
+            self.measurements_frame1, height=295, width=989) #989
         self.measurements_frame.interior.grid_columnconfigure(0, weight=1)
         self.measurements_frame.interior.grid_rowconfigure(0, weight=1)
         self.measurements_frame.grid(row=1, sticky="WENS")
@@ -1049,7 +1049,7 @@ class App(Frame):
         #            value="functional").pack(anchor="w")
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
-        width = 18 #9
+        width = 9 #9
         if platform.system() == "Windows":
             width += 2
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
