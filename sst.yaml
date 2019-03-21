@@ -1,4 +1,4 @@
-Project1:
+Project 1:
     SubjectTypes:
         - Group1
         - Group2
@@ -22,7 +22,10 @@ Project1:
            Age:
            Gender: m[ ] f[ ]
 
-    Documents:
+    Files: 
+        - "*.txt"
+
+    Checklist: 
         - Pre-Scan Questionnaire
         - Post-Scan Questionnaire
 
@@ -37,12 +40,12 @@ Project1:
         - Name:        Run1
           Vols:        300
           Comments:    |
-                       Answer 1: 
+                       Answer 1:
 
         - Name:        Run2
           Vols:        400
           Comments:    |
-                       Answer 2: 
+                       Answer 2:
 
         - Name:        Run3
           Vols:        200
@@ -55,12 +58,12 @@ Project1:
           Comments:
 
 
-Project2:
-    Groups:
+Project 2:
+    SubjectTypes:
         - GroupA
         - GroupB
 
-    Sessions:
+    SessionTypes:
         - SessA
         - SessB
 
@@ -72,7 +75,17 @@ Project2:
         - UserA
         - UserB
 
-    Documents:
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Files: 
+        - "*.txt"
+
+    Checklist:
         - Participation Reimbursement Form
 
     Measurements anatomical:
@@ -86,12 +99,12 @@ Project2:
         - Name:        RunA
           Vols:        300
           Comments:    |
-                       Answer 1: 
+                       Answer 1:
 
         - Name:        RunB
           Vols:        400
           Comments:    |
-                       Answer 2: 
+                       Answer 2:
 
         - Name:        RunC
           Vols:        200

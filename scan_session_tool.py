@@ -17,7 +17,7 @@ if sys.version[0] == '3':
     from tkinter import font as tkFont
     from tkinter import filedialog as tkFileDialog
     from tkinter import messagebox as tkMessageBox
-    from tkinter import scrolledtext as ScrolledText
+    from tkinter.scrolledtext import ScrolledText
 else:
     from Tkinter import *
     from ttk import *
@@ -71,11 +71,13 @@ filled in, but need to be checked.
 The following fields are available:
     "Project"        - The project identifier
                        (free-type and selection)
-    "Group"          - The group identifier
+    "Subject"        - The subject number
+                       (001-999)
+                     - The subject identifier
                        (free-type and selection)
-    "Subject No."    - The subject number
-                       (1-99)
-    "Session"        - The session identifier
+    "Session"        - The session number
+                       (001-999)
+                     - The session identifier
                        (free-type and selection)
     "Date"           - The date of the scan session
                        (free-type, auto-filled)
@@ -93,14 +95,24 @@ The following fields are available:
 
 --------------------------- The "Documents" area ----------------------------
 
-This area provides checkboxes to specify which forms and documents have been
-collected from the participant. Additional documents can be specified in a
-configuration file (see "Config File" section).
-The following checkboxes are available:
-    "MR Safety Screening Form"            - The (f)MRI screening from provi-
-                                            ded by the scanning institution
-    "Participation Informed Consent Form" - The official (f)MRI written con-
-                                            sent form
+This area provides input fields for additional documents that are acquired du-
+ring the session, such as logfiles and behavioural data files, as well as 
+questionnaires and forms that are filled in by the participant. The following
+input fields are available:
+    "Files"       - A newline separated list of all session logfiles and addi-
+                    tional documents.
+                    (free-type)
+    "Checklist"   - Checkboxes to specify which forms and documents have been 
+                    collected from the participant. Additional documents can 
+                    be specified in a configuration file (see "Config File" 
+                    section). The following checkboxes are available:
+                    "MR Safety Screening Form"            - The (f)MRI scree-
+                                                            ning from provided 
+                                                            by the scanning 
+                                                            institution
+                    "Participation Informed Consent Form" - The official (f)MRI 
+                                                            written consent 
+                                                            form
 
 
 ------------------------- The "Measurements" area ---------------------------
@@ -113,7 +125,7 @@ that are marked with an orange background are automatically filled in, but
 need to be checked.
 The following input fields are available per measurement:
     "No"                   - The number of the measurement
-                             (1-99)
+                             (001-999)
     "Type"                 - "anatomical", "functional" or "misc"
                              (selection)
     "Vols"                 - The number of volumes of the measurement
@@ -138,39 +150,42 @@ The control area consists of the following three buttons:
 "Archive" - Copies acquired data from specified location into a timestamped
             sub-folder <~Archiveyyymmdd>. Please note that all data is
             expected to be within the specified folder. That is, all DICOM
-            files (*.dcm OR *.IMA; no sub-folders!), all stimulation protocols,
-            all logfiles as well as all Turbo Brain Voyager files (all *.tbv
-            files in a folder called 'TBVFiles').
+            files (*.dcm OR *.IMA; with or without sub-folders), all stimula-
+            tion protocols, all logfiles as well as all Turbo Brain Voyager 
+            files (all *.tbv files in a folder called 'TBVFiles').
             The data will be copied into the following folder hierarchy:
             DICOMs -->
-              <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/<DICOM>/
+              <Project>/<Subject[Type]>/<Session[Type]>/<Type>/<Name>/<DICOM>/
             Logfiles -->
-              <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/
+              <Project>/<Subject[Type]>/<Session[Type]>/<Type>/<Name>/
+            Files -->
+              <Project>/<Subject[Type]>/<Session[Type]>/
             Turbo Brain Voyager files -->
-             <Project>/<Subject[Group]>/<Session>/<Type>/<Name>/TBV/
+              <Project>/<Subject[Type]>/<Session[Type]>/<TBV>/
             Scan Session Protocol -->
-              <Project>/<Project>_<Subject[Group]>_Session_ScanProtocol.txt
+              <Project>/<Subject[Type]>/<Session[Type]>/
 
 
 
 ================================ Config File ================================
 
 A configuration file can be created to pre-define the values to be used as
-selection options for the "Group", "Session", "Certified User", "Backup
+selection options for the "Subject", "Session", "Certified User", "Backup
 Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
-project basis, as well as additional items in the "Documents" section.
-The Scan Session Tool will look for a configuration file with the name
-"sst.yaml", located in the same directory as the application itself (does not
-work for the OS X compiled .app) or in the $HOME folder.
+project basis, as well as additional items in the "Files" and "Checklist" 
+fields of the "Documents" section.The Scan Session Tool will look for a confi-
+guration file with the name "sst.yaml", located in the same directory as the 
+application itself (does not work for the OS X compiled .app) or in the $HOME 
+folder. 
 
 The syntax is YAML. Here is an example:
 
 Project 1:
-    Groups:
+    SubjectTypes:
         - Group1
         - Group2
 
-    Sessions:
+    SessionTypes:
         - Sess1
         - Sess2
 
@@ -189,7 +204,10 @@ Project 1:
            Age:
            Gender: m[ ] f[ ]
 
-    Documents:
+    Files: 
+        - "*.txt"
+
+    Checklist: 
         - Pre-Scan Questionnaire
         - Post-Scan Questionnaire
 
@@ -223,11 +241,11 @@ Project 1:
 
 
 Project 2:
-    Groups:
+    SubjectTypes:
         - GroupA
         - GroupB
 
-    Sessions:
+    SessionTypes:
         - SessA
         - SessB
 
@@ -246,7 +264,10 @@ Project 2:
            Age:
            Gender: m[ ] f[ ]
 
-    Documents:
+    Files: 
+        - "*.txt"
+
+    Checklist:
         - Participation Reimbursement Form
 
     Measurements anatomical:
@@ -371,6 +392,43 @@ class AutoScrollbarText(Text):
     def __str__(self):
         return str(self.frame)
 
+    def copy_logfiles(self, source, destination):
+        original = self.get(1.0, END)
+        logfiles = original.split("\n")
+        logfiles = [x.strip() for x in logfiles if x != ""]
+        warning = ""
+        new = original
+        for logfile in logfiles:
+            if "*" in logfile:
+                replaced = []
+            try:
+                if logfile != "" and not os.path.isdir(logfile):
+                    files = glob.glob(os.path.join(source, logfile))
+                    if files == []:
+                        raise Exception
+                    for file_ in files:
+                        if not os.path.isdir(file_):
+                            if "*" in logfile:
+                                replaced.append(
+                                    os.path.split(file_)[-1])
+                            shutil.copyfile(
+                                file_,
+                                os.path.join(destination,
+                                             os.path.split(file_)[-1]))
+                    if "*" in logfile:
+                        new = new.replace(
+                            logfile, "\n".join(replaced))
+                        self.delete(1.0, END)
+                        self.insert(1.0, new)
+                
+                if logfile != "" and os.path.isdir(os.path.join(source, logfile)):
+                    shutil.copytree(os.path.abspath(os.path.join(source, logfile)), 
+                                    os.path.abspath(os.path.join(destination, logfile)))
+            except:
+               warning += "\nError copying logfiles " \
+                   "'{}' not found\n".format(logfile)
+        return warning
+        
 
 class VerticalScrolledFrame(Frame):
     """A pure Tkinter scrollable frame that actually works!
@@ -630,8 +688,10 @@ class App(Frame):
                         "Backup Person:")
         self.documents = ["MR Safety Screening Form",
                           "Participation Informed Consent Form"]
+
         self.measurement = ("No.", "Type", "Vols", "Name",
                             "Logfiles", "Comments")
+
         self.documents_vars = []
         self.additional_documents = []
         self.additional_documents_vars = []
@@ -683,8 +743,8 @@ class App(Frame):
                 frame = Frame(self.general_frame_left, width=width) 
                 var1 = StringVar()
                 var1.trace("w", self.change_callback)
-                var1.set(1)
-                spinbox = Spinbox(frame, from_=1, to=999,
+                var1.set("001")
+                spinbox = Spinbox(frame, from_=1, to=999, format="%03.0f",
                           width=3, justify="right", textvariable=var1,
                           state="readonly", font=self.font, style="Orange.TSpinbox")
                 spinbox.grid(row=0, column=0, sticky="W")
@@ -762,7 +822,7 @@ class App(Frame):
                             style="Green.TLabel")
         notes_label.grid(row=0, column=0, sticky="W")
         notes_label['font'] = (self.default_font, self.default_font_size)
-        notes_container = FixedSizeFrame(self.general_frame_right, 299, 186)
+        notes_container = FixedSizeFrame(self.general_frame_right, 299, 171)
         notes_container.grid(row=1, column=0, sticky="N")
         notes = AutoScrollbarText(notes_container, wrap=NONE)
         notes.grid(row=0, column=0, sticky="N")
@@ -827,7 +887,6 @@ class App(Frame):
         self.go_button = Button(self.button_frame, text="Archive",
                                 state="disabled", command=self.archive)
         self.go_button.grid(row=2, column=0, sticky="")
-
         documents_label = Label(self.top_frame, text="Documents")
         documents_label['font'] = (self.default_font,
                                    self.default_font_size - 2,
@@ -837,6 +896,26 @@ class App(Frame):
                                           labelwidget=documents_label)
         self.documents_frame.grid(row=0, column=2, sticky="NSE")
         self.nofocus_widgets.append(self.documents_frame)
+        files_label = Label(self.documents_frame, text="Files:")
+        files_label.grid(row=0, sticky="W", padx=10)
+        self.nofocus_widgets.append(files_label)
+        files_container = FixedSizeFrame(self.documents_frame, 299, 68)
+        files_container.grid(row=1, sticky="NSEW", padx=10)
+        self.nofocus_widgets.append(files_container)
+        self.files = AutoScrollbarText(files_container, wrap=NONE, background=self.orange,
+                                       highlightbackground=self.orange)
+        self.files.bind('<KeyRelease>', self.change_callback)
+        self.files.frame.bind('<Enter>',
+                        lambda event: self.mouseover_callback(True))
+        self.files.frame.bind('<Leave>',
+                        lambda event: self.mouseover_callback(False))
+        self.files.grid(sticky="NWES")
+        empty_label = Label(self.documents_frame, text="")
+        empty_label.grid(row=2, sticky="W", padx=10)
+        self.nofocus_widgets.append(empty_label)
+        checklist_label = Label(self.documents_frame, text="Checklist:")
+        checklist_label.grid(row=3, sticky="W", padx=10)
+        self.nofocus_widgets.append(checklist_label)
         self.documents_labels = []
         self.documents_checks = []
         self.documents_vars = []
@@ -844,9 +923,9 @@ class App(Frame):
             var = IntVar()
             var.trace("w", self.change_callback)
             check = Checkbutton(self.documents_frame, text=x, variable=var)
-            check.grid(sticky="W", padx=10)
+            check.grid(row=row+4, sticky="W", padx=10)
             self.documents_vars.append(var)
-
+        
         self.bottom_frame = Frame(self)
         self.bottom_frame.grid_columnconfigure(0, weight=1)
         self.bottom_frame.grid(row=1, column=0, padx=10, pady=10,
@@ -931,7 +1010,7 @@ class App(Frame):
             #label['font'] = (self.default_font, self.default_font_size,
                              #"bold")
             #label.bind('<Button-1>', lambda x: app.master.focus())
-        value = len(self.measurements) + 1
+        value = repr(len(self.measurements) + 1).zfill(3)
         scanning_vars = []
         scanning_widgets = []
         var1 = StringVar()
@@ -939,8 +1018,8 @@ class App(Frame):
         var1.set(value)
         var1.trace("w", self.change_callback)
         spinbox = Spinbox(self.measurements_frame.interior, from_=1, to=99,
-                          width=2, justify="right", state="readonly",
-                          textvariable=var1, font=self.font,
+                          format="%03.0f",width=3, justify="right",
+                          state="readonly", textvariable=var1, font=self.font,
                           style="Orange.TSpinbox")
         spinbox.grid(row=value, column=0, sticky="W", padx=(10, 2))
         spinbox.bind('<Enter>',
@@ -962,7 +1041,7 @@ class App(Frame):
         #            value="functional").pack(anchor="w")
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
-        width = 10
+        width = 9
         if platform.system() == "Windows":
             width += 2
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
@@ -1045,7 +1124,7 @@ class App(Frame):
         scanning_widgets.append(text)
         self.measurements.append(scanning_vars)
         self.measurements_widgets.append(scanning_widgets)
-        if value >= 6:
+        if int(value) >= 6:
             self.measurements_frame.bind_mouse_wheel()
         else:
             self.measurements_frame.unbind_mouse_wheel()
@@ -1063,7 +1142,7 @@ class App(Frame):
     def add_additional_documents(self):
         current_project = self.general_widgets[0].get()
         try:
-            for x in self.config[current_project]["Documents"]:
+            for x in self.config[current_project]["Checklist"]:
                 if not x in self.documents:
                     var = IntVar()
                     var.trace("w", self.change_callback)
@@ -1077,11 +1156,21 @@ class App(Frame):
         except:
             pass
 
+    def add_files(self):
+        current_project = self.general_widgets[0].get()
+        try:
+            for x in self.config[current_project]["Files"]:
+                if not x in self.files.get(1.0, END).strip("\n"):        
+                    self.files.insert(END, x + '\n')  
+        except:
+            pass
+
     def del_additional_documents(self):
         self.general_widgets[1][1].set_completion_list([])
         self.general_widgets[2][1].set_completion_list([])
         self.general_widgets[6].set_completion_list([])
         self.general_widgets[7].set_completion_list([])
+        self.files.delete(1.0, END)
         for index, m in enumerate(self.measurements_widgets):
             t = self.measurements[index][1].get()
             m[3].set_completion_list([])
@@ -1218,7 +1307,8 @@ class App(Frame):
                 except:
                     pass
             self.add_additional_documents()
-
+            self.add_files()
+            
             # Update notes
             if current_project != "":
                 try:
@@ -1232,8 +1322,8 @@ class App(Frame):
         # Check if archving is possible
         try:
             if current_project != "" and \
-                            self.general_vars[3].get() != "" and \
-                            self.general_vars[4].get()!= "":
+                            self.general_vars[0].get() != "" and \
+                            self.general_vars[3].get()!= "":
                 self.enable_archive()
             else:
                 self.disable_archive()
@@ -1249,7 +1339,7 @@ class App(Frame):
                         1.0, END).strip("\n") == "" and \
                 self.measurements_widgets[-1][-1].get(
                         1.0, END).strip("\n") == "":
-                    self.enable_minus()
+                self.enable_minus()
             else:
                 self.disable_minus()
         except:
@@ -1300,19 +1390,20 @@ class App(Frame):
                     if t != "anatomical":
                         e = "*"
 
-                        prt = "_".join(self.get_filename().split("_")[:-2]) + \
-                            "_" + n + e
+                        prt = "_".join(self.get_filename().split("_")[1:4]) + \
+                            "_" + n + "." + e
                         if prt != self.prt_files[idx]:
                             if self.prt_files[idx] == "":
                                 start = 1.0
                             elif self.prt_files[idx] != "":
-                                start = x[4].search(self.prt_files[idx], 1.0,
+                                start = self.measurements[idx][4].search(self.prt_files[idx], 1.0,
                                                     stopindex=END)
                                 end = ".".join([start.split(".")[0],
                                             repr(len(self.prt_files[idx]))])
-                                x[4].delete(start, end)
-                            x[4].insert(start, prt)
+                                self.measurements[idx][4].delete(start, end)
+                            self.measurements[idx][4].insert(start, prt)
                             self.prt_files[idx] = prt
+                    
             except:
                 pass
 
@@ -1389,12 +1480,12 @@ class App(Frame):
         if proj == "":
             proj = "Project" 
         subj_nr = self.general_vars[1][0].get()
-        subj = "Sub" + repr(int(subj_nr)).zfill(3)
+        subj = "sub-" + repr(int(subj_nr)).zfill(3)
         subj_type = self.general_vars[1][1].get()
         if subj_type != "":
             subj = "{0}-{1}".format(subj, subj_type)
         ses_nr = self.general_vars[2][0].get()
-        ses = "Ses" + repr(int(ses_nr)).zfill(3)
+        ses = "ses-" + repr(int(ses_nr)).zfill(3)
         ses_type = self.general_vars[2][1].get()
         if ses_type != "":
             ses = "{0}-{1}".format(ses, ses_type)
@@ -1403,7 +1494,7 @@ class App(Frame):
             date = "Date"
         else:
             date = "".join(date.split("-"))
-        filename = "{0}_{1}_{2}_ScanProtocol_{3}".format(proj, subj, ses,
+        filename = "ScanProtocol_{0}_{1}_{2}_{3}".format(proj, subj, ses,
                                                          date)
         return filename
 
@@ -1412,7 +1503,7 @@ class App(Frame):
 
         if filename is None:
             filename = self.get_filename()
-            f = tkFileDialog.asksaveasfile(mode='w', defaultextension='txt',
+            f = tkFileDialog.asksaveasfile(mode='w', defaultextension='.txt',
                                            initialfile=filename)
         else:
             f = open(filename, 'w')
@@ -1429,51 +1520,74 @@ class App(Frame):
                 except:
                     value1 = "000"
                     value2 = ""
-                f.write("{0}{1}{2}\n".format(label, " "*(30-len(label)),
+                f.write("{0}{1}{2}\n".format(label, " "*(24-len(label)),
                                              value1 + value2))
             else:
                 try:
                     value = self.general_vars[pos].get()
                 except:
                     value = ""
-                f.write("{0}{1}{2}\n".format(label, " "*(30-len(label)),
+                f.write("{0}{1}{2}\n".format(label, " "*(24-len(label)),
                                              value))
-        f.write("\nNotes")
-        f.write("\n........")
+
+        f.write("\nNotes:")
+        notes = self.general_widgets[-1].get(1.0, END).split("\n")
+        notes_lines = [x.strip() for x in notes]
         try:
-            f.write("\n{0}".format(self.general_widgets[-1].get(1.0, END)))
+            for line_nr, line in enumerate(notes_lines):
+                if line_nr == 0:
+                    f.write("{0}{1}".format(" "*(24-len("Notes:")), line))
+                else:
+                    f.write("\n{0}{1}".format(" "*24, line))
         except:
             pass
-        f.write("........\n")
         f.write("\n")
         f.write("\n")
         f.write("\n")
         f.write("Documents\n")
         f.write("=========\n")
-        f.write("\n")
+
+        f.write("\nFiles:")
+        files = self.files.get(1.0, END).split("\n")
+        file_lines = [x.strip() for x in files if x != ""] 
+        try:
+            for line_nr, line in enumerate(file_lines):
+                if line_nr == 0:
+                    f.write("{0}{1}".format(" "*(24-len("Files:")), line))
+                else:
+                    f.write("\n{0}{1}".format(" "*24, line))
+        except:
+            pass
+
+        f.write("\n\nChecklist:")
         states = ("[ ]", "[x]")
         for pos, label in enumerate(self.documents):
             try:
                 value = int(self.documents_vars[pos].get())
             except:
                 value = 0
-            f.write("{0} {1}\n".format(states[value], label))
+            if pos == 0:
+                f.write("{0}{1} {2}".format(" "*(24-len("Checklist:")), 
+                                            states[value], label))
+            else:
+                f.write("\n{0}{1} {2}".format(" "*24, states[value], label))
+
         f.write("\n")
         f.write("\n")
         f.write("\n")
         f.write("Measurements\n")
-        f.write("============\n")
+        f.write("============")
+        f.write("\n")
         for m in self.measurements:
-            f.write("\n")
-            f.write("No. {0}\n".format(m[0].get()))
+            f.write("\nNo. {0}\n".format(int(m[0].get())))
             f.write("-----\n\n")
             for elem in range(1, len(self.measurement)-1):
                 if elem == 4:
                     try:
-                        l = m[elem].get(1.0, END).split("\n")
-                        l = [x.strip() for x in l if x != ""]
-                        l = [" " * 31 + x if index > 0 \
-                                 else x for index, x in enumerate(l)]
+                        logfiles = m[elem].get(1.0, END).split("\n")
+                        logfile_lines = [x.strip() for x in logfiles if x != ""]
+                        l = [" "*23 + x if index > 0 \
+                                 else x for index, x in enumerate(logfile_lines)]
                         value = "\n".join(l)
                     except:
                         value = ""
@@ -1484,28 +1598,36 @@ class App(Frame):
                         value = ""
                 f.write("{0}:{1}{2}\n".format(
                     self.measurement[elem],
-                    " "*(30-len(self.measurement[elem])),
+                    " "*(23-len(self.measurement[elem])),
                     value))
-            f.write("\nComments")
-            f.write("\n........")
+
+            f.write("\nComments:")
+            
+            comments = m[-1].get(1.0, END).split("\n")
+            comment_lines = [x.strip() for x in comments if x != ""] 
             try:
-                f.write("\n{0}".format(m[-1].get(1.0, END)))
+                for line_nr, line in enumerate(comment_lines):
+                    if line_nr == 0:
+                        f.write("{0}{1}".format(" "*(24-len("Comments:")), line))
+                    else:
+                        f.write("\n{0}{1}".format(" "*24, line))
             except:
                 pass
-            f.write("........\n\n")
+            f.write("\n\n")
         f.close()
         self.disable_save()
 
     def open(self, *args):
         """Load data."""
 
-        f = tkFileDialog.askopenfile("r", filetypes=[("text files", "txt")])
+        f = tkFileDialog.askopenfile("r", filetypes=[("text files", ".txt")])
         if f is not None:
             current_document = 0
             measurement = False
             measurement_starts = []
             notes_block = False
             comments_block = False
+            files_block = False
             if len(self.measurements) == 0:
                 self.new_measurement()
             while len(self.measurements) > 1:
@@ -1515,39 +1637,49 @@ class App(Frame):
             for linenr, line in enumerate(f):
                 if 3 <= linenr <= 10:
                     if linenr in (4,5):
-                        self.general_vars[linenr-3][0].set(repr(int(line[30:33])))
-                        self.general_vars[linenr-3][1].set(line[34:].strip())
+                        self.general_vars[linenr-3][0].set((line[24:27]))
+                        self.general_vars[linenr-3][1].set(line[28:].strip())
                     else:
-                        self.general_vars[linenr-3].set(line[30:].strip())
+                        self.general_vars[linenr-3].set(line[24:].strip())
                     if linenr == 3:
                         self.del_additional_documents()
                 elif not measurement:
-                    if not notes_block and line.startswith("........"):
+                    if line.startswith("Notes:"):
                         notes_block = True
                         self.general_widgets[-1].delete(1.0, END)
-                    elif notes_block:
-                        if line.startswith("........"):
+                    if line.startswith("Files:"):
+                        files_block = True
+                        self.files.delete(1.0, END)
+                    if line.startswith("Checklist:"):
+                        files_block = False
+                    if notes_block:
+                        if line.startswith("Documents"):
                             notes_block = False
                         else:
                             if self.general_widgets[-1].get(1.0, END).strip("\n") == "":
                                 self.general_widgets[-1].insert(END,
-                                                                line.strip())
+                                                                line[24:].strip())
                             else:
                                 self.general_widgets[-1].insert(END,
-                                                                "\n" + line.strip())
+                                                                "\n" + line[24:].strip())
+                    elif files_block:
+                        if self.files.get(1.0, END).strip("\n") == "":
+                            self.files.insert(END, line[24:].strip())
+                        else:
+                            self.files.insert(END, "\n" + line[24:].strip())
                     elif line.startswith("Measurements"):
                         measurement = True
                     else:
                         try:
                             #self.add_additional_documents()
-                            check = line[1]
+                            check = line[25]
                             if check == " ":
                                 value = 0
                             elif check == "x":
                                 value = 1
 
-                            x = line[3:].strip()
-                            if line.startswith("[") and not x in self.documents:
+                            x = line[27:].strip()
+                            if line[24:].startswith("[") and not x in self.documents:
                                 var = IntVar()
                                 var.trace("w", self.change_callback)
                                 check = Checkbutton(self.documents_frame, text=x, variable=var)
@@ -1562,6 +1694,7 @@ class App(Frame):
                             current_document += 1
                         except:
                             pass
+
                 elif measurement:
                     if line.startswith("===") or line.strip() == "":
                         pass
@@ -1569,8 +1702,9 @@ class App(Frame):
                         if measurement_starts != []:
                             self.new_measurement()
                         self.measurements[len(measurement_starts)][0].set(
-                            line[4:].strip())
+                            line[4:].strip().zfill(3))
                         measurement_starts.append(linenr)
+                        comments_block = False
                     elif linenr >= measurement_starts[-1]+3:
                         if line.startswith("Type:") or\
                                 line.startswith("Vols:") or\
@@ -1578,36 +1712,35 @@ class App(Frame):
                             self.measurements[
                                 len(measurement_starts)-
                                 1][linenr-measurement_starts[-1]-
-                                   2].set(line[31:].strip())
+                                   2].set(line[24:].strip())
                         elif line.startswith("Logfiles:"):
                             widget = self.measurements[
                                 len(measurement_starts)-
                                 1][-2]
                             widget.delete(1.0, END)
-                            widget.insert(END, line[31:].strip())
-                        elif line.startswith(" " * 30):
+                            widget.insert(END, line[24:].strip())
+                        elif line.startswith(" " * 24) and comments_block == False:
                             widget = self.measurements[
                                 len(measurement_starts)-
                                 1][-2]
-                            widget.insert(END, "\n" + line[31:].strip())
-                    if line.startswith("........"):
+                            widget.insert(END, "\n" + line[24:].strip())
+                    if line.startswith("Comments:"):
                         if comments_block is False:
                             comments_block = True
                             self.measurements[len(measurement_starts)-
                                               1][-1].delete(1.0, END)
-                        else:
-                            comments_block = False
-                    elif comments_block:
+                        
+                    if comments_block:
                         if self.measurements[len(measurement_starts)-
                                 1][-1].get( 1.0, END).strip("\n") == "":
                             self.measurements[len(measurement_starts)-
                                               1][-1].insert(END,
-                                                            line.strip())
+                                                            line[24:].strip())
                         else:
                             self.measurements[len(measurement_starts)-
                                               1][-1].insert(END,
-                                                            "\n" + line.strip())
-
+                                                            "\n" + line[24:].strip())
+                
             self.disable_save()
 
     def set_title(self, status=None):
@@ -1620,9 +1753,10 @@ class App(Frame):
     def _archive_run(self, d, dialogue):
         warnings = "\n\n\n"
         project = self.general_vars[0].get()
-        subject = int(self.general_vars[1].get())
-        group = self.general_vars[2].get()
-        session = self.general_vars[3].get()
+        subject_no = int(self.general_vars[1][0].get())
+        subject_type = self.general_vars[1][1].get()
+        session_no = int(self.general_vars[2][0].get())
+        session_type = self.general_vars[2][1].get()
         timestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
         folder = os.path.join(d, "~Archive"+timestamp)
         if not os.path.exists(folder):
@@ -1639,16 +1773,39 @@ class App(Frame):
                 vols = 0
             name = measurement[3].get()
             scans = []
-            for f in glob.glob(os.path.join(d, "*.dcm")):
-                if int(os.path.split(f)[-1].split("_")[1]) == number:
-                    scans.append(f)
+            
+            try:
+                for subfolder in os.listdir(d):
+                    if os.path.isdir(os.path.join(d, subfolder)) and "-" in subfolder and\
+                    int(subfolder.split("-")[0]) == number:
+                        for image in glob.glob(os.path.join(d, subfolder, "*.dcm")):
+                            if int(os.path.split(image)[-1].split("_")[1]) == number:
+                                scans.append(image)
+                        if len(scans) == 0:
+                            for image in glob.glob(os.path.join(d, subfolder, "*.IMA")):
+                                if int(os.path.split(image)[-1].split(".")[3]) == number:
+                                    scans.append(image)
+                                elif len(os.path.split(image)[-1].split(".")) > 11:
+                                    if int(os.path.split(image)[-1].split(".")[-11]) == number:
+                                        scans.append(image)
+            except:
+                pass    
+
             if len(scans) == 0:
-                for f in glob.glob(os.path.join(d, "*.IMA")):
-                    if int(os.path.split(f)[-1].split(".")[3]) == number:
-                        scans.append(f)
-                    elif len(os.path.split(f)[-1].split(".")) > 11:
-                        if int(os.path.split(f)[-1].split(".")[-11]) == number:
-                            scans.append(f)
+                try:
+                    for image in glob.glob(os.path.join(d, "*.dcm")):
+                        if int(os.path.split(image)[-1].split("_")[1]) == number:
+                            scans.append(image)
+                    if len(scans) == 0:
+                        for image in glob.glob(os.path.join(d, "*.IMA")):
+                            if int(os.path.split(image)[-1].split(".")[3]) == number:
+                                scans.append(image)
+                            elif len(os.path.split(image)[-1].split(".")) > 11:
+                                if int(os.path.split(image)[-1].split(".")[-11]) == number:
+                                    scans.append(image)
+                except:
+                    pass
+
             if name == "":
                 warnings += "\nError copying images for measurement {0}:\n" \
                            "    'Name' not specified\n".format(number)
@@ -1657,220 +1814,91 @@ class App(Frame):
                            "    'Vols' not specified\n".format(number)
             elif scans == []:
                 warnings += "\nError copying images for measurement {0}:\n" \
-                            "    No images found\n".format(
-                    number)
+                            "    No images found\n".format(number)
             elif len(scans) != vols:
                 warnings += "\nError copying images for measurement {0}:" \
-                            "    'Vols' unequals number of images\n".format(
-                    number)
+                            "    'Vols' unequals number of images\n".format(number)
             else:
                 try:
                     project_folder = os.path.join(folder, project)
                     if not os.path.exists(project_folder):
                         os.makedirs(project_folder)
-                    group_folder = os.path.join(project_folder, group)
-                    if not os.path.exists(group_folder):
-                        os.makedirs(group_folder)
-                    subject_folder = os.path.join(group_folder,
-                                                  "S" + repr(
-                                                      subject).zfill(2))
+                    #group_folder = os.path.join(project_folder, group)
+                    #if not os.path.exists(group_folder):
+                    #    os.makedirs(group_folder)
+                    if subject_type == "":
+                        subject_folder = os.path.join(project_folder,
+                                                  "sub-" + repr(
+                                                      subject_no).zfill(3))
+                    else:
+                        subject_folder = os.path.join(project_folder,
+                                                  "sub-" + repr(
+                                                      subject_no).zfill(3) + "-" + subject_type)
                     if not os.path.exists(subject_folder):
                         os.makedirs(subject_folder)
-                    session_folder = os.path.join(subject_folder, session)
+                    
+                    if session_type == "":
+                        session_folder = os.path.join(subject_folder, "ses-" + repr(session_no).zfill(3))
+                    else:
+                        session_folder = os.path.join(subject_folder, 
+                                         "ses-" + repr(session_no).zfill(3) + "-" + session_type)
+
                     if not os.path.exists(session_folder):
                         os.makedirs(session_folder)
+                    
                     type_folder = os.path.join(session_folder, type)
                     if not os.path.exists(type_folder):
                         os.makedirs(type_folder)
-                    name_folder = os.path.join(type_folder, name)
+                    name_folder = os.path.join(type_folder, repr(number).zfill(3) + "-" + name)
                     if not os.path.exists(name_folder):
                         os.makedirs(name_folder)
                 except:
                     warnings += "\nError creating directory structure for " \
                                 "measurement {0}\n".format(number)
                     shutil.rmtree(dicom_folder)
-
-                if os.path.isdir(os.path.join(d, "TBVFiles")):
-                    dialogue.status.set(
-                       "Archiving measurement {0} of {1}\n\n".format(
-                           measurement[0].get(), len(self.measurements)) +
-                       "(Copying TBV files...)")
-                    dialogue.update()
-                    try:
-                        # TBV files
-                        tbv_folder = os.path.join(name_folder, "TBV")
-                        if not os.path.exists(tbv_folder):
-                            os.makedirs(tbv_folder)
-                        if name == "Anatomy":
-                            # Anatomy
-                            for file in glob.glob(
-                                    os.path.join(d, "TBVFiles/Anatomy/*")):
-                                if not file.endswith("dcm"):
-                                    dialogue.update()
-                                    shutil.copy(os.path.abspath(file),
-                                                tbv_folder)
-                        else:
-                            # Run
-                            for file in glob.glob(
-                                    os.path.join(d, "TBVFiles/*.tbv")):
-                                dialogue.update()
-
-                                f = open(file)
-                                content = f.read()
-                                start = content.find("DicomFirstVolumeNr:")
-                                end = content.find("\n", start)
-                                if int(content[start:end].split(
-                                        " ")[-1]) == number:
-                                    start = content.find("TargetFolder:")
-                                    end = content.find("\n", start)
-                                    target_folder = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("WatchFolder:")
-                                    end = content.find("\n", start)
-                                    watch_folder = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("StimulationProtocol:")
-                                    end = content.find("\n", start)
-                                    stimulation_protocol = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("ContrastFile:")
-                                    end = content.find("\n", start)
-                                    contrast_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("IntraSessionMotionCorrectionFile:")
-                                    end = content.find("\n", start)
-                                    motion_correction_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("FMRVMRAlignVMRPosFile:")
-                                    end = content.find("\n", start)
-                                    pos_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("ACPCTransformationFile:")
-                                    end = content.find("\n", start)
-                                    acpc_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("TalairachCerebrumBorderFile:")
-                                    end = content.find("\n", start)
-                                    tal_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("TalairachVMRFile:")
-                                    end = content.find("\n", start)
-                                    vmr_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("SRFFileLH:")
-                                    end = content.find("\n", start)
-                                    surface_l_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    start = content.find("SRFFileRH:")
-                                    end = content.find("\n", start)
-                                    surface_r_file = \
-                                        content[start:end].split(
-                                            " ")[-1].strip("\r").strip('"')
-                                    f.close()
-
-                                    # Copy files
-                                    shutil.copy(os.path.abspath(file), tbv_folder)
-                                    for elem in os.listdir(
-                                        os.path.join(d, "TBVFiles",
-                                                     target_folder)):
-                                        dialogue.update()
-                                        shutil.copy(
-                                            os.path.join(d, "TBVFiles",
-                                                         target_folder,
-                                                         elem),
-                                                         tbv_folder)
-                                    if stimulation_protocol != "":
-                                        shutil.copy(
-                                            os.path.join(d, "TBVFiles",
-                                                         stimulation_protocol),
-                                            tbv_folder)
-                                    if contrast_file != "":
-                                        shutil.copy(
-                                            os.path.join(d, "TBVFiles",
-                                                         contrast_file),
-                                            tbv_folder)
-
-                                    # Adapt TBV file
-                                    if target_folder != "":
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                target_folder, "./")
-                                    if watch_folder != "":
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                watch_folder, "./../DICOM/")
-                                    if stimulation_protocol != "":
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                stimulation_protocol, "./" + os.path.split(stimulation_protocol)[-1])
-                                        for fmr_file in glob.glob(
-                                                os.path.join(tbv_folder, "*.fmr")):
-                                            f = open(fmr_file)
-                                            content = f.read()
-                                            start = content.find("ProtocolFile:")
-                                            end = content.find("\n", start)
-                                            fmr_protocol_file = \
-                                                content[start:end].split(
-                                                    " ")[-1].strip("\r").strip('"')
-                                            f.close()
-                                            replace(os.path.join(
-                                                tbv_folder, os.path.split(fmr_file)[-1]),
-                                                    fmr_protocol_file, "./" + os.path.split(stimulation_protocol)[-1])
-                                    if contrast_file != "":
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                contrast_file, "./" + os.path.split(contrast_file)[-1])
-                                    if motion_correction_file != "":
-                                        split_ = os.path.split(motion_correction_file)
-                                        replace(os.path.join(
-                                            tbv_folder, os.path.split(file)[-1]),
-                                                motion_correction_file, "../../" + split_[-2] + "/TBV/" + split_[-1])
-                                    for x in [pos_file, acpc_file, tal_file, vmr_file, surface_l_file, surface_r_file]:
-                                        if x != "":
-                                            dialogue.update()
-                                            replace(os.path.join(
-                                                tbv_folder, os.path.split(file)[-1]),
-                                                    x, os.path.join(
-                                                    "../../../anatomical/Anatomy/TBV/",
-                                                    os.path.split(x)[-1]))
-                        if os.listdir(tbv_folder) == []:
-                            shutil.rmtree(tbv_folder)
-                    except:
-                        warnings += "\nError copying Turbo Brain Voyager files " \
-                                    "for measurement {0}\n".format(number)
-                        shutil.rmtree(tbv_folder)
-
+                
+                # DICOMs
                 dialogue.status.set(
-                       "Archiving measurement {0} of {1}\n\n".format(
-                           measurement[0].get(), len(self.measurements)) +
-                       "(Copying images...)")
+                "Archiving measurement {0} of {1}\n\n".format(
+                   measurement[0].get(), len(self.measurements)) +
+                "(Copying images...)")
                 dialogue.update()
                 try:
-                    # DICOMs
                     dicom_folder = os.path.join(name_folder, "DICOM")
                     if not os.path.exists(dicom_folder):
                         os.makedirs(dicom_folder)
-                    for s in scans:
+                    for image in scans:
                         dialogue.update()
                         shutil.copyfile(
-                            s, os.path.join(folder, project, group,
-                                            "S" + repr(subject).zfill(2),
-                                            session, type, name, "DICOM",
-                                            os.path.split(s)[-1]))
+                            image, os.path.join(dicom_folder,
+                                            os.path.split(image)[-1]))
                 except:
                     warnings += "\nError copying images for measurement " \
                                 "{0}:\n    Filesystem error\n".format(number)
                     shutil.rmtree(dicom_folder)
+               
+
+                #BV Files                       
+                dialogue.status.set("(Copying BV files...)")
+                dialogue.update() 
+                try:
+                    bv_folder = os.path.join(session_folder, "BV")
+                    if not os.path.exists(bv_folder):
+                        os.makedirs(bv_folder)
+               
+                    if type == "functional" or name == "Anatomy":
+                        for image in os.listdir(dicom_folder):
+                            if image.split(".")[-1] == "dcm":
+                                target_name = "{}-{:04d}-0001-{:05d}.dcm".format(image.split("_")[0], 
+                                                int(image.split("_")[1]), int(image.split("_")[2].split(".")[0]))  
+                                os.link(os.path.join(dicom_folder, image) , os.path.join(bv_folder, target_name))
+                            if image.split(".")[-1] == "IMA":
+                                target_name = "{}-{:04d}-0001-{:05d}.dcm".format(image.split(".")[0], 
+                                                int(image.split(".")[3]), int(image.split(".")[4]))  
+                                os.link(os.path.join(dicom_folder, image) , os.path.join(bv_folder, target_name))
+                except:
+                    warnings += "\nError creating Brain Voyager links "
+
 
             # Logfiles
             if type != "anatomical":
@@ -1880,85 +1908,92 @@ class App(Frame):
                        "(Copying logfiles...)")
                 dialogue.update()
                 try:
-                    original = measurement[4].get(1.0, END)
-                    logfiles = original.split("\n")
-                    logfiles = [x.strip() for x in logfiles if x != ""]
-                    for logfile in logfiles:
-                        if "*" in logfile:
-                            replaced = []
-                        try:
-                            if logfile != "" and not os.path.isdir(logfile):
-                                files = glob.glob(os.path.join(d,
-                                                               logfile))
-                                if files == []:
-                                    raise Exception
-                                for file_ in files:
-                                    if not os.path.isdir(file_):
-                                        dialogue.update()
-                                        if "*" in logfile:
-                                            replaced.append(
-                                                os.path.split(file_)[-1])
-                                        shutil.copyfile(
-                                            file_,
-                                            os.path.join(folder,
-                                                         project,
-                                                         group,
-                                                         "S" + repr(
-                                                             subject).zfill(
-                                                             2),
-                                                         session, type, name,
-                                                         os.path.split(file_)[-1]))
-                                if "*" in logfile:
-                                    new = original.replace(
-                                        logfile, "\n".join(replaced))
-                                    measurement[4].delete(1.0, END)
-                                    measurement[4].insert(1.0, new)
-
-                        except:
-                           warnings += "\nError copying logfiles " \
-                               "for measurement {0}:\n    '{1}' not " \
-                               "found\n".format(number, logfile)
-
+                    warning = measurement[4].copy_logfiles(d, name_folder)
+                    if warning != None:
+                        warnings += warning
+                
                 except:
                     warnings += "\nError copying logfiles " \
                                "for measurement {0}\n".format(number)
 
-        message = "Archived to: {0}".format(os.path.abspath(folder))
 
-        # Try general TBV files
-        dialogue.status.set("Archiving general TBV files\n\n(Copying...)")
-        dialogue.update()
+        # TBV Files
         if os.path.isdir(os.path.join(d, "TBVFiles")):
+            dialogue.status.set(
+               "(Copying TBV files...)")
+            dialogue.update()
             try:
-                func_folder = os.path.join(folder, project, group,
-                                           "S" + repr(subject).zfill(2),
-                                           session, "functional")
-                for file in glob.glob(os.path.join(d, "TBVFiles/*")):
-                    if file.endswith("roi") or file.endswith("voi"):
-                        dialogue.update()
-                        shutil.copy(os.path.abspath(file), func_folder)
+                tbv_folder = os.path.join(session_folder, "TBV",)
+                shutil.copytree(os.path.abspath(os.path.join(d, "TBVFiles")), 
+                                os.path.abspath(os.path.join(tbv_folder, "TBVFiles")))
             except:
-                warnings += "\nError copying general Turbo Brain Voyager files\n"
-        else:
-            warnings += "\nNo Turbo Brain Voyager files found\n"
+                warnings += "\nError copying Turbo Brain Voyager files "
+                         
+            # Create dcm links
+            try:
+                for filename in glob.glob(os.path.join(tbv_folder, "TBVFiles", "*.tbv")):
+                    with open(filename) as f:
+                        for line in f.readlines():
+                            if line.startswith("DicomFirstVolumeNr"):
+                                run_nr = line.split(" ")[-1]
+                            
+                    dcm_files = []
+                    session_raw = os.path.join(session_folder, "functional")
+                    
+                    for run in os.listdir(session_raw):                        
+                        if int(run.split("-")[0]) == int(run_nr):
+                            source_folder = os.path.abspath(os.path.join(session_raw, run, "DICOM"))
+                            for image in os.listdir(source_folder):
+                                
+                                if image.split(".")[-1] == "IMA" and int(image.split(".")[3]) == int(run_nr):
+                                    target_name = "001_{:06d}_{:06d}.dcm".format(int(image.split(".")[3]),
+                                                                             int(image.split(".")[4]))
 
+                                if image.split(".")[-1] == "dcm" and int(image.split("_")[1]) == int(run_nr):
+                                    target_name = "001_{:06d}_{:06d}.dcm".format(int(image.split("_")[1]),
+                                                                             int(image.split("_")[2].split(".")[0]))
+            
+                                os.link(os.path.join(source_folder, image), os.path.join(tbv_folder, target_name))
+            except:
+                warnings += "\nError creating dcm links for Turbo Brain Voyager "
+
+
+        #Session Files
+        dialogue.status.set(
+               "Archiving Files" +
+               "(Copying Files...)")
+        dialogue.update()
+        try:
+            warning = self.files.copy_logfiles(d, session_folder)
+            if warning != None:
+                warnings += warning
+        except:
+            warnings += "\nError copying Files "
+                               
+    
         # Try general documents
         dialogue.status.set("Archiving general documents\n\n(Copying...)")
         dialogue.update()
         try:
             all_documents = 0
-            sess_folder = os.path.join(folder, project, group,
-                                       "S" + repr(subject).zfill(2),
-                                       session)
+            total_logs = []
+
+            for measurement in self.measurements:
+                original = measurement[4].get(1.0, END)
+                logfiles = original.split("\n")
+                logfiles = [x.strip() for x in logfiles if x != ""]
+                total_logs.extend(logfiles)
             for file in glob.glob(os.path.join(d, "*")):
-                if os.path.splitext(file)[-1] in (".txt",
-                                                  ".pdf",
-                                                  ".odt"
-                                                  ".doc",
-                                                  ".docx"):
+                if os.path.split(file)[-1] not in total_logs and \
+                    os.path.splitext(file)[-1] in (".txt",
+                                                   ".pdf",
+                                                   ".odt"
+                                                   ".doc",
+                                                   ".docx"):
                     dialogue.update()
                     all_documents += 1
-                    shutil.copy(os.path.abspath(file), sess_folder)
+                    shutil.copy(os.path.abspath(file), session_folder)
+            
             if all_documents == 0:
                 warnings += "\nNo general documents found\n"
         except:
@@ -1968,12 +2003,13 @@ class App(Frame):
         dialogue.update()
 
         # Save scan protocol
-        path = os.path.join(folder, project, self.get_filename() + ".txt")
         try:
+            path = os.path.join(session_folder, self.get_filename() + ".txt")
             self.save(path)
         except:
             warnings += "\nError saving scan protocol\n"
         # Confirm archiving
+        message = "Archived to: {0}".format(os.path.abspath(folder))
         message += warnings
         return message
 
@@ -2108,4 +2144,4 @@ if __name__ == "__main__":
     root.protocol("WM_DELETE_WINDOW", app.quit_callback)
     app.general_widgets[0].focus()
     app.disable_save()
-    app.mainloop()
+app.mainloop()
