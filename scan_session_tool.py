@@ -752,7 +752,10 @@ class App(Frame):
                 spinbox = Spinbox(frame, from_=1, to=999, format="%03.0f",
                           width=3, justify="right", textvariable=var1,
                           state="readonly", font=self.font, style="Orange.TSpinbox")
-                spinbox.grid(row=0, column=0, sticky="W", padx=(0,3))
+                pad = 7
+                if platform.system() == "Windows":
+                    pad -= 4
+                spinbox.grid(row=0, column=0, sticky="W", padx=(0,pad))
                 var2 = StringVar()
                 var2.trace("w", self.change_callback)
                 combobox = AutocompleteCombobox(frame, textvariable=var2,
