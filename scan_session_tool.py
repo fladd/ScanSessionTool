@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__version__ = '0.6.2'
-__date__ = '24 Jan 2019'
+__version__ = '0.7.0'
+__date__ = '21 Mar 2019'
 
 
 import sys
@@ -34,7 +34,8 @@ docs = """
 |                                                                           |
 |        A tool for MR scan session documentation and data archiving        |
 |                                                                           |
-|             Author: Florian Krause <Florian.Krause@fladd.de>              |
+|             Authors: Florian Krause <Florian.Krause@fladd.de>             |
+|                      Nikos Kogias <n.kogias@student.ru.nl>                |
 |                                                                           |
 + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
 
@@ -46,9 +47,9 @@ The Scan Session Tool is a graphical application for documenting (f)MRI scan
 sessions and automatized data archiving. Information about the scan session
 itself, used forms and documents, as well as the single measurements can be
 entered and saved into a protocol file. This information can furthermore be
-used to copy acquired data (DICOM images, stimulation protocols, logfiles,
-Turbo Brain Voyager files) into a specific hierarchical folder structure for
-unified archiving purposes.
+used to copy acquired data (DICOM images as well as optional stimulation
+protocols, logfiles and Turbo-BrainVoyager files) into a specific
+hierarchical folder structure for unified archiving purposes.
 
 
 
@@ -95,22 +96,23 @@ The following fields are available:
 
 --------------------------- The "Documents" area ----------------------------
 
-This area provides input fields for additional documents that are acquired du-
-ring the session, such as logfiles and behavioural data files, as well as 
+This area provides input fields for additional documents that are acquired
+during the session, such as logfiles and behavioural data files, as well as 
 questionnaires and forms that are filled in by the participant. The following
 input fields are available:
-    "Files"       - A newline separated list of all session logfiles and addi-
-                    tional documents.
+    "Files"       - A newline separated list of all session logfiles and ad-
+                    ditional documents; wildcard masks (*) will be completed
+                    during archiving
                     (free-type)
     "Checklist"   - Checkboxes to specify which forms and documents have been 
                     collected from the participant. Additional documents can 
                     be specified in a configuration file (see "Config File" 
                     section). The following checkboxes are available:
                     "MR Safety Screening Form"            - The (f)MRI scree-
-                                                            ning from provided 
-                                                            by the scanning 
-                                                            institution
-                    "Participation Informed Consent Form" - The official (f)MRI 
+                                                            ning from provi-
+                                                            ded by the scan-
+                                                            ning institution
+                    "Participation Informed Consent Form" - The official MRI 
                                                             written consent 
                                                             form
 
@@ -132,12 +134,12 @@ The following input fields are available per measurement:
                              (free-type)
     "Name"                 - The name of the measurement
                              (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected logfiles
+    "Logfiles"             - A newline separated list of all connected
+                             logfiles; wildcard masks (*) will be completed
+                             during archiving (please note that a stimulation
+                             protocol mask will be included automatically,
+                             based on the session information)
                              (free-type)
-                             (Please note that a stimulation protocol mask
-                             will be included automatically, based on the
-                             session information, and will be replaced by
-                             the found files matching this mask)
     "Comments"             - Any additional comments about the measurement
                              (free-type)
 
@@ -145,25 +147,28 @@ The following input fields are available per measurement:
 ----------------------------- The control area ------------------------------
 
 The control area consists of the following three buttons:
-"Open"    - Opens previously saved information from a text file
-"Save"    - Saves the entered session information into a text file
-"Archive" - Copies acquired data from specified location into a timestamped
-            sub-folder <~Archiveyyymmdd>. Please note that all data is
-            expected to be within the specified folder. That is, all DICOM
-            files (*.dcm OR *.IMA; with or without sub-folders), all stimula-
-            tion protocols, all logfiles as well as all Turbo Brain Voyager 
-            files (all *.tbv files in a folder called 'TBVFiles').
-            The data will be copied into the following folder hierarchy:
-            DICOMs -->
-              <Project>/<Subject[Type]>/<Session[Type]>/<Type>/<Name>/<DICOM>/
-            Logfiles -->
-              <Project>/<Subject[Type]>/<Session[Type]>/<Type>/<Name>/
-            Files -->
-              <Project>/<Subject[Type]>/<Session[Type]>/
-            Turbo Brain Voyager files -->
-              <Project>/<Subject[Type]>/<Session[Type]>/<TBV>/
-            Scan Session Protocol -->
-              <Project>/<Subject[Type]>/<Session[Type]>/
+    "Open"    - Opens previously saved information from a text file
+    "Save"    - Saves the entered session information into a text file
+    "Archive" - Copies acquired data from specified location into a time-
+                stamped sub-folder <~Archiveyyymmdd>. Please note that all
+                data is expected to be within the specified folder. That is,
+                all DICOM files (*.dcm OR *.IMA; with or without sub-folders),
+                all stimulation protocols, all logfiles as well as all Turbo-
+                BrainVoyager files (all *.tbv files in a folder called
+                'TBVFiles').
+                The data will be copied into the following folder hierarchy:
+                    DICOMs -->
+                      <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
+                    BrainVoyager files (links only) -->
+                      <Project>/<Subject>/<Session>/<BV>/
+                    Logfiles -->
+                      <Project>/<Subject>/<Session>/<Type>/<Name>/
+                    Files -->
+                      <Project>/<Subject>/<Session>/
+                    Turbo-BrainVoyager files (links only) -->
+                      <Project>/<Subject>/<Session>/<TBV>/
+                    Scan Session Protocol -->
+                      <Project>/<Subject>/<Session>/
 
 
 
@@ -173,10 +178,10 @@ A configuration file can be created to pre-define the values to be used as
 selection options for the "Subject", "Session", "Certified User", "Backup
 Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
 project basis, as well as additional items in the "Files" and "Checklist" 
-fields of the "Documents" section.The Scan Session Tool will look for a confi-
-guration file with the name "sst.yaml", located in the same directory as the 
-application itself (does not work for the OS X compiled .app) or in the $HOME 
-folder. 
+fields of the "Documents" section.The Scan Session Tool will look for a con-
+figuration file with the name "sst.yaml", located in the same directory as
+the application itself (does not work for the OS X compiled .app) or in the
+$HOME folder. 
 
 The syntax is YAML. Here is an example:
 
@@ -682,10 +687,10 @@ class App(Frame):
                         #"Group:",
                         "Session:",
                         "Date:",
-                        "Booked Time:",
-                        "Actual Time:",
-                        "Certified User:",
-                        "Backup Person:")
+                        "Time A:",
+                        "Time B:",
+                        "User 1:",
+                        "User 2:")
         self.documents = ["MR Safety Screening Form",
                           "Participation Informed Consent Form"]
 
@@ -733,26 +738,29 @@ class App(Frame):
 
         for row, x in enumerate(self.general):
             label = Label(self.general_frame_left, text=x)
-            label['font'] = (self.default_font, self.default_font_size)
+            label['font'] = (self.default_font, self.default_font_size, "bold")
             label.grid(row=row, column=0, sticky="E", padx=(0, 3), pady=3)
             self.general_labels.append(label) 
             if row in (1, 2):
-                width = 10
+                width = 13  #10
                 if platform.system() == "Windows":
                     width += 3
-                frame = Frame(self.general_frame_left, width=width) 
+                frame = Frame(self.general_frame_left)  #, width=width) 
                 var1 = StringVar()
                 var1.trace("w", self.change_callback)
                 var1.set("001")
                 spinbox = Spinbox(frame, from_=1, to=999, format="%03.0f",
                           width=3, justify="right", textvariable=var1,
                           state="readonly", font=self.font, style="Orange.TSpinbox")
-                spinbox.grid(row=0, column=0, sticky="W")
+                pad = 7
+                if platform.system() == "Windows":
+                    pad -= 4
+                spinbox.grid(row=0, column=0, sticky="W", padx=(0,pad))
                 var2 = StringVar()
                 var2.trace("w", self.change_callback)
                 combobox = AutocompleteCombobox(frame, textvariable=var2,
                                                 validate=validate, validatecommand=vcmd,
-                                                font=self.font)
+                                                font=self.font, width=width)
                 combobox.grid(row=0, column=1, sticky="W")
                 self.general_vars.append([var1, var2])
                 self.general_widgets.append([spinbox, combobox])
@@ -787,7 +795,7 @@ class App(Frame):
                     projects = sorted(self.config.keys())
                     #projects.sort()
                     combobox.set_completion_list(projects)
-                combobox.grid(row=row, column=1, sticky="EW")
+                combobox.grid(row=row, column=1, sticky="W")
                 self.general_widgets.append(combobox)
             elif row in (3, 4, 5):
                 var = StringVar()
@@ -821,7 +829,7 @@ class App(Frame):
         notes_label = Label(self.general_frame_right, text="Notes:",
                             style="Green.TLabel")
         notes_label.grid(row=0, column=0, sticky="W")
-        notes_label['font'] = (self.default_font, self.default_font_size)
+        notes_label['font'] = (self.default_font, self.default_font_size, "bold")
         notes_container = FixedSizeFrame(self.general_frame_right, 299, 171)
         notes_container.grid(row=1, column=0, sticky="N")
         notes = AutoScrollbarText(notes_container, wrap=NONE)
@@ -861,13 +869,13 @@ class App(Frame):
         self.nofocus_widgets.append(self.title3)
         self.version1 = Label(self.logo,
                              text="Version {0}".format(__version__),
-                             style="Grey.TLabel")
+                             style="Blue.TLabel")
         self.version1.grid(row=3)
         self.version1['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version1)
         self.version2 = Label(self.logo,
                              text="({0})".format(__date__),
-                             style="Grey.TLabel")
+                             style="Blue.TLabel")
         self.version2.grid(row=4)
         self.version2['font'] = (self.default_font, self.default_font_size + 2)
         self.nofocus_widgets.append(self.version2)
@@ -898,8 +906,10 @@ class App(Frame):
         self.nofocus_widgets.append(self.documents_frame)
         files_label = Label(self.documents_frame, text="Files:")
         files_label.grid(row=0, sticky="W", padx=10)
+        files_label['font'] = (self.default_font, self.default_font_size, "bold")
+
         self.nofocus_widgets.append(files_label)
-        files_container = FixedSizeFrame(self.documents_frame, 299, 68)
+        files_container = FixedSizeFrame(self.documents_frame, 299, 53)  #68
         files_container.grid(row=1, sticky="NSEW", padx=10)
         self.nofocus_widgets.append(files_container)
         self.files = AutoScrollbarText(files_container, wrap=NONE, background=self.orange,
@@ -915,6 +925,7 @@ class App(Frame):
         self.nofocus_widgets.append(empty_label)
         checklist_label = Label(self.documents_frame, text="Checklist:")
         checklist_label.grid(row=3, sticky="W", padx=10)
+        checklist_label['font'] = (self.default_font, self.default_font_size, "bold")
         self.nofocus_widgets.append(checklist_label)
         self.documents_labels = []
         self.documents_checks = []
@@ -943,7 +954,7 @@ class App(Frame):
         self.measurements_frame1.grid(row=0, sticky="WENS")
         self.nofocus_widgets.append(self.measurements_frame1)
         self.measurements_frame = VerticalScrolledFrame(
-            self.measurements_frame1, height=295, width=989)
+            self.measurements_frame1, height=295, width=989) #989
         self.measurements_frame.interior.grid_columnconfigure(0, weight=1)
         self.measurements_frame.interior.grid_rowconfigure(0, weight=1)
         self.measurements_frame.grid(row=1, sticky="WENS")
@@ -1021,7 +1032,7 @@ class App(Frame):
                           format="%03.0f",width=3, justify="right",
                           state="readonly", textvariable=var1, font=self.font,
                           style="Orange.TSpinbox")
-        spinbox.grid(row=value, column=0, sticky="W", padx=(10, 2))
+        spinbox.grid(row=int(value), column=0, sticky="W", padx=(10, 2))
         spinbox.bind('<Enter>',
                      lambda event: self.mouseover_callback(True))
         spinbox.bind('<Leave>',
@@ -1041,7 +1052,7 @@ class App(Frame):
         #            value="functional").pack(anchor="w")
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
-        width = 9
+        width = 9 #9
         if platform.system() == "Windows":
             width += 2
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
@@ -1049,7 +1060,7 @@ class App(Frame):
                             font=self.font, style="Orange.TCombobox")
         combobox.set_completion_list(["anatomical", "functional", "misc"])
         combobox.current(0)
-        combobox.grid(row=value, column=1, sticky="", padx=2)
+        combobox.grid(row=int(value), column=1, sticky="", padx=2)
         combobox.bind('<Enter>',
                       lambda event: self.mouseover_callback(True))
         combobox.bind('<Leave>',
@@ -1067,7 +1078,7 @@ class App(Frame):
                        justify="right", textvariable=var3,
                        validate=validate, validatecommand=vcmd,
                        font=self.font, style="Red.TEntry")
-        vols.grid(row=value, column=2, sticky="", padx=2)
+        vols.grid(row=int(value), column=2, sticky="", padx=2)
         scanning_widgets.append(vols)
         var4 = StringVar()
         var4.trace("w", self.change_callback)
@@ -1085,7 +1096,7 @@ class App(Frame):
                                     textvariable=var4, validate=validate,
                                     validatecommand=vcmd, font=self.font,
                                     style="Red.TCombobox", width=width)
-        name.grid(row=value, column=3, sticky="", padx=2)
+        name.grid(row=int(value), column=3, sticky="", padx=2)
         name.bind('<Enter>',
                   lambda event: self.mouseover_callback(True))
         name.bind('<Leave>',
@@ -1098,7 +1109,7 @@ class App(Frame):
         #scanning_vars.append(prt_file)
         #scanning_widgets.append(prt_file)
         container2 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
-        container2.grid(row=value, column=4, sticky="NSE", pady=3, padx=2)
+        container2.grid(row=int(value), column=4, sticky="NSE", pady=3, padx=2)
         scanning_widgets.append(container2)
         logfiles = AutoScrollbarText(container2, wrap=NONE, background=self.orange,
                                      highlightbackground=self.orange)
@@ -1111,7 +1122,7 @@ class App(Frame):
         logfiles.grid()
         scanning_widgets.append(logfiles)
         container3 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
-        container3.grid(row=value, column=5, sticky="NSE", pady=3, padx=(2, 10))
+        container3.grid(row=int(value), column=5, sticky="NSE", pady=3, padx=(2, 10))
         scanning_widgets.append(container3)
         text = AutoScrollbarText(container3, wrap=NONE)
         text.bind('<KeyRelease>', self.change_callback)
@@ -1294,9 +1305,9 @@ class App(Frame):
             except:
                 pass
             try:
-                if self.config[current_project]["Backups"] is not None:
+                if self.config[current_project]["Users"] is not None:
                     self.general_widgets[7].set_completion_list(
-                        self.config[current_project]["Backups"])
+                        self.config[current_project]["Users"])
             except:
                 pass
             for index, m in enumerate(self.measurements_widgets):
@@ -1745,10 +1756,9 @@ class App(Frame):
 
     def set_title(self, status=None):
         if status is None:
-            self.master.title('Scan Session Tool {0}'.format(__version__))
+            self.master.title('Scan Session Tool')
         else:
-            self.master.title('Scan Session Tool {0} ({1})'.format(
-                __version__, status))
+            self.master.title('Scan Session Tool ({1})'.format(status))
 
     def _archive_run(self, d, dialogue):
         warnings = "\n\n\n"
@@ -2106,6 +2116,7 @@ class HelpDialogue:
         self.master = master
         top = self.top = Toplevel(master, background="grey85")
         top.title("Help")
+        top.resizable(False, False)
         self.text = ScrolledText(top, width=77)
         self.text.pack()
         self.text.insert(END, docs)
