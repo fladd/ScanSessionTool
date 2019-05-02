@@ -1032,7 +1032,7 @@ class App(Frame):
                           format="%03.0f",width=3, justify="right",
                           state="readonly", textvariable=var1, font=self.font,
                           style="Orange.TSpinbox")
-        spinbox.grid(row=value, column=0, sticky="W", padx=(10, 2))
+        spinbox.grid(row=int(value), column=0, sticky="W", padx=(10, 2))
         spinbox.bind('<Enter>',
                      lambda event: self.mouseover_callback(True))
         spinbox.bind('<Leave>',
@@ -1060,7 +1060,7 @@ class App(Frame):
                             font=self.font, style="Orange.TCombobox")
         combobox.set_completion_list(["anatomical", "functional", "misc"])
         combobox.current(0)
-        combobox.grid(row=value, column=1, sticky="", padx=2)
+        combobox.grid(row=int(value), column=1, sticky="", padx=2)
         combobox.bind('<Enter>',
                       lambda event: self.mouseover_callback(True))
         combobox.bind('<Leave>',
@@ -1078,7 +1078,7 @@ class App(Frame):
                        justify="right", textvariable=var3,
                        validate=validate, validatecommand=vcmd,
                        font=self.font, style="Red.TEntry")
-        vols.grid(row=value, column=2, sticky="", padx=2)
+        vols.grid(row=int(value), column=2, sticky="", padx=2)
         scanning_widgets.append(vols)
         var4 = StringVar()
         var4.trace("w", self.change_callback)
@@ -1096,7 +1096,7 @@ class App(Frame):
                                     textvariable=var4, validate=validate,
                                     validatecommand=vcmd, font=self.font,
                                     style="Red.TCombobox", width=width)
-        name.grid(row=value, column=3, sticky="", padx=2)
+        name.grid(row=int(value), column=3, sticky="", padx=2)
         name.bind('<Enter>',
                   lambda event: self.mouseover_callback(True))
         name.bind('<Leave>',
@@ -1109,7 +1109,7 @@ class App(Frame):
         #scanning_vars.append(prt_file)
         #scanning_widgets.append(prt_file)
         container2 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
-        container2.grid(row=value, column=4, sticky="NSE", pady=3, padx=2)
+        container2.grid(row=int(value), column=4, sticky="NSE", pady=3, padx=2)
         scanning_widgets.append(container2)
         logfiles = AutoScrollbarText(container2, wrap=NONE, background=self.orange,
                                      highlightbackground=self.orange)
@@ -1122,7 +1122,7 @@ class App(Frame):
         logfiles.grid()
         scanning_widgets.append(logfiles)
         container3 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
-        container3.grid(row=value, column=5, sticky="NSE", pady=3, padx=(2, 10))
+        container3.grid(row=int(value), column=5, sticky="NSE", pady=3, padx=(2, 10))
         scanning_widgets.append(container3)
         text = AutoScrollbarText(container3, wrap=NONE)
         text.bind('<KeyRelease>', self.change_callback)
