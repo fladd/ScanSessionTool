@@ -532,7 +532,10 @@ class VerticalScrolledFrame(Frame):
         elif os == "Darwin":
             self.canvas.yview_scroll(-2*event.delta, "units")
         elif os == "Windows":
-            self.canvas.yview_scroll(-2*(event.delta/120), "units")
+            if sys.version[0] == '3':
+                self.canvas.yview_scroll(-2*(event.delta//120), "units")
+            else:
+                self.canvas.yview_scroll(-2*(event.delta/120), "units")
 
 
 class AutocompleteCombobox(Combobox):
