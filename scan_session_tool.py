@@ -1758,7 +1758,7 @@ class App(Frame):
         if status is None:
             self.master.title('Scan Session Tool')
         else:
-            self.master.title('Scan Session Tool ({1})'.format(status))
+            self.master.title('Scan Session Tool ({0})'.format(status))
 
     def _archive_run(self, d, dialogue):
         warnings = "\n\n\n"
