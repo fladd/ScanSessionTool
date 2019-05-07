@@ -983,14 +983,18 @@ class App(Frame):
             label = Label(label_frame, text=x)
             if column == 0:
                 p = 18
+                if platform.system() == "Windows":
+                    p -= 2
                 label.grid(row=0, column=column, padx=(p, 0), pady=(3, 3))
             elif column == 1:
                 p = 43
                 if platform.system() == "Windows":
-                    p += 1
+                    p += 2
                 label.grid(row=0, column=column, padx=(p, 0))
             elif column == 2:
                 p = 41
+                if platform.system() == "Windows":
+                    p += 1
                 label.grid(row=0, column=column, padx=(p, 0))
             elif column == 3:
                 p = 69
