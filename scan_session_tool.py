@@ -756,7 +756,7 @@ class App(Frame):
                           width=3, justify="right", textvariable=var1,
                           state="readonly", font=self.font, style="Orange.TSpinbox")
                 pad = 7
-                if platform.system() == "Windows":
+                if platform.system() in ("Windows", "Linux"):
                     pad -= 4
                 spinbox.grid(row=0, column=0, sticky="W", padx=(0,pad))
                 var2 = StringVar()
@@ -983,28 +983,36 @@ class App(Frame):
             label = Label(label_frame, text=x)
             if column == 0:
                 p = 18
-                if platform.system() == "Windows":
+                if platform.system() in ("Windows", "Linux"):
                     p -= 2
                 label.grid(row=0, column=column, padx=(p, 0), pady=(3, 3))
             elif column == 1:
                 p = 43
                 if platform.system() == "Windows":
                     p += 2
+                if platform.system() == "Linux":
+                    p += 12
                 label.grid(row=0, column=column, padx=(p, 0))
             elif column == 2:
                 p = 41
                 if platform.system() == "Windows":
                     p += 1
+                if platform.system() == "Linux":
+                    p += 13
                 label.grid(row=0, column=column, padx=(p, 0))
             elif column == 3:
                 p = 69
                 if platform.system() == "Windows":
                     p -= 1
+                if platform.system() == "Linux":
+                    p -= 12
                 label.grid(row=0, column=column, padx=(p, 0))
             elif column == 4:
                 p = 201
                 if platform.system() == "Windows":
                     p += 2
+                if platform.system() == "Linux":
+                    p -= 5
                 label.grid(row=0, column=column, padx=(p, 0))
             elif column == 5:
                 p = 239
@@ -1064,6 +1072,8 @@ class App(Frame):
         width = 9 #9
         if platform.system() == "Windows":
             width += 2
+        if platform.system() == "Linux":
+            width += 5
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
                             textvariable=var2, width=width, state="readonly",
                             font=self.font, style="Orange.TCombobox")
