@@ -1779,15 +1779,17 @@ class App(Frame):
         else:
             self.master.title('Scan Session Tool ({0})'.format(status))
 
-    def _archive_run(self, d, dialogue):
+    def _archive_run(self, archiving, dialogue):
+        d, folder, bv_links, tbv_links, tbv_files, tbv_prefix = archving
+        # TODO: Rewrite archiving procedure with above values!
         warnings = "\n\n\n"
         project = self.general_vars[0].get()
         subject_no = int(self.general_vars[1][0].get())
         subject_type = self.general_vars[1][1].get()
         session_no = int(self.general_vars[2][0].get())
         session_type = self.general_vars[2][1].get()
-        timestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        folder = os.path.join(d, "~Archive"+timestamp)
+        #timestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
+        #folder = os.path.join(d, "~Archive"+timestamp)
         if not os.path.exists(folder):
             try:
                 os.makedirs(folder)
@@ -2046,21 +2048,145 @@ class App(Frame):
     def archive(self, *args):
         """Archive the data."""
 
+        dialogue = ArchiveDialogue(self.master)
+        archiving = dialogue.show()
+        if archiving[0]:
+            print("Okay")
+            if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
+                self.master.protocol("WM_DELETE_WINDOW", lambda x: None)
+                self.set_title("Busy")
+                dialogue = BusyDialogue(self.master)
+                dialogue.status.set("Busy")
+                dialogue.top.update()
+                message = self._archive_run(archiving[1:], dialogue)
+                dialogue.destroy()
+                self.set_title()
+                self.master.protocol("WM_DELETE_WINDOW", app.quit_callback)
+                #tkMessageBox.showinfo(title="Done", message=message)
+                errors = MessageDialogue(self.master, message)
+                errors.show()
+
+
+class ArchiveDialogue:
+
+    def __init__(self, master):
+        self.master = master
+        top = self.top = Toplevel(master, background="grey85")
+        top.title("Archive")
+        top.resizable(False, False)
+
+        self.data_frame = LabelFrame(top, text="Data", padding=(5,5))
+        self.data_frame.grid(row=0, column=0, sticky="NSWE", padx=10, pady=10)
+        self.data_frame.grid_columnconfigure(1, weight=1)
+        self.source_label = Label(self.data_frame, text="Source:")
+        self.source_label.grid(row=0, column=0, sticky="E", padx=(0, 3),
+                               pady=3)
+        self.source_var = StringVar()
+        self.source_entry = Entry(self.data_frame, width=50,
+                                  textvariable=self.source_var)
+        self.source_entry["state"] = "readonly"
+        self.source_entry.grid(row=0, column=1, sticky="W")
+        self.source_button = Button(self.data_frame, text="Browse",
+                                    command=self.set_source)
+        self.source_button.grid(row=0, column=3, sticky="E")
+        self.target_label = Label(self.data_frame, text="Target:")
+        self.target_label.grid(row=1, column=0, sticky="E", padx=(0, 3),
+                               pady=3)
+        self.target_var = StringVar()
+        self.target_entry = Entry(self.data_frame, width=50,
+                                  textvariable=self.target_var)
+        self.target_entry["state"] = "readonly"
+        self.target_entry.grid(row=1, column=1, sticky="W")
+        self.target_button = Button(self.data_frame, text="Browse",
+                                    command=self.set_target)
+        self.target_button.grid(row=1, column=3, sticky="E")
+
+        self.options_frame = LabelFrame(top, text="Options", padding=(5,5))
+        self.options_frame.grid(row=1, column=0, sticky="NSWE", padx=10)
+        self.options_frame.grid_columnconfigure(1, weight=1)
+        self.bv_links_var = IntVar()
+        self.bv_links_var.set(0)
+        self.bv_links_checkbox = Checkbutton(self.options_frame,
+                                             text="Create BrainVoyager links",
+                                             var=self.bv_links_var)
+        self.bv_links_checkbox.grid(row=0, column=0, sticky="W")
+        self.tbv_links_var = IntVar()
+        self.tbv_links_var.set(0)
+        self.tbv_links_checkbox = Checkbutton(
+            self.options_frame,
+            text="Create Turbo-BrainVoyager links",
+            var=self.tbv_links_var,
+            command=self.activate_tbv)
+        self.tbv_links_checkbox.grid(row=1, column=0, sticky="W")
+        self.tbv_files_label = Label(self.options_frame,
+                                     text="TBV files directory name:")
+        self.tbv_files_label["state"] = DISABLED
+        self.tbv_files_label.grid(row=2, column=0, sticky="E", padx=(0, 3))
+        self.tbv_files_var = StringVar()
+        self.tbv_files_entry = Entry(self.options_frame,
+                                     textvariable=self.tbv_files_var)
+        self.tbv_files_var.set("TBVFiles")
+        self.tbv_files_entry["state"] = DISABLED
+        self.tbv_files_entry.grid(row=2, column=1, sticky="WE")
+        self.tbv_prefix_label = Label(self.options_frame,
+                                      text="Run prefix:")
+        self.tbv_prefix_label["state"] = DISABLED
+        self.tbv_prefix_label.grid(row=3, column=0, sticky="E", padx=(0, 3))
+        self.tbv_prefix_var = StringVar()
+        self.tbv_prefix_entry = Entry(self.options_frame,
+                                      textvariable=self.tbv_prefix_var)
+        self.tbv_prefix_var.set("TBV_")
+        self.tbv_prefix_entry["state"] = DISABLED
+        self.tbv_prefix_entry.grid(row=3, column=1, sticky="WE")
+
+        self.okay_button = Button(top, text="GO", command=self.archive)
+        self.okay_button["state"] = DISABLED
+        self.okay_button.grid(row=2, column=0, pady=10)
+        self.okay = False
+
+    def activate_tbv(self):
+        if self.tbv_links_var.get() == 1:
+            self.tbv_files_label["state"] = NORMAL
+            self.tbv_files_entry["state"] = NORMAL
+            self.tbv_prefix_label["state"] = NORMAL
+            self.tbv_prefix_entry["state"] = NORMAL
+        else:
+            self.tbv_files_label["state"] = DISABLED
+            self.tbv_files_entry["state"] = DISABLED
+            self.tbv_prefix_label["state"] = DISABLED
+            self.tbv_prefix_entry["state"] = DISABLED
+
+    def set_source(self):
+        self.top.grab_set()
         d = tkFileDialog.askdirectory(
-            title="Select directory containing all data")
-        if d is not "":
-            self.master.protocol("WM_DELETE_WINDOW", lambda x: None)
-            self.set_title("Busy")
-            dialogue = BusyDialogue(self.master)
-            dialogue.status.set("Busy")
-            dialogue.top.update()
-            message = self._archive_run(d, dialogue)
-            dialogue.destroy()
-            self.set_title()
-            self.master.protocol("WM_DELETE_WINDOW", app.quit_callback)
-            #tkMessageBox.showinfo(title="Done", message=message)
-            errors = MessageDialogue(self.master, message)
-            errors.show()
+            title="Select directory containing all raw data")
+        self.top.grab_release()
+        self.source_var.set(d)
+        if self.source_var.get() != "" and self.target_var.get() != "":
+            self.okay_button["state"] = NORMAL
+
+    def set_target(self):
+        self.top.grab_set()
+        d = tkFileDialog.askdirectory(
+            title="Select target directory to archive data to")
+        self.top.grab_release()
+        self.target_var.set(d)
+        if self.source_var.get() != "" and self.target_var.get() != "":
+            self.okay_button["state"] = NORMAL
+
+    def archive(self):
+        self.okay = True
+        self.top.destroy()
+
+    def show(self):
+        self.master.wait_window(self.top)
+        return (self.okay,
+                self.source_var.get(),
+                self.target_var.get(),
+                self.bv_links_var.get(),
+                self.tbv_links_var.get(),
+                self.tbv_files_var.get(),
+                self.tbv_prefix_var.get())
 
 
 class BusyDialogue:
