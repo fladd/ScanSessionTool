@@ -27,6 +27,7 @@ else:
     from ScrolledText import ScrolledText
 
 import yaml
+import pydicom
 
 
 docs = """
@@ -128,7 +129,7 @@ need to be checked.
 The following input fields are available per measurement:
     "No"                   - The number of the measurement
                              (001-999)
-    "Type"                 - "anatomical", "functional" or "misc"
+    "Type"                 - "anat", "func" or "misc"
                              (selection)
     "Vols"                 - The number of volumes of the measurement
                              (free-type)
@@ -216,14 +217,14 @@ Project 1:
         - Pre-Scan Questionnaire
         - Post-Scan Questionnaire
 
-    Measurements anatomical:
+    Measurements anat:
         - Name:        Localizer
           Vols:        3
 
         - Name:        Anatomy
           Vols:        192
 
-    Measurements functional:
+    Measurements func:
         - Name:        Run1
           Vols:        300
           Comments:    |
@@ -275,14 +276,14 @@ Project 2:
     Checklist:
         - Participation Reimbursement Form
 
-    Measurements anatomical:
+    Measurements anat:
         - Name:        Localizer
           Vols:        3
 
         - Name:        MPRAGE
           Vols:        192
 
-    Measurements functional:
+    Measurements func:
         - Name:        RunA
           Vols:        300
           Comments:    |
@@ -1064,9 +1065,9 @@ class App(Frame):
         #radio_var = StringVar()
         #radio_var.set("misc")
         #Radiobutton(radiobuttons, text="anat", variable=radio_var,
-        #            value="anatomical").pack(anchor="w")
+        #            value="anat").pack(anchor="w")
         #Radiobutton(radiobuttons, text="func", variable=radio_var,
-        #            value="functional").pack(anchor="w")
+        #            value="func").pack(anchor="w")
         #Radiobutton(radiobuttons, text="misc", variable=radio_var,
         #            value="misc").pack(anchor="w")
         width = 9 #9
@@ -1077,7 +1078,7 @@ class App(Frame):
         combobox = AutocompleteCombobox(self.measurements_frame.interior,
                             textvariable=var2, width=width, state="readonly",
                             font=self.font, style="Orange.TCombobox")
-        combobox.set_completion_list(["anatomical", "functional", "misc"])
+        combobox.set_completion_list(["anat", "func", "misc"])
         combobox.current(0)
         combobox.grid(row=int(value), column=1, sticky="", padx=2)
         combobox.bind('<Enter>',
@@ -1417,7 +1418,7 @@ class App(Frame):
                             pass
                     except:
                         pass
-                    if t != "anatomical":
+                    if t != "anat":
                         e = "*"
 
                         prt = "_".join(self.get_filename().split("_")[1:4]) + \
@@ -1460,10 +1461,10 @@ class App(Frame):
                 #                                 "backups": [],
                 #                                 "info": "",
                 #                                 "measurements": {
-                #                                     "anatomical": {
+                #                                     "anat": {
                 #                                         "names": [],
                 #                                         "comment": ""},
-                #                                     "functional": {
+                #                                     "func": {
                 #                                         "names": [],
                 #                                         "comment": ""},
                 #                                     "misc": {
@@ -1486,16 +1487,16 @@ class App(Frame):
                 #         self.config[project]["backups"] = \
                 #             [x.strip() for x in line[8:].strip().split(",")]
                 #         self.config[project]["backups"].sort()
-                #     elif line.startswith("Measurements Anatomical:"):
-                #         self.config[project]["measurements"]["anatomical"]["names"] = \
+                #     elif line.startswith("Measurements Anat:"):
+                #         self.config[project]["measurements"]["anat"]["names"] = \
                 #             [x.strip() for x in line[24:].strip().split(",")]
-                #         self.config[project]["measurements"]["anatomical"]["names"].sort()
-                #         self.config[project]["measurements"]["anatomical"]["comment"] = line[9:].strip()
-                #     elif line.startswith("Measurements Functional:"):
-                #         self.config[project]["measurements"]["functional"]["names"] = \
+                #         self.config[project]["measurements"]["anat"]["names"].sort()
+                #         self.config[project]["measurements"]["anat"]["comment"] = line[9:].strip()
+                #     elif line.startswith("Measurements Func:"):
+                #         self.config[project]["measurements"]["func"]["names"] = \
                 #             [x.strip() for x in line[24:].strip().split(",")]
-                #         self.config[project]["measurements"]["functional"]["names"].sort()
-                #         self.config[project]["measurements"]["functional"]["comment"] = line[9:].strip()
+                #         self.config[project]["measurements"]["func"]["names"].sort()
+                #         self.config[project]["measurements"]["func"]["comment"] = line[9:].strip()
                 #     elif line.startswith("Measurements Incomplete:"):
                 #         self.config[project]["measurements"]["misc"]["names"] = \
                 #             [x.strip() for x in line[24:].strip().split(",")]
@@ -1780,8 +1781,7 @@ class App(Frame):
             self.master.title('Scan Session Tool ({0})'.format(status))
 
     def _archive_run(self, archiving, dialogue):
-        d, folder, bv_links, tbv_links, tbv_files, tbv_prefix = archving
-        # TODO: Rewrite archiving procedure with above values!
+        d, folder, bv_links, tbv_links, tbv_files, tbv_prefix = archiving
         warnings = "\n\n\n"
         project = self.general_vars[0].get()
         subject_no = int(self.general_vars[1][0].get())
@@ -1803,37 +1803,37 @@ class App(Frame):
             except:
                 vols = 0
             name = measurement[3].get()
-            scans = []
+            scans = {}
 
             try:
-                for subfolder in os.listdir(d):
-                    if os.path.isdir(os.path.join(d, subfolder)) and "-" in subfolder and\
-                    int(subfolder.split("-")[0]) == number:
-                        for image in glob.glob(os.path.join(d, subfolder, "*.dcm")):
-                            if int(os.path.split(image)[-1].split("_")[1]) == number:
-                                scans.append(image)
-                        if len(scans) == 0:
-                            for image in glob.glob(os.path.join(d, subfolder, "*.IMA")):
-                                if int(os.path.split(image)[-1].split(".")[3]) == number:
-                                    scans.append(image)
-                                elif len(os.path.split(image)[-1].split(".")) > 11:
-                                    if int(os.path.split(image)[-1].split(".")[-11]) == number:
-                                        scans.append(image)
+                for image in glob.glob(os.path.join(d, "*.dcm")):
+                    with pydicom.dcmread(image) as dicom:    
+                        if int(dicom.SeriesNumber) == int(number):
+                            scans[image] = [dicom.ProtocolName, dicom.SeriesNumber, dicom.InstanceNumber] 
+
+                for image in glob.glob(os.path.join(d, "*.IMA")):
+                    with pydicom.dcmread(image) as dicom:    
+                        if int(dicom.SeriesNumber) == int(number):
+                            scans[image] = [dicom.ProtocolName, dicom.SeriesNumber, dicom.InstanceNumber]
             except:
                 pass
 
+
+
             if len(scans) == 0:
                 try:
-                    for image in glob.glob(os.path.join(d, "*.dcm")):
-                        if int(os.path.split(image)[-1].split("_")[1]) == number:
-                            scans.append(image)
-                    if len(scans) == 0:
-                        for image in glob.glob(os.path.join(d, "*.IMA")):
-                            if int(os.path.split(image)[-1].split(".")[3]) == number:
-                                scans.append(image)
-                            elif len(os.path.split(image)[-1].split(".")) > 11:
-                                if int(os.path.split(image)[-1].split(".")[-11]) == number:
-                                    scans.append(image)
+                    for subfolder in os.listdir(d):
+                        if os.path.isdir(os.path.join(d, subfolder)):
+                            
+                            for image in glob.glob(os.path.join(d, subfolder, "*.dcm")):
+                                with pydicom.dcmread(image) as dicom:
+                                    if int(dicom.SeriesNumber) == int(number):
+                                        scans[image] = [dicom.ProtocolName, dicom.SeriesNumber, dicom.InstanceNumber]
+
+                            for image in glob.glob(os.path.join(d, subfolder, "*.IMA")):
+                                with pydicom.dcmread(image) as dicom:
+                                    if int(dicom.SeriesNumber) == int(number):
+                                        scans[image] = [dicom.ProtocolName, dicom.SeriesNumber, dicom.InstanceNumber]
                 except:
                     pass
 
@@ -1843,7 +1843,7 @@ class App(Frame):
             if vols == 0:
                 warnings += "\nError copying images for measurement {0}:\n" \
                            "    'Vols' not specified\n".format(number)
-            elif scans == []:
+            elif scans == {}:
                 warnings += "\nError copying images for measurement {0}:\n" \
                             "    No images found\n".format(number)
             elif len(scans) != vols:
@@ -1910,29 +1910,26 @@ class App(Frame):
 
 
                 #BV Files                       
-                dialogue.status.set("(Copying BV files...)")
-                dialogue.update()
-                try:
-                    bv_folder = os.path.join(session_folder, "BV")
-                    if not os.path.exists(bv_folder):
-                        os.makedirs(bv_folder)
+                if bv_links == True:
+                    dialogue.status.set("(Copying BV files...)")
+                    dialogue.update()
+                    try:
+                        bv_folder = os.path.join(session_folder, "BV")
+                        if not os.path.exists(bv_folder):
+                            os.makedirs(bv_folder)
+                
+                        for image in scans:
+                            target_name = "{}-{:04d}-0001-{:05d}.dcm".format(scans[image][0], 
+                                                                            scans[image][1], scans[image][2])
+                            os.link(os.path.join(dicom_folder, os.path.split(image)[-1]), 
+                                                os.path.join(bv_folder, target_name))
 
-                    if type == "functional" or name == "Anatomy":
-                        for image in os.listdir(dicom_folder):
-                            if image.split(".")[-1] == "dcm":
-                                target_name = "{}-{:04d}-0001-{:05d}.dcm".format(image.split("_")[0],
-                                                int(image.split("_")[1]), int(image.split("_")[2].split(".")[0]))
-                                os.link(os.path.join(dicom_folder, image) , os.path.join(bv_folder, target_name))
-                            if image.split(".")[-1] == "IMA":
-                                target_name = "{}-{:04d}-0001-{:05d}.dcm".format(image.split(".")[0],
-                                                int(image.split(".")[3]), int(image.split(".")[4]))
-                                os.link(os.path.join(dicom_folder, image) , os.path.join(bv_folder, target_name))
-                except:
-                    warnings += "\nError creating Brain Voyager links "
+                    except:
+                        warnings += "\nError creating Brain Voyager links "
 
 
             # Logfiles
-            if type != "anatomical":
+            if type != "anat":
                 dialogue.status.set(
                        "Archiving measurement {0} of {1}\n\n".format(
                            measurement[0].get(), len(self.measurements)) +
@@ -1949,42 +1946,55 @@ class App(Frame):
 
 
         # TBV Files
-        if os.path.isdir(os.path.join(d, "TBVFiles")):
+        if tbv_links == True:
             dialogue.status.set(
                "(Copying TBV files...)")
             dialogue.update()
+            tbv_folder = os.path.join(session_folder, "TBV")
             try:
-                tbv_folder = os.path.join(session_folder, "TBV",)
-                shutil.copytree(os.path.abspath(os.path.join(d, "TBVFiles")), 
-                                os.path.abspath(os.path.join(tbv_folder, "TBVFiles")))
+                shutil.copytree(os.path.abspath(os.path.join(d, tbv_files)), 
+                                    os.path.abspath(os.path.join(tbv_folder, tbv_files)))
             except:
                 warnings += "\nError copying Turbo Brain Voyager files "
 
             # Create dcm links
             try:
-                for filename in glob.glob(os.path.join(tbv_folder, "TBVFiles", "*.tbv")):
+                tbv_runs = []
+                tbv_run = 0
+                for filename in glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv")):
                     with open(filename) as f:
                         for line in f.readlines():
                             if line.startswith("DicomFirstVolumeNr"):
-                                run_nr = line.split(" ")[-1]
+                                run_nr = int(line.split()[-1])
+                            if line.startswith("Title:"):
+                                run_folder_name = line.split()[-1]
+                        tbv_runs.append([run_folder_name, run_nr])
 
-                    dcm_files = []
-                    session_raw = os.path.join(session_folder, "functional")
-
-                    for run in os.listdir(session_raw):
-                        if int(run.split("-")[0]) == int(run_nr):
-                            source_folder = os.path.abspath(os.path.join(session_raw, run, "DICOM"))
-                            for image in os.listdir(source_folder):
-
-                                if image.split(".")[-1] == "IMA" and int(image.split(".")[3]) == int(run_nr):
-                                    target_name = "001_{:06d}_{:06d}.dcm".format(int(image.split(".")[3]),
-                                                                             int(image.split(".")[4]))
-
-                                if image.split(".")[-1] == "dcm" and int(image.split("_")[1]) == int(run_nr):
-                                    target_name = "001_{:06d}_{:06d}.dcm".format(int(image.split("_")[1]),
-                                                                             int(image.split("_")[2].split(".")[0]))
-
+                session_func = os.path.join(session_folder, "func")
+                for run in os.listdir(session_func):
+                    if run.split("-")[1].startswith(tbv_prefix):
+                        source_folder = os.path.abspath(os.path.join(session_func, run, "DICOM"))
+                        for image in os.listdir(source_folder):
+                            with pydicom.dcmread(os.path.abspath(os.path.join(source_folder, image))) as dicom:
+                                target_name = "001_{:06d}_{:06d}.dcm".format(tbv_runs[tbv_run][1], dicom.InstanceNumber)
                                 os.link(os.path.join(source_folder, image), os.path.join(tbv_folder, target_name))
+                        
+                        #Change absolute path for prt file to relative path in fmr file
+                        try:
+                            title = tbv_runs[tbv_run][0].replace('"', '')
+                            fmr_file = os.path.abspath(os.path.join(tbv_folder, tbv_files, title, "{}.fmr").format(title))
+                            with open(fmr_file) as f:
+                                for line in f.readlines():
+                                    if line.startswith("ProtocolFile"):
+                                        prt_path = line.split()[-1]
+                                        
+                            replace(fmr_file, prt_path, '"./../{}.prt"'.format(title))
+                        except:
+                            warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
+
+
+                        tbv_run +=1
+
             except:
                 warnings += "\nError creating dcm links for Turbo Brain Voyager "
 
@@ -2051,7 +2061,6 @@ class App(Frame):
         dialogue = ArchiveDialogue(self.master)
         archiving = dialogue.show()
         if archiving[0]:
-            print("Okay")
             if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
                 self.master.protocol("WM_DELETE_WINDOW", lambda x: None)
                 self.set_title("Busy")
@@ -2158,8 +2167,8 @@ class ArchiveDialogue:
 
     def set_source(self):
         self.top.grab_set()
-        d = tkFileDialog.askdirectory(
-            title="Select directory containing all raw data")
+        d = os.path.abspath(tkFileDialog.askdirectory(
+            title="Select directory containing all raw data"))
         self.top.grab_release()
         self.source_var.set(d)
         if self.source_var.get() != "" and self.target_var.get() != "":
@@ -2167,8 +2176,8 @@ class ArchiveDialogue:
 
     def set_target(self):
         self.top.grab_set()
-        d = tkFileDialog.askdirectory(
-            title="Select target directory to archive data to")
+        d = os.path.abspath(tkFileDialog.askdirectory(
+            title="Select target directory to archive data to"))
         self.top.grab_release()
         self.target_var.set(d)
         if self.source_var.get() != "" and self.target_var.get() != "":
