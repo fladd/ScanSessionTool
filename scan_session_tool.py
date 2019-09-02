@@ -1617,7 +1617,7 @@ class App(Frame):
                     try:
                         logfiles = m[elem].get(1.0, END).split("\n")
                         logfile_lines = [x.strip() for x in logfiles if x != ""]
-                        l = [" "*23 + x if index > 0 \
+                        l = [" "*24 + x if index > 0 \
                                  else x for index, x in enumerate(logfile_lines)]
                         value = "\n".join(l)
                     except:
@@ -1967,9 +1967,11 @@ class App(Frame):
                             if line.startswith("DicomFirstVolumeNr"):
                                 run_nr = int(line.split()[-1])
                             if line.startswith("Title:"):
-                                run_folder_name = line.split()[-1]
-                        tbv_runs.append([run_folder_name, run_nr])
-
+                                run_folder_name = line.split()[-1].replace('"', '')
+                        if os.path.isdir(os.path.join(tbv_folder, tbv_files, run_folder_name)):
+                            tbv_runs.append([run_folder_name, run_nr])
+                                            
+                tbv_runs.sort(key = lambda x: x[1])
                 session_func = os.path.join(session_folder, "func")
                 for run in os.listdir(session_func):
                     if run.split("-")[1].startswith(tbv_prefix):
@@ -1981,7 +1983,7 @@ class App(Frame):
                         
                         #Change absolute path for prt file to relative path in fmr file
                         try:
-                            title = tbv_runs[tbv_run][0].replace('"', '')
+                            title = tbv_runs[tbv_run][0]
                             fmr_file = os.path.abspath(os.path.join(tbv_folder, tbv_files, title, "{}.fmr").format(title))
                             with open(fmr_file) as f:
                                 for line in f.readlines():
@@ -1991,8 +1993,6 @@ class App(Frame):
                             replace(fmr_file, prt_path, '"./../{}.prt"'.format(title))
                         except:
                             warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
-
-
                         tbv_run +=1
 
             except:
