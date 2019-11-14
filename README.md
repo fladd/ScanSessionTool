@@ -8,8 +8,10 @@ sessions and automatized data archiving. Information about the scan session
 itself, used forms and documents, as well as the single measurements can be
 entered and saved into a protocol file. This information can furthermore be
 used to copy acquired data (DICOM images as well as optional stimulation
-protocols, logfiles and TurboBrain Voyager files) into a specific
-hierarchical folder structure for unified archiving purposes.
+protocols and logfiles into a specific hierarchical folder structure for
+unified archiving purposes, with optional sepcial support for
+(Turbo-)BrainVoyager.
+
 
 Download
 --------
