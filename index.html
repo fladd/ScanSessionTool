@@ -21,9 +21,9 @@
     <section class="main-content">
       <p>The Scan Session Tool is a graphical application for documenting (f)MRI scan sessions and automatized data archiving.
          Information about the scan session itself, used forms and documents, as well as the single measurements can be entered
-         and saved into a protocol file. This information can furthermore be used to copy acquired data (DICOM images as well
-         as optional stimulation protocols, logfiles and Turbo-Brain Voyager files) into a specific hierarchical folder structure 
-         for unified archiving purposes.</p>
+         and saved into a protocol file. This information can furthermore beused to copy acquired data (DICOM images as well as
+         optional stimulation protocols and logfiles into a specific hierarchical folder structure for unified archiving
+         purposes, with optional sepcial support for (Turbo-)BrainVoyager.</p>
 
 <p><img src="https://raw.githubusercontent.com/fladd/ScanSessionTool/gh-pages/ScanSessionTool_Screenshot.png" alt="ScanSessionTool_Screenshot.png" title="Screenshot of Scan Session Tool"></p>
 
@@ -60,21 +60,21 @@ The following fields are available:</p>
                        (free-type and selection)
     "Subject"        - The subject number
                        (001-999)
-                     - The subject identifier
+                     - The subject type
                        (free-type and selection)
     "Session"        - The session number
                        (001-999)
-                     - The session identifier
+                     - The session type
                        (free-type and selection)
     "Date"           - The date of the scan session
                        (free-type, auto-filled)
-    "Booked Time"    - The time period the scanner was booked
+    "Time A"         - The main time period (e.g. official scanner booking)
                        (free-type)
-    "Actual Time"    - The time period the scanner was actually used
+    "Time B"         - An additional time period (e.g. actual scanner usage)
                        (free-type)
-    "Certified User" - The responsible user
+    "User 1"         - The main user (e.g. responsible MR operator)
                        (free-type and selection)
-    "Backup Person"  - An additional person
+    "User 2"         - An additional user (e.g. back-up/buddy)
                        (free-type and selection)
     "Notes"          - Any additional notes about the session
                        (free-type)
@@ -142,26 +142,31 @@ The following input fields are available per measurement:</p>
 
 <pre><code>    "Open"    - Opens previously saved information from a text file
     "Save"    - Saves the entered session information into a text file
-    "Archive" - Copies acquired data from specified location into a time-
-                stamped sub-folder <~Archiveyyymmdd>. Please note that all
-                data is expected to be within the specified folder. That is,
-                all DICOM files (*.dcm OR *.IMA; with or without sub-folders),
-                all stimulation protocols, all logfiles as well as all Turbo-
-                BrainVoyager files (all *.tbv files in a folder called
-                'TBVFiles').
+    "Archive" - Copies acquired data from a specified source folder into a
+                target folder at another specified location. Please note that
+                all data are expected to be within the specified source fol-
+                der. That is, all DICOM files (*.dcm OR *.IMA; with or with-
+                out sub-folders), all stimulation protocols and all logfiles.
+                Optionally, links to the DICOM images in BrainVoyager and
+                Turbo-BrainVoyager formats can be created. Turbo-BrainVoyager
+                files and data will be manipulated to work in the target
+                directory.
                 The data will be copied into the following folder hierarchy:
                     DICOMs -->
-                      <Project>/<Subject>/<Session>/<Type>/<Name>/<DICOM>/
-                    BrainVoyager files (links only) -->
-                      <Project>/<Subject>/<Session>/<BV>/
+                      <Project>/sub-<Subject>/ses-<Session>/<Type>/
+                      <No>-<Name>/<DICOM>/
                     Logfiles -->
-                      <Project>/<Subject>/<Session>/<Type>/<Name>/
+                      <Project>/sub-<Subject>/ses-<Session>/<Type>/
+                      <No>-<Name>/
                     Files -->
-                      <Project>/<Subject>/<Session>/
-                    Turbo-BrainVoyager files (links only) -->
-                      <Project>/<Subject>/<Session>/<TBV>/
+                      <Project>/sub-<Subject>/ses-<Session>/
+                    BrainVoyager files (links only, optional) -->
+                      <Project>/sub-<Subject>/ses-<Session>/<BV>/
+                    Turbo-BrainVoyager files (links only, optional) -->
+                      <Project>/sub-<Subject>/ses-<Session>/<TBV>/
                     Scan Session Protocol -->
-                      <Project>/<Subject>/<Session>/
+                      <Project>/sub-<Subject>/ses-<Session>/
+
 </code></pre>
 
 <h2>
