@@ -36,7 +36,7 @@ docs = """
 |                                                                           |
 |        A tool for MR scan session documentation and data archiving        |
 |                                                                           |
-|             Authors: Florian Krause <Florian.Krause@fladd.de>             |
+|             Authors: Florian Krause <f.krause@donders.ru.nl>              |
 |                      Nikos Kogias <n.kogias@student.ru.nl>                |
 |                                                                           |
 + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
@@ -2157,7 +2157,7 @@ class BusyDialogue:
 
     def __init__(self, master):
         self.master = master
-        top = self.top = Toplevel(master)
+        top = self.top = Toplevel(master, background="#49d042")
         top.withdraw()
         if master.winfo_viewable():
             top.transient(master)
