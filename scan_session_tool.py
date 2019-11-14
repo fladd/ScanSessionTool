@@ -52,7 +52,7 @@ entered and saved into a protocol file. This information can furthermore be
 used to copy acquired data (DICOM images as well as optional stimulation
 protocols and logfiles into a specific hierarchical folder structure for
 unified archiving purposes, with optional sepcial support for
-(Turbo-)BrainVoyager.
+(Turbo-)BrainVoyager (https://brainvoyager.com).
 
 
 
