@@ -1730,7 +1730,7 @@ class App(Frame):
                 return(
                     "Archiving failed: Could not create target directory!")
 
-        dialogue.update(status=["Preparation", "Reading DICOM images...0%"])
+        dialogue.update(status=["Preparation", "Reading DICOM images..."])
         all_dicoms = []
         for root, _, files in os.walk(d):
             for f in files:
@@ -1741,7 +1741,8 @@ class App(Frame):
 
         scans = {}  # scans[RUN][VOLUME]["protocolname"|"filename"]
         for counter, dicom in enumerate(imap(_readdicom, all_dicoms)):
-            percentage = int(round((counter + 1) / len(all_dicoms) * 100))
+            percentage = int(
+                round((float(counter) + 1) / len(all_dicoms) * 100))
             dialogue.update(
                 status=["Preparation",
                         "Reading DICOM images...{0}%".format(percentage)])
@@ -1792,7 +1793,7 @@ class App(Frame):
                 # DICOMs
                 dialogue.update(status=["Measurement {0} ({1} of {2})".format(
                     number, meas_counter+1, len(self.measurements)),
-                                        "Copying DICOM files...0%"])
+                                        "Copying DICOM files..."])
                 try:
                     dicom_folder = os.path.join(name_folder, "DICOM")
                     if not os.path.exists(dicom_folder):
@@ -1800,10 +1801,10 @@ class App(Frame):
 
                     for counter, image in enumerate(scans[number]):
                         percentage = int(round(
-                            (counter + 1) / len(scans[number]) * 100))
+                            (float(counter) + 1) / len(scans[number]) * 100))
                         dialogue.update(
                             status=["Measurement {0} ({1} of {2})".format(
-                                number, meas_counter+1,
+                                number, meas_counter + 1,
                                 len(self.measurements)),
                                     "Copying DICOM files...{0}%".format(
                                         percentage)])
@@ -1821,19 +1822,21 @@ class App(Frame):
                     dialogue.update(
                         status=["Measurement {0} ({1} of {2})".format(
                             number, meas_counter+1, len(self.measurements)),
-                                "Creating BrainVoyager links...0%"])
+                                "Creating BrainVoyager links..."])
                     try:
                         bv_folder = os.path.join(session_folder, "BV")
                         if not os.path.exists(bv_folder):
                             os.makedirs(bv_folder)
 
                         for counter, image in enumerate(scans[number]):
-                            percentage = int(round(
-                                (counter + 1) / len(scans[number]) * 100))
+                            percentage = int(round((float(counter) + 1) / len(
+                                scans[number]) * 100))
                             dialogue.update(
                                 status=["Measurement {0} ({1} of {2})".format(
-                                    number, meas_counter+1, len(self.measurements)),
-                                        "Creating BrainVoyager links...{0}%".format(percentage)])
+                                    number, meas_counter + 1,
+                                    len(self.measurements)),
+                                        "Creating BrainVoyager links...{0}%".format(
+                                            percentage)])
                             target_name = "{}-{:04d}-0001-{:05d}.dcm".format(
                                 scans[number][image]["protocolname"],
                                 number, image)
@@ -1864,7 +1867,7 @@ class App(Frame):
         # TBV Files
         if tbv_links == True:
             dialogue.update(status=["Finalization",
-                                    "Copying Turbo-BrainVoyager files...0%"])
+                                    "Copying Turbo-BrainVoyager files..."])
             if True:
                 tbv_folder = os.path.join(session_folder, "TBV")
 
@@ -1882,7 +1885,7 @@ class App(Frame):
                         os.makedirs(os.path.split(dst)[0])
 
                     percentage = int(round(
-                            (counter + 1) / len(tbv_file_list) * 100))
+                            (float(counter) + 1) / len(tbv_file_list) * 100))
                     dialogue.update(
                         status=[
                             "Finalization",
@@ -1895,7 +1898,7 @@ class App(Frame):
 
             # Create dcm links
             dialogue.update(status=["Finalization",
-                                    "Creating Turbo-BrainVoyager links...0%"])
+                                    "Creating Turbo-BrainVoyager links..."])
             try:
                 tbv_runs = []
                 tbv_run = 0
@@ -1942,10 +1945,11 @@ class App(Frame):
                             warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
                         tbv_run +=1
                         percentage = int(round(
-                                    (tbv_run) / len(tbv_runs) * 100))
+                                    (float(tbv_run)) / len(tbv_runs) * 100))
                         dialogue.update(
                         status=["Finalization",
-                                "Creating Turbo-BrainVoyager links...{0}%".format(percentage)])
+                                "Creating Turbo-BrainVoyager links...{0}%".format(
+                                    percentage)])
 
             except:
                 warnings += "\nError creating dcm links for Turbo Brain Voyager "
@@ -2189,7 +2193,9 @@ class BusyDialogue:
         if sys.platform == "win32":
             master.wm_attributes("-disabled", True)
 
+
     def update(self, event=None, status=None):
+
         if status is not None:
             self.status1.set(status[0])
             self.status2.set(status[1])
