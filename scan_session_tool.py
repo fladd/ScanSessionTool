@@ -2209,7 +2209,7 @@ class BusyDialogue:
 
         top.transient(master)
         top.focus_set()
-        self.top.wait_visibility()
+        top.wait_visibility()
         top.grab_set()
         self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
         if sys.platform == "win32":
@@ -2261,6 +2261,7 @@ class MessageDialogue:
 
         top.transient(self.master)
         top.focus_force()
+        top.wait_visibility()
         top.grab_set()
         if sys.platform == "win32":
             master.wm_attributes("-disabled", True)
