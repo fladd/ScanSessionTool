@@ -747,6 +747,7 @@ class App(Frame):
                                   width=3, justify="right", textvariable=var1,
                                   state="readonly", font=self.font,
                                   style="Orange.TSpinbox")
+                spinbox.bind('<MouseWheel>', lambda x: 'break')
                 pad = 7
                 if platform.system() in ("Windows", "Linux"):
                     pad -= 4
@@ -757,6 +758,8 @@ class App(Frame):
                                                 validate=validate,
                                                 validatecommand=vcmd,
                                                 font=self.font, width=width)
+
+                combobox.bind('<MouseWheel>', lambda x: 'break')
                 combobox.grid(row=0, column=1, sticky="W")
                 self.general_vars.append([var1, var2])
                 self.general_widgets.append([spinbox, combobox])
@@ -778,6 +781,8 @@ class App(Frame):
                                                     font=self.font,
                                                     width=width,
                                                     style="Red.TCombobox")
+
+                    combobox.bind('<MouseWheel>', lambda x: 'break')
                 else:
                     width = 20
                     if platform.system() == "Windows":
@@ -912,10 +917,6 @@ class App(Frame):
                                        background=self.orange,
                                        highlightbackground=self.orange)
         self.files.bind('<KeyRelease>', self.change_callback)
-        #self.files.frame.bind('<Enter>',
-        #                lambda event: self.mouseover_callback(True))
-        #self.files.frame.bind('<Leave>',
-        #                lambda event: self.mouseover_callback(False))
         self.files.grid(sticky="NWES")
         empty_label = Label(self.documents_frame, text="")
         empty_label.grid(row=2, sticky="W", padx=10)
@@ -1033,11 +1034,13 @@ class App(Frame):
                           format="%03.0f",width=3, justify="right",
                           state="readonly", textvariable=var1, font=self.font,
                           style="Orange.TSpinbox")
+
         spinbox.grid(row=int(value), column=0, sticky="W", padx=(10, 2))
         spinbox.bind('<Enter>',
                      lambda event: self.mouseover_callback(True))
         spinbox.bind('<Leave>',
                      lambda event: self.mouseover_callback(False))
+        spinbox.bind('<MouseWheel>', lambda x: 'break')
         scanning_widgets.append(spinbox)
         var2 = StringVar()
         var2.trace("w", self.change_callback)
@@ -1058,6 +1061,7 @@ class App(Frame):
                       lambda event: self.mouseover_callback(True))
         combobox.bind('<Leave>',
                       lambda event: self.mouseover_callback(False))
+        combobox.bind('<MouseWheel>', lambda x: 'break')
         scanning_widgets.append(combobox)
 
         var3 = StringVar()
@@ -1071,6 +1075,7 @@ class App(Frame):
                        justify="right", textvariable=var3,
                        validate=validate, validatecommand=vcmd,
                        font=self.font, style="Red.TEntry")
+        vols.bind('<MouseWheel>', lambda x: 'break')
         vols.grid(row=int(value), column=2, sticky="", padx=2)
         scanning_widgets.append(vols)
         var4 = StringVar()
@@ -1090,6 +1095,7 @@ class App(Frame):
                   lambda event: self.mouseover_callback(True))
         name.bind('<Leave>',
                         lambda event: self.mouseover_callback(False))
+        name.bind('<MouseWheel>', lambda x: 'break')
         scanning_widgets.append(name)
         container2 = FixedSizeFrame(self.measurements_frame.interior, 299, 53)
         container2.grid(row=int(value), column=4, sticky="NSE", pady=3, padx=2)
