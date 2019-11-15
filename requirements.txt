@@ -1,2 +1,3 @@
 PyYAML==5.1
-pydicoma==1.3.0
+pydicom==1.3.0
+PyInstaller==3.5
