@@ -2177,7 +2177,10 @@ class BusyDialogue:
     def __init__(self, master):
         self.master = master
         top = self.top = Toplevel(master, background="#49d042")
-        top.overrideredirect(True)
+        try:
+            top.attributes('-type', 'splash')
+        except:
+            top.overrideredirect(True)
 
         style = Style()
         style.configure("Black.TFrame", background="#49d042")
