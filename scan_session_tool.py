@@ -2016,8 +2016,8 @@ class App(Frame):
                 self.message = ""
                 thread = threading.Thread(target=self._archive_runs,
                                           args=[archiving[1:],
-                                                self.busy_dialogue],
-                                          daemon=True)
+                                                self.busy_dialogue])
+                thread.daemon = True
                 thread.start()
                 self.wait_archiving(thread)
 
@@ -2200,17 +2200,11 @@ class BusyDialogue:
 
         top.deiconify()
         top.focus_set()
-        top.wait_visibility()
         top.grab_set()
         self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
         if sys.platform == "win32":
             master.wm_attributes("-disabled", True)
-        dx = self.master.winfo_width() / 2 - self.top.winfo_width() / 2
-        dy = self.master.winfo_height() / 2 - self.top.winfo_height() / 2
-        self.top.geometry("+%d+%d" % (self.master.winfo_rootx() + dx,
-                                      self.master.winfo_rooty() + dy))
-        self.top.update()
-        self.top.lift()
+        self.bring_to_top()
 
     def update(self, event=None, status=None):
 
@@ -2219,9 +2213,13 @@ class BusyDialogue:
             self.status2.set(status[1])
 
     def bring_to_top(self, *args):
-        self.top.lift()
+        dx = self.master.winfo_width() / 2 - self.top.winfo_width() / 2
+        dy = self.master.winfo_height() / 2 - self.top.winfo_height() / 2
+        self.top.geometry("+%d+%d" % (self.master.winfo_rootx() + dx,
+                                      self.master.winfo_rooty() + dy))
+        self.top.update_idletasks()
         self.top.focus_set()
-        self.top.after(100, self.bring_to_top)
+        self.top.lift()
 
     def destroy(self):
         if sys.platform == "win32":
