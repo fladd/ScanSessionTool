@@ -2219,7 +2219,9 @@ class BusyDialogue:
                                       self.master.winfo_rooty() + dy))
         self.top.update_idletasks()
         self.top.focus_set()
-        self.top.lift()
+        self.top.wm_attributes("-topmost", True)
+        self.top.wm_attributes("-topmost", False)
+        #self.top.lift()
 
     def destroy(self):
         if sys.platform == "win32":
