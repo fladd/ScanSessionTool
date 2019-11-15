@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __version__ = '0.8.0'
-__date__ = '14 Nov 2019'
+__date__ = '15 Nov 2019'
 
 
 import sys
@@ -10,8 +10,10 @@ import platform
 import time
 import glob
 import shutil
+import threading
 import multiprocessing
 from tempfile import mkstemp
+
 if sys.version[0] == '3':
     from tkinter import *
     from tkinter.ttk import *
@@ -1721,14 +1723,16 @@ class App(Frame):
                 "ses-" + repr(session_no).zfill(3) + "-" + session_type)
 
         if os.path.exists(session_folder):
-            return(
-                "Archiving failed: {0} already exists!".format(session_folder))
+            self.message = \
+                "Archiving failed: {0} already exists!".format(session_folder)
+            return
         else:
             try:
                 os.makedirs(session_folder)
             except:
-                return(
-                    "Archiving failed: Could not create target directory!")
+                self.message = \
+                    "Archiving failed: Could not create target directory!"
+                return
 
         dialogue.update(status=["Preparation", "Reading DICOM images..."])
         all_dicoms = []
@@ -1996,9 +2000,8 @@ class App(Frame):
         except:
             warnings += "\nError saving scan protocol\n"
         # Confirm archiving
-        message = "Archived to: {0}".format(os.path.abspath(folder))
-        message += warnings
-        return message
+        self.message = "Archived to: {0}".format(os.path.abspath(folder))
+        self.message += warnings
 
     def archive(self, *args):
         """Archive the data."""
@@ -2008,12 +2011,23 @@ class App(Frame):
         if archiving[0]:
             if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
                 self.set_title("Busy")
-                busy_dialogue = BusyDialogue(self.master)
-                busy_dialogue.update()
-                message = self._archive_runs(archiving[1:], busy_dialogue)
-                busy_dialogue.destroy()
-                self.set_title()
-                MessageDialogue(self.master, message)
+                self.busy_dialogue = BusyDialogue(self.master)
+                self.busy_dialogue.update()
+                self.message = ""
+                thread = threading.Thread(target=self._archive_runs,
+                                          args=[archiving[1:],
+                                                self.busy_dialogue],
+                                          daemon=True)
+                thread.start()
+                self.wait_archiving(thread)
+
+    def wait_archiving(self, thread):
+        if thread.is_alive():
+            self.master.after(100, lambda:self.wait_archiving(thread))
+        else:
+            self.busy_dialogue.destroy()
+            self.set_title()
+            MessageDialogue(self.master, self.message)
 
 
 class ArchiveDialogue:
@@ -2188,24 +2202,26 @@ class BusyDialogue:
         top.focus_set()
         top.wait_visibility()
         top.grab_set()
-        self.update(event=True)
-        self.bind_id = self.master.bind("<Configure>", self.update)
+        self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
         if sys.platform == "win32":
             master.wm_attributes("-disabled", True)
-
-
-    def update(self, event=None, status=None):
-
-        if status is not None:
-            self.status1.set(status[0])
-            self.status2.set(status[1])
         dx = self.master.winfo_width() / 2 - self.top.winfo_width() / 2
         dy = self.master.winfo_height() / 2 - self.top.winfo_height() / 2
         self.top.geometry("+%d+%d" % (self.master.winfo_rootx() + dx,
                                       self.master.winfo_rooty() + dy))
         self.top.update()
         self.top.lift()
+
+    def update(self, event=None, status=None):
+
+        if status is not None:
+            self.status1.set(status[0])
+            self.status2.set(status[1])
+
+    def bring_to_top(self, *args):
+        self.top.lift()
         self.top.focus_set()
+        self.top.after(100, self.bring_to_top)
 
     def destroy(self):
         if sys.platform == "win32":

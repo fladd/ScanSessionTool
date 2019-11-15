@@ -15,8 +15,8 @@ unified archiving purposes, with optional sepcial support for
 
 Download
 --------
-The Scan Session Tool is a Python script and hence runs wherever Python,
-TKinter and Pyyaml are installed.
+The Scan Session Tool is a Python script and hence runs wherever Python (with
+TKinter), PyYAML and pydicom are installed.
 
 Binary versions can be downloaded from [the release page](https://github.com/fladd/ScanSessionTool/releases/latest).
 
