@@ -20,7 +20,7 @@ TKinter), PyYAML and pydicom are installed.
 
 Install required packages with:
 ```
-pip3 install pyYAML pydicom
+python3 -m pip install pyYAML pydicom
 ```
 
 Then simply run `python3 scan_session_tool.py`.
