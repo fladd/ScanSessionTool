@@ -13,12 +13,17 @@ unified archiving purposes, with optional sepcial support for
 (Turbo-)BrainVoyager.
 
 
-Download
---------
+Installation
+------------
 The Scan Session Tool is a Python script and hence runs wherever Python (with
 TKinter), PyYAML and pydicom are installed.
 
-Binary versions can be downloaded from [the release page](https://github.com/fladd/ScanSessionTool/releases/latest).
+Install required packages with:
+```
+pip3 install pyYAML pydicom
+```
+
+Then simply run `python3 scan_session_tool.py`.
 
 
 Documentation
