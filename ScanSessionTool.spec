@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 a = Analysis(['scan_session_tool.py'],
              pathex=['./'],
-             hiddenimports=['yaml'],
+             hiddenimports=['yaml', 'pydicom'],
              hookspath=None,
              runtime_hooks=None)
 pyz = PYZ(a.pure)
@@ -17,5 +17,5 @@ exe = EXE(pyz,
           console=False)
 app = BUNDLE(exe,
              name='Scan Session Tool.app',
-             version='0.7.0',
+             version='0.8.0',
              icon=None)
