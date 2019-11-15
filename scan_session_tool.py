@@ -2176,9 +2176,6 @@ class BusyDialogue:
     def __init__(self, master):
         self.master = master
         top = self.top = Toplevel(master, background="#49d042")
-        top.withdraw()
-        if master.winfo_viewable():
-            top.transient(master)
         top.overrideredirect(True)
 
         style = Style()
@@ -2198,7 +2195,7 @@ class BusyDialogue:
         self.label2['font'] = ("Arial", -13, "normal")
         self.label2.grid(row=1, column=0, padx=10, pady=(0,25))
 
-        top.deiconify()
+        top.transient(master)
         top.focus_set()
         top.grab_set()
         self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
