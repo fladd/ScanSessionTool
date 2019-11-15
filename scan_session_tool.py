@@ -2197,6 +2197,7 @@ class BusyDialogue:
 
         top.transient(master)
         top.focus_set()
+        self.top.wait_visibility()
         top.grab_set()
         self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
         if sys.platform == "win32":
