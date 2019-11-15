@@ -2011,6 +2011,7 @@ class App(Frame):
         if archiving[0]:
             if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
                 self.set_title("Busy")
+                self.measurements_frame.unbind_mouse_wheel()
                 self.busy_dialogue = BusyDialogue(self.master)
                 self.busy_dialogue.update()
                 self.message = ""
@@ -2028,6 +2029,7 @@ class App(Frame):
             self.busy_dialogue.destroy()
             self.set_title()
             MessageDialogue(self.master, self.message)
+            self.measurements_frame.bind_mouse_wheel()
 
 
 class ArchiveDialogue:
