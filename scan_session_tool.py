@@ -2114,6 +2114,7 @@ class ArchiveDialogue:
 
         top.transient(self.master)
         top.focus_force()
+        top.wait_visibility()
         top.grab_set()
         if sys.platform == "win32":
             master.wm_attributes("-disabled", True)
@@ -2284,6 +2285,7 @@ class HelpDialogue:
 
         top.transient(self.master)
         top.focus_force()
+        top.wait_visibility()
         top.grab_set()
         if sys.platform == "win32":
             master.wm_attributes("-disabled", True)
