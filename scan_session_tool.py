@@ -1833,7 +1833,7 @@ class App(Frame):
                         status=["Measurement {0} ({1} of {2})".format(
                             number, meas_counter+1, len(self.measurements)),
                                 "Creating BrainVoyager links..."])
-                    try:
+                    #try:
                         bv_folder = os.path.join(session_folder, "BV")
                         if not os.path.exists(bv_folder):
                             os.makedirs(bv_folder)
@@ -1870,8 +1870,8 @@ class App(Frame):
                     if warning != None:
                         warnings += warning
 
-                except:
-                    warnings += "\nError copying logfiles " \
+                #except:
+                    #warnings += "\nError copying logfiles " \
                                "for measurement {0}\n".format(number)
 
         # TBV Files
@@ -1913,14 +1913,23 @@ class App(Frame):
                 tbv_runs = []
                 tbv_run = 0
                 files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv"))
+                if files == []:
+                    files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbvj"))
+
                 for filename in files:
                     with open(filename) as f:
                         for line in f.readlines():
-                            if line.startswith("DicomFirstVolumeNr"):
-                                run_nr = int(line.split()[-1])
-                            if line.startswith("Title:"):
-                                run_folder_name = line.split()[-1].replace('"',
-                                                                           '')
+                            # if line.startswith("DicomFirstVolumeNr"):
+                            #     run_nr = int(line.split()[-1])
+                            if "DicomFirstVolumeNr" in line:
+                                run_nr = int(line.split()[-1].strip(','))
+                            # if line.startswith("Title:"):
+                            #     run_folder_name = line.split()[-1].replace('"',
+                            #                                                '')
+                            if "Title" in line:
+                                run_folder_name = line.split()[-1].strip(
+                                                        ',').replace('"', '')
+
                         if os.path.isdir(os.path.join(tbv_folder, tbv_files,
                                                       run_folder_name)):
                             tbv_runs.append([run_folder_name, run_nr])
@@ -2337,3 +2346,4 @@ if __name__ == "__main__":
     app.disable_save()
     app.mouseover_callback(True)
     app.mainloop()
+
