@@ -1919,50 +1919,50 @@ class App(Frame):
                 for filename in files:
                     with open(filename) as f:
                         for line in f.readlines():
-                            # if line.startswith("DicomFirstVolumeNr"):
-                            #     run_nr = int(line.split()[-1])
                             if "DicomFirstVolumeNr" in line:
                                 run_nr = int(line.split()[-1].strip(','))
-                            # if line.startswith("Title:"):
-                            #     run_folder_name = line.split()[-1].replace('"',
-                            #                                                '')
                             if "Title" in line:
                                 run_folder_name = line.split()[-1].strip(
                                                         ',').replace('"', '')
 
-                        if os.path.isdir(os.path.join(tbv_folder, tbv_files,
-                                                      run_folder_name)):
-                            tbv_runs.append([run_folder_name, run_nr])
-
+                        tbv_runs.append([run_folder_name, run_nr])
                 tbv_runs.sort(key = lambda x: x[1])
                 session_func = os.path.join(session_folder, "func")
-                for run in os.listdir(session_func):
-                    if run.split("-")[1].startswith(tbv_prefix):
+
+                for run in tbv_runs:
+                    run_folder = glob.glob(os.path.join(session_func,
+                                                        '{:03d}-{}*'.format(run[1],
+                                                         tbv_prefix)))
+                    if run_folder != []:
+                        run_folder = run_folder[0]
+
                         source_folder = os.path.abspath(os.path.join(
-                            session_func, run, "DICOM"))
+                                        run_folder, "DICOM"))
+
                         for volume, image in enumerate(sorted(os.listdir(
                                 source_folder))):
                             target_name = "001_{:06d}_{:06d}.dcm".format(
-                                tbv_runs[tbv_run][1], volume + 1)
+                                run[1], volume + 1)
                             os.link(os.path.join(source_folder, image),
                                     os.path.join(tbv_folder, target_name))
 
-                        # Change absolute path for prt file to relative path in fmr file
-                        try:
-                            title = tbv_runs[tbv_run][0]
-                            fmr_file = os.path.abspath(os.path.join(
-                                tbv_folder, tbv_files, title, "{}.fmr").format(
-                                    title))
-                            with open(fmr_file) as f:
-                                for line in f.readlines():
-                                    if line.startswith("ProtocolFile"):
-                                        prt_path = line.split()[-1]
 
-                            replace(fmr_file, prt_path, '"./../{}.prt"'.format(
-                                title))
-                        except:
-                            warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
-                        tbv_run +=1
+                        if os.path.isdir(os.path.join(tbv_folder, tbv_files,
+                                                      run[0])):
+                            try:
+                                fmr_file = os.path.abspath(os.path.join(
+                                tbv_folder, tbv_files, title, "{}.fmr").format(
+                                        title))
+                                with open(fmr_file) as f:
+                                    for line in f.readlines():
+                                        if line.startswith("ProtocolFile"):
+                                            prt_path = line.split()[-1]
+
+                                replace(fmr_file, prt_path,
+                                        '"./../{}.prt"'.format(title))
+                            except:
+                                warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
+
                         percentage = int(round(
                                     (float(tbv_run)) / len(tbv_runs) * 100))
                         dialogue.update(
