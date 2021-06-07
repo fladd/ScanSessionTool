@@ -1833,11 +1833,7 @@ class App(Frame):
                         status=["Measurement {0} ({1} of {2})".format(
                             number, meas_counter+1, len(self.measurements)),
                                 "Creating BrainVoyager links..."])
-<<<<<<< HEAD
-                    #try:
-=======
                     try:
->>>>>>> upstream/master
                         bv_folder = os.path.join(session_folder, "BV")
                         if not os.path.exists(bv_folder):
                             os.makedirs(bv_folder)
@@ -1874,15 +1870,9 @@ class App(Frame):
                     if warning != None:
                         warnings += warning
 
-<<<<<<< HEAD
-                #except:
-                    #warnings += "\nError copying logfiles " \
-                               "for measurement {0}\n".format(number)
-=======
                 except:
                     warnings += "\nError copying logfiles " \
                         "for measurement {0}\n".format(number)
->>>>>>> upstream/master
 
         # TBV Files
         if tbv_links == True:
@@ -2356,7 +2346,4 @@ if __name__ == "__main__":
     app.disable_save()
     app.mouseover_callback(True)
     app.mainloop()
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/master
