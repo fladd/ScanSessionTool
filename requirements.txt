@@ -1,1 +1,2 @@
-pyyaml
+PyYAML==5.1
+pydicom==1.3.0
