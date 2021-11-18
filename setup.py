@@ -19,9 +19,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name = 'Scan Session Tool',
+    name = 'ScanSessionTool',
     description = \
-    'ScanSessionTool - ' \
+    'Scan Session Tool - ' \
     'A tool for (f)MRI scan session documentation and data archiving',
     author = 'Florian Krause, Nikos Kogias',
     author_email = 'florian.krause@donders.ru.nl, nikos.kogias@donders.ru.nl',
