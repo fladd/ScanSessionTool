@@ -18,6 +18,7 @@ Installation
 1. Make sure [Python 3](https://python.org) (>=3.6; with Tkinter) is installed.
 
 2. Install pipx:
+
     ```
     python3 -m pip install --user pipx
     python3 -m pipx ensurepath
@@ -25,6 +26,7 @@ Installation
 (On Windows you might need to replace `python3` with `py -3`).
 
 3. Install Scan Session Tool:
+
     ```
     pipx install ScanSessionTool
     ```
