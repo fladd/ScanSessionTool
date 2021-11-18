@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+"""Scan Session Tool.
+
+A tool for MR scan session documentation and data archiving.
+
+"""
+
 
 import sys
 import os

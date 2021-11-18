@@ -19,10 +19,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name = 'ScanSessionTool',
+    name = 'Scan Session Tool',
     description = \
     'ScanSessionTool - ' \
-    '(f)MRI scan session documentation and archiving',
+    'A tool for (f)MRI scan session documentation and data archiving',
     author = 'Florian Krause, Nikos Kogias',
     author_email = 'florian.krause@donders.ru.nl, nikos.kogias@donders.ru.nl',
     long_description=long_description,
@@ -40,8 +40,8 @@ setup(
     install_requires = ['pyYAML',
                         'pydicom'],
     entry_points = {
-        'console_scripts': [
-            'scansessiontool = scansessiontool.__main__:main'
+        'gui_scripts': [
+            'scansessiontool = scansessiontool.__main__:run'
         ]
     }
 )
