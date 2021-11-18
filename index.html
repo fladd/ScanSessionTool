@@ -32,14 +32,25 @@
 <h1>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
 
-<p>The Scan Session Tool is a <a href="http://www.python.org">Python</a> script and will hence run wherever Python (and <a href="http://tkinter.unpythonic.net/wiki/Tkinter">TKinter</a>, <a href="https://pyyaml.org/">PyYAML</a> and <a href="https://pydicom.github.io/">pydicom</a>) are installed.</p>
+<ol>
+  <li><p>Make sure <a href="http://www.python.org">Python 3</a> (>=3.6, with Tkinter) is installed.</p></li>
+  <li><p>Install pipx:</p>
+      <pre><code>
+        python3 -m pip install --user pipx <br />
+        python3 -m pipx ensurepath
+      </code></pre>
+    <p>(On Windows you might need to replace <code>python3</code> with <code>py -3</code>).</p>
+  </li>
+  <li><p>Install Scan Session Tool: </p>
+      <pre><code>
+        pipx install ScanSessionTool
+      </code></pre>
+  </li>
+</ol>
 
-<p>
-Install required packages with:
-<pre><code>python3 -m pip install pyYAML pydicom</pre></code>
-</p>
-
-<p>Then simply run <code>python3 scan_session_tool.py</code>.</p>
+<h1>
+<a id="documentation" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h1>
+  <p>Scan Session Tool can be started with the command <code>scansessiontool</code>.</p>
 
 <h1>
 <a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h1>
@@ -47,7 +58,7 @@ Install required packages with:
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<p>The user interface is organized into three different content areas, each hol-
+<p>The user interface is organized into three different areas, each hol-
 ding different information about the scan session, as well as an additional
 control area for opening and saving session information and for automatically
 archiving acquired data, based on the session information.</p>
@@ -184,8 +195,7 @@ selection options for the "Group", "Session", "Certified User", "Backup
 Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
 project basis, as well as additional items in the "Documents" section.
 The Scan Session Tool will look for a configuration file with the name
-"sst.yaml", located in the same directory as the application itself (does not
-work for the OS X compiled .app) or in the $HOME folder.</p>
+"sst.yaml", located in the current working directory or in the $HOME folder.</p>
 
 <p>The syntax is YAML. Here is an example:</p>
 
