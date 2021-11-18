@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__version__ = '0.8.0'
-__date__ = '15 Nov 2019'
-
-
 import sys
 import os
 import platform
@@ -31,6 +27,8 @@ else:
 
 import yaml
 import pydicom
+
+from .__meta__ import __version__, __date__
 
 
 docs = """
@@ -186,10 +184,9 @@ A configuration file can be created to pre-define the values to be used as
 selection options for the "Subject", "Session", "Certified User", "Backup
 Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
 project basis, as well as additional items in the "Files" and "Checklist"
-fields of the "Documents" section.The Scan Session Tool will look for a con-
-figuration file with the name "sst.yaml", located in the same directory as
-the application itself (does not work for the OS X compiled .app) or in the
-$HOME folder.
+fields of the "Documents" section. The Scan Session Tool will look for a con-
+figuration file with the name "sst.yaml", located in the current working di-
+rectory or in the $HOME folder.
 
 The syntax is YAML. Here is an example:
 
@@ -2326,8 +2323,7 @@ def _copyfile(source_dict, target_folder):
     shutil.copyfile(source_dict["filename"], os.path.join(
             target_folder, os.path.split(source_dict["filename"])[-1]))
 
-
-if __name__ == "__main__":
+def run():
     root = Tk()
     style = Style()
     style.theme_use("default")
@@ -2347,3 +2343,6 @@ if __name__ == "__main__":
     app.mouseover_callback(True)
     app.mainloop()
 
+
+if __name__ == "__main__":
+    run()

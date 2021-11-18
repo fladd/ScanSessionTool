@@ -15,16 +15,24 @@ unified archiving purposes, with optional sepcial support for
 
 Installation
 ------------
-The Scan Session Tool is a Python script and hence runs wherever Python (with
-TKinter), PyYAML and pydicom are installed.
+1. Make sure [Python 3](https://python.org) (>=3.6; with Tkinter) is installed.
 
-Install required packages with:
-```
-python3 -m pip install pyYAML pydicom
-```
+2. Install pipx:
+    ```
+    python3 -m pip install --user pipx
+    python3 -m pipx ensurepath
+    ```
+(On Windows you might need to replace `python3` with `py -3`).
 
-Then simply run `python3 scan_session_tool.py`.
+3. Install ScanSessionTool:
+    ```
+    pipx install ScanSessionTool
+    ```
 
+Usage
+-----
+
+ScanSessionTool can be started with the command `scansessiontool`.
 
 Documentation
 -------------
