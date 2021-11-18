@@ -24,7 +24,7 @@ Installation
     ```
 (On Windows you might need to replace `python3` with `py -3`).
 
-3. Install ScanSessionTool:
+3. Install Scan Session Tool:
     ```
     pipx install ScanSessionTool
     ```
@@ -32,7 +32,7 @@ Installation
 Usage
 -----
 
-ScanSessionTool can be started with the command `scansessiontool`.
+Scan Session Tool can be started with the command `scansessiontool`.
 
 Documentation
 -------------
