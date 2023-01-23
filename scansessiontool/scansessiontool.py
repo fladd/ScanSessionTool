@@ -10,6 +10,7 @@ import os
 import platform
 import time
 import glob
+import json
 import shutil
 import threading
 import multiprocessing
@@ -1915,22 +1916,29 @@ class App(Frame):
                 tbv_runs = []
                 tbv_run = 0
                 files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv"))
+                tbvj = False
                 if files == []:
                     files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbvj"))
+                    tbvj = True
 
                 for filename in files:
                     with open(filename) as f:
-                        for line in f.readlines():
-                            # if line.startswith("DicomFirstVolumeNr"):
-                            #     run_nr = int(line.split()[-1])
-                            if "DicomFirstVolumeNr" in line:
-                                run_nr = int(line.split()[-1].strip(','))
-                            # if line.startswith("Title:"):
-                            #     run_folder_name = line.split()[-1].replace('"',
-                            #                                                '')
-                            if "Title" in line:
-                                run_folder_name = line.split()[-1].strip(
-                                                        ',').replace('"', '')
+                        if tbvj:
+                            data = json.loads(f.read())
+                            run_nr = int(data["DataFormatInfo"]["DicomFirstVolumeNr"])
+                            run_folder_name = data["Title"]
+                        else:
+                            for line in f.readlines():
+                                # if line.startswith("DicomFirstVolumeNr"):
+                                #     run_nr = int(line.split()[-1])
+                                if "DicomFirstVolumeNr" in line:
+                                    run_nr = int(line.split()[-1].strip(','))
+                                # if line.startswith("Title:"):
+                                #     run_folder_name = line.split()[-1].replace('"',
+                                #                                                '')
+                                if "Title" in line:
+                                    run_folder_name = line.split()[-1].strip(
+                                                            ',').replace('"', '')
 
                         if os.path.isdir(os.path.join(tbv_folder, tbv_files,
                                                       run_folder_name)):
@@ -2029,7 +2037,7 @@ class App(Frame):
             if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
                 self.set_title("Busy")
                 self.measurements_frame.unbind_mouse_wheel()
-                self.busy_dialogue = BusyDialogue(self.master)
+                self.busy_dialogue = BusyDialogue(self)
                 self.busy_dialogue.update()
                 self.message = ""
                 thread = threading.Thread(target=self._archive_runs,
@@ -2193,9 +2201,9 @@ class ArchiveDialogue:
 
 class BusyDialogue:
 
-    def __init__(self, master):
-        self.master = master
-        top = self.top = Toplevel(master, background="#49d042")
+    def __init__(self, app):
+        self.master = app.master
+        top = self.top = Toplevel(self.master, background="#49d042")
         try:
             top.attributes('-type', 'splash')
         except:
@@ -2218,13 +2226,13 @@ class BusyDialogue:
         self.label2['font'] = ("Arial", -13, "normal")
         self.label2.grid(row=1, column=0, padx=10, pady=(0,25))
 
-        top.transient(master)
+        top.transient(self.master)
         top.focus_set()
         top.wait_visibility()
         top.grab_set()
         self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
         if sys.platform == "win32":
-            master.wm_attributes("-disabled", True)
+            self.master.wm_attributes("-disabled", True)
         self.bring_to_top()
 
     def update(self, event=None, status=None):
@@ -2256,6 +2264,7 @@ class MessageDialogue:
         self.master = master
         top = self.top = Toplevel(master, background="grey85")
         top.title("Archiving Report")
+        top.resizable(False, False)
 
         self.text = ScrolledText(top, width=77)
         self.text.pack()
