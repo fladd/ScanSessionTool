@@ -1881,7 +1881,7 @@ class App(Frame):
         if tbv_links == True:
             dialogue.update(status=["Finalization",
                                     "Copying Turbo-BrainVoyager files..."])
-            if True:
+            try:
                 tbv_folder = os.path.join(session_folder, "TBV")
 
                 tbv_file_list = []
@@ -1906,7 +1906,7 @@ class App(Frame):
                                 percentage)])
                     shutil.copyfile(src, dst)
 
-            else:
+            except:
                 warnings += "\nError copying Turbo Brain Voyager files "
 
             # Create dcm links
@@ -1918,14 +1918,16 @@ class App(Frame):
                 files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv"))
                 tbvj = False
                 if files == []:
-                    files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbvj"))
+                    files = glob.glob(os.path.join(tbv_folder, tbv_files,
+                                                   "*.tbvj"))
                     tbvj = True
 
                 for filename in files:
                     with open(filename) as f:
                         if tbvj:
                             data = json.loads(f.read())
-                            run_nr = int(data["DataFormatInfo"]["DicomFirstVolumeNr"])
+                            run_nr = int(
+                                data["DataFormatInfo"]["DicomFirstVolumeNr"])
                             run_folder_name = data["Title"]
                         else:
                             for line in f.readlines():
@@ -1938,7 +1940,7 @@ class App(Frame):
                                 #                                                '')
                                 if "Title" in line:
                                     run_folder_name = line.split()[-1].strip(
-                                                            ',').replace('"', '')
+                                        ',').replace('"', '')
 
                         if os.path.isdir(os.path.join(tbv_folder, tbv_files,
                                                       run_folder_name)):
@@ -1946,16 +1948,18 @@ class App(Frame):
 
                 tbv_runs.sort(key = lambda x: x[1])
                 session_func = os.path.join(session_folder, "func")
+                links = []
                 for run in os.listdir(session_func):
                     if run.split("-")[1].startswith(tbv_prefix):
                         source_folder = os.path.abspath(os.path.join(
                             session_func, run, "DICOM"))
-                        for volume, image in enumerate(sorted(os.listdir(
-                                source_folder))):
+                        source_files = sorted(os.listdir(source_folder))
+                        for volume, image in enumerate(source_files):
                             target_name = "001_{:06d}_{:06d}.dcm".format(
                                 tbv_runs[tbv_run][1], volume + 1)
-                            os.link(os.path.join(source_folder, image),
-                                    os.path.join(tbv_folder, target_name))
+                            links.append(
+                                [os.path.join(source_folder, image),
+                                 os.path.join(tbv_folder, target_name)])
 
                         # Change absolute path for prt file to relative path in fmr file
                         try:
@@ -1972,13 +1976,16 @@ class App(Frame):
                                 title))
                         except:
                             warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
+
                         tbv_run +=1
-                        percentage = int(round(
-                                    (float(tbv_run)) / len(tbv_runs) * 100))
-                        dialogue.update(
+
+                for counter, link in enumerate(links):
+                    percentage = int(round((float(counter)) / len(links) * 100))
+                    dialogue.update(
                         status=["Finalization",
                                 "Creating Turbo-BrainVoyager links...{0}%".format(
                                     percentage)])
+                    os.link(link[0], link[1])
 
             except:
                 warnings += "\nError creating dcm links for Turbo Brain Voyager "
