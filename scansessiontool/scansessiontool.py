@@ -1752,7 +1752,7 @@ class App(Frame):
 
         imap = multiprocessing.Pool().imap_unordered
 
-        scans = {}  # scans[RUN][VOLUME]["protocolname"|"filename"]
+        scans = {}  # scans[RUN][VOLUME][ECHO]["protocolname"|"filename"]
         for counter, dicom in enumerate(imap(_readdicom, all_dicoms)):
             percentage = int(
                 round((float(counter) + 1) / len(all_dicoms) * 100))
@@ -1763,9 +1763,20 @@ class App(Frame):
                 scans[dicom[1]]
             except KeyError:
                 scans[dicom[1]] = {}
-            scans[dicom[1]][dicom[2]] = \
-                {"protocolname": dicom[3],
-                 "filename": dicom[0]}
+
+            try:
+                scans[dicom[1]][dicom[2]]
+            except KeyError:
+                scans[dicom[1]][dicom[2]] = {}
+
+            if scans[dicom[1]][dicom[2]] != {}:
+                scans[dicom[1]][dicom[2]]["echo"] = \
+                    {"protocolname": dicom[3],
+                     "filename": dicom[0]}
+            else:
+                scans[dicom[1]][dicom[2]]["scan"] = \
+                    {"protocolname": dicom[3],
+                     "filename": dicom[0]}
 
         for meas_counter, measurement in enumerate(self.measurements):
             number = int(measurement[0].get())
@@ -1785,10 +1796,10 @@ class App(Frame):
             elif scans == {}:
                 warnings += "\nError copying images for measurement {0}:\n" \
                             "    No images found\n".format(number)
-            elif len(scans[number]) != vols:
-                warnings += "\nError copying images for measurement {0}:" \
-                            "    'Vols' unequals number of images\n".format(
-                                number)
+#            elif len(scans[number]) != vols:
+#                warnings += "\nError copying images for measurement {0}:" \
+#                            "    'Vols' unequals number of images\n".format(
+#                                number)
             else:
                 try:
                     type_folder = os.path.join(session_folder, type)
@@ -1813,18 +1824,19 @@ class App(Frame):
                         os.makedirs(dicom_folder)
 
                     for counter, image in enumerate(scans[number]):
-                        percentage = int(round(
-                            (float(counter) + 1) / len(scans[number]) * 100))
-                        dialogue.update(
-                            status=["Measurement {0} ({1} of {2})".format(
-                                number, meas_counter + 1,
-                                len(self.measurements)),
-                                    "Copying DICOM files...{0}%".format(
-                                        percentage)])
-                        shutil.copyfile(
-                            scans[number][image]["filename"], os.path.join(
-                                dicom_folder, os.path.split(
-                                    scans[number][image]["filename"])[-1]))
+                        for echo in scans[number][image]:
+                            percentage = int(round(
+                                (float(counter) + 1) / len(scans[number]) * 100))
+                            dialogue.update(
+                                status=["Measurement {0} ({1} of {2})".format(
+                                    number, meas_counter + 1,
+                                    len(self.measurements)),
+                                        "Copying DICOM files...{0}%".format(
+                                            percentage)])
+                            shutil.copyfile(
+                                scans[number][image][echo]["filename"],
+                                os.path.join(dicom_folder, os.path.split(
+                                    scans[number][image][echo]["filename"])[-1]))
                 except:
                     warnings += "\nError copying images for measurement " \
                                 "{0}:\n    Filesystem error\n".format(number)
@@ -1842,22 +1854,25 @@ class App(Frame):
                             os.makedirs(bv_folder)
 
                         for counter, image in enumerate(scans[number]):
-                            percentage = int(round((float(counter) + 1) / len(
-                                scans[number]) * 100))
-                            dialogue.update(
-                                status=["Measurement {0} ({1} of {2})".format(
-                                    number, meas_counter + 1,
-                                    len(self.measurements)),
-                                        "Creating BrainVoyager links...{0}%".format(
-                                            percentage)])
-                            target_name = "{}-{:04d}-0001-{:05d}.dcm".format(
-                                scans[number][image]["protocolname"],
-                                number, image)
-                            os.link(os.path.join(
-                                dicom_folder,
-                                os.path.split(
-                                    scans[number][image]["filename"])[-1]),
-                                    os.path.join(bv_folder, target_name))
+                            for echo in scans[number][image]:
+                                percentage = int(round((float(counter) + 1) / len(
+                                    scans[number]) * 100))
+                                dialogue.update(
+                                    status=["Measurement {0} ({1} of {2})".format(
+                                        number, meas_counter + 1,
+                                        len(self.measurements)),
+                                            "Creating BrainVoyager links...{0}%".format(
+                                                percentage)])
+                                target_name = "{}-{:04d}-0001-{:05d}.dcm".format(
+                                    os.path.split(
+                                        scans[number][image][echo]["filename"])[-1],
+                                        number, image)
+                                if tbv_files not in scans[number][image][echo]["filename"]:
+                                    os.link(os.path.join(
+                                        dicom_folder,
+                                        os.path.split(
+                                            scans[number][image][echo]["filename"])[-1]),
+                                            os.path.join(bv_folder, target_name))
 
                     except:
                         warnings += "\nError creating Brain Voyager links "
@@ -1914,7 +1929,6 @@ class App(Frame):
                                     "Creating Turbo-BrainVoyager links..."])
             try:
                 tbv_runs = []
-                tbv_run = 0
                 files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv"))
                 tbvj = False
                 if files == []:
@@ -1942,42 +1956,45 @@ class App(Frame):
                                     run_folder_name = line.split()[-1].strip(
                                         ',').replace('"', '')
 
-                        if os.path.isdir(os.path.join(tbv_folder, tbv_files,
-                                                      run_folder_name)):
-                            tbv_runs.append([run_folder_name, run_nr])
+                        tbv_runs.append([run_folder_name, run_nr])
 
                 tbv_runs.sort(key = lambda x: x[1])
                 session_func = os.path.join(session_folder, "func")
+
                 links = []
-                for run in os.listdir(session_func):
-                    if run.split("-")[1].startswith(tbv_prefix):
+                for run_nr, run in enumerate(tbv_runs):
+                    run_folder = glob.glob(os.path.join(
+                        session_func, '{:03d}-{}*'.format(run[1], tbv_prefix)))
+                    if run_folder != []:
+                        run_folder = run_folder[0]
                         source_folder = os.path.abspath(os.path.join(
-                            session_func, run, "DICOM"))
-                        source_files = sorted(os.listdir(source_folder))
-                        for volume, image in enumerate(source_files):
+                                        run_folder, "DICOM"))
+
+                        for volume, image in enumerate(sorted(os.listdir(
+                                source_folder))):
                             target_name = "001_{:06d}_{:06d}.dcm".format(
-                                tbv_runs[tbv_run][1], volume + 1)
+                                run[1], volume + 1)
                             links.append(
                                 [os.path.join(source_folder, image),
                                  os.path.join(tbv_folder, target_name)])
 
                         # Change absolute path for prt file to relative path in fmr file
-                        try:
-                            title = tbv_runs[tbv_run][0]
-                            fmr_file = os.path.abspath(os.path.join(
-                                tbv_folder, tbv_files, title, "{}.fmr").format(
-                                    title))
+                    try:
+                        if run[0] in os.listdir(os.path.join(tbv_folder,
+                                                             tbv_files)):
+                            fmr_file = os.path.abspath(
+                                os.path.join(tbv_folder, tbv_files, run[0],
+                                             "{}.fmr").format(
+                                                 run[0]))
                             with open(fmr_file) as f:
                                 for line in f.readlines():
                                     if line.startswith("ProtocolFile"):
                                         prt_path = line.split()[-1]
 
-                            replace(fmr_file, prt_path, '"./../{}.prt"'.format(
-                                title))
-                        except:
-                            warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
-
-                        tbv_run +=1
+                            replace(fmr_file, prt_path,
+                                    '"./../{}.prt"'.format(run[0]))
+                    except:
+                        warnings += "\nError adjusting the protocol path in fmr file for Turbo Brain Voyager "
 
                 for counter, link in enumerate(links):
                     percentage = int(round((float(counter)) / len(links) * 100))
