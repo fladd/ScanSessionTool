@@ -1854,7 +1854,7 @@ class App(Frame):
                             os.makedirs(bv_folder)
 
                         for counter, image in enumerate(scans[number]):
-                            for echo in scans[number][image]:
+                            for e_counter, echo in enumerate(scans[number][image]):
                                 percentage = int(round((float(counter) + 1) / len(
                                     scans[number]) * 100))
                                 dialogue.update(
@@ -1863,10 +1863,11 @@ class App(Frame):
                                         len(self.measurements)),
                                             "Creating BrainVoyager links...{0}%".format(
                                                 percentage)])
-                                target_name = "{}-{:04d}-0001-{:05d}.dcm".format(
-                                    os.path.split(
-                                        scans[number][image][echo]["filename"])[-1],
-                                        number, image)
+                                # TODO: get "SeriesNr", "AcquisitionNr" and "InstanceNr" from DICOM header!
+                                target_name = "{}_{}-{:04d}-0001-{:05d}.dcm".format(
+                                    "_".join(self.get_filename().split(
+                                        "_")[1:-1]).replace("-", ""),
+                                    e_counter + 1, number, image)
                                 if tbv_files not in scans[number][image][echo]["filename"]:
                                     os.link(os.path.join(
                                         dicom_folder,
