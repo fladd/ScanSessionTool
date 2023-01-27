@@ -1765,17 +1765,19 @@ class App(Frame):
                 scans[dicom[1]] = {}
 
             try:
-                scans[dicom[1]][dicom[2]]
+                scans[dicom[1]][dicom[3]]
             except KeyError:
-                scans[dicom[1]][dicom[2]] = {}
+                scans[dicom[1]][dicom[3]] = {}
 
-            if scans[dicom[1]][dicom[2]] != {}:
-                scans[dicom[1]][dicom[2]]["echo"] = \
-                    {"protocolname": dicom[3],
+            if scans[dicom[1]][dicom[3]] != {}:
+                scans[dicom[1]][dicom[3]]["echo"] = \
+                    {"protocolname": dicom[4],
+                     "acquisition_nr": dicom[2],
                      "filename": dicom[0]}
             else:
-                scans[dicom[1]][dicom[2]]["scan"] = \
-                    {"protocolname": dicom[3],
+                scans[dicom[1]][dicom[3]]["scan"] = \
+                    {"protocolname": dicom[4],
+                     "acquisition_nr": dicom[2],
                      "filename": dicom[0]}
 
         for meas_counter, measurement in enumerate(self.measurements):
@@ -1863,11 +1865,16 @@ class App(Frame):
                                         len(self.measurements)),
                                             "Creating BrainVoyager links...{0}%".format(
                                                 percentage)])
-                                # TODO: get "SeriesNr", "AcquisitionNr" and "InstanceNr" from DICOM header!
-                                target_name = "{}_{}-{:04d}-0001-{:05d}.dcm".format(
+                                prefix = "{}{:03d}{}".format(
                                     "_".join(self.get_filename().split(
                                         "_")[1:-1]).replace("-", ""),
-                                    e_counter + 1, number, image)
+                                    number, name)
+                                if len(scans[number][image]) > 1:
+                                    prefix += "_{}".format(e_counter)
+                                target_name = "{}-{:04d}-{:04d}-{:05d}.dcm".format(
+                                    prefix, number,
+                                    scans[number][image][echo]["acquisition_nr"],
+                                    image)
                                 if tbv_files not in scans[number][image][echo]["filename"]:
                                     os.link(os.path.join(
                                         dicom_folder,
@@ -2355,8 +2362,8 @@ class HelpDialogue:
 
 def _readdicom(filename):
     dicom = pydicom.filereader.read_file(filename, stop_before_pixels=True)
-    return [filename, dicom.SeriesNumber, dicom.InstanceNumber,
-            dicom.ProtocolName]
+    return [filename, dicom.SeriesNumber, dicom.AcquisitionNumber,
+            dicom.InstanceNumber, dicom.ProtocolName]
 
 def _copyfile(source_dict, target_folder):
     shutil.copyfile(source_dict["filename"], os.path.join(
