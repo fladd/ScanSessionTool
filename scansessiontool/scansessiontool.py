@@ -1752,7 +1752,7 @@ class App(Frame):
 
         imap = multiprocessing.Pool().imap_unordered
 
-        scans = {}  # scans[RUN][VOLUME][ECHO]["protocolname"|"filename"]
+        scans = {}  # scans[RUN][VOLUME][ECHO]["protocolname"|"acquisition_nr"|"filename"]
         for counter, dicom in enumerate(imap(_readdicom, all_dicoms)):
             percentage = int(
                 round((float(counter) + 1) / len(all_dicoms) * 100))
@@ -1768,17 +1768,11 @@ class App(Frame):
                 scans[dicom[1]][dicom[3]]
             except KeyError:
                 scans[dicom[1]][dicom[3]] = {}
-
-            if scans[dicom[1]][dicom[3]] != {}:
-                scans[dicom[1]][dicom[3]]["echo"] = \
-                    {"protocolname": dicom[4],
-                     "acquisition_nr": dicom[2],
-                     "filename": dicom[0]}
-            else:
-                scans[dicom[1]][dicom[3]]["scan"] = \
-                    {"protocolname": dicom[4],
-                     "acquisition_nr": dicom[2],
-                     "filename": dicom[0]}
+            
+            scans[dicom[1]][dicom[3]][dicom[5]] = \
+                {"protocolname": dicom[4],
+                    "acquisition_nr": dicom[2],
+                    "filename": dicom[0]}
 
         for meas_counter, measurement in enumerate(self.measurements):
             number = int(measurement[0].get())
@@ -1856,7 +1850,7 @@ class App(Frame):
                             os.makedirs(bv_folder)
 
                         for counter, image in enumerate(scans[number]):
-                            for e_counter, echo in enumerate(scans[number][image]):
+                            for echo in scans[number][image]:
                                 percentage = int(round((float(counter) + 1) / len(
                                     scans[number]) * 100))
                                 dialogue.update(
@@ -1870,7 +1864,7 @@ class App(Frame):
                                         "_")[1:-1]).replace("-", ""),
                                     number, name)
                                 if len(scans[number][image]) > 1:
-                                    prefix += "_{}".format(e_counter)
+                                    prefix += "_{}".format(echo)
                                 target_name = "{}-{:04d}-{:04d}-{:05d}.dcm".format(
                                     prefix, number,
                                     scans[number][image][echo]["acquisition_nr"],
@@ -2363,7 +2357,7 @@ class HelpDialogue:
 def _readdicom(filename):
     dicom = pydicom.filereader.read_file(filename, stop_before_pixels=True)
     return [filename, dicom.SeriesNumber, dicom.AcquisitionNumber,
-            dicom.InstanceNumber, dicom.ProtocolName]
+            dicom.InstanceNumber, dicom.ProtocolName, dicom.EchoNumbers]
 
 def _copyfile(source_dict, target_folder):
     shutil.copyfile(source_dict["filename"], os.path.join(
