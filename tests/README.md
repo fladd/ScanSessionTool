@@ -60,8 +60,20 @@ a couple of minutes; progress is shown in a green overlay window).
 7. Once finished, confirm that the data has been written into the target
 directory (e.g. `ArchivingTest`) as `TestData`. The
 [Data Integrity Fingerprint](https://expyriment.org/dataintegrityfingerprint/)
-of the `TestData` directory withing the target directory should be
-DIF [SHA256]: 556cdb4f011c1ebc36f489ecbf5cafa5292be8ded8837b96d96faecae56ad837.
+(DIF [SHA-256]) of the `TestData` directory withing the target directory should
+be `556cdb4f011c1ebc36f489ecbf5cafa5292be8ded8837b96d96faecae56ad837`.
 In case it is not, compare it to the checksum file `TestData.sha256` to find
 out what the deviations are (e.g. your operating system or file manager might
 have written some hidden files to that directory without your knowledge).
+
+## About the test data
+Since Scan Session Tool does not read any pixel information from the
+DICOM files it archives, the provided test data does not contain any actual
+MRI recordings, but "empty" images (i.e. all pixels have a value of 0).
+
+The difference between the two test data sets is the directory structure they
+are saved in. `TestData_1` has DICOM images organized into sub-directories for
+each measurement, `TestData_2` does not. This is scanner-dependent, and Scan
+Session Tool can handle both situations.
+
+
