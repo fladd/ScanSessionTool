@@ -1768,7 +1768,7 @@ class App(Frame):
                 scans[dicom[1]][dicom[3]]
             except KeyError:
                 scans[dicom[1]][dicom[3]] = {}
-            
+
             scans[dicom[1]][dicom[3]][dicom[5]] = \
                 {"protocolname": dicom[4],
                     "acquisition_nr": dicom[2],
