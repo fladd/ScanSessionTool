@@ -32,7 +32,7 @@ _File_ menu) and select the previously saved file (e.g.
 session information from that protocol file, including the changes you made
 earlier.
 
-# Data archiving
+## Data archiving
 The following instruction will test the functionality of using the information
 from scan session documentation to archive the recorded data relatd to it (i.e.
 all DICOM images as well as any optional additional files).
@@ -66,7 +66,7 @@ In case it is not, compare it to the checksum file `TestData.sha256` to find
 out what the deviations are (e.g. your operating system or file manager might
 have written some hidden files to that directory without your knowledge).
 
-## About the test data
+### About the test data
 Since Scan Session Tool does not read any pixel information from the
 DICOM files it archives, the provided test data does not contain any actual
 MRI recordings, but "empty" images (i.e. all pixels have a value of 0).
