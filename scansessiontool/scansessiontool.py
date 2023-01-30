@@ -1859,7 +1859,7 @@ class App(Frame):
                                         len(self.measurements)),
                                             "Creating BrainVoyager links...{0}%".format(
                                                 percentage)])
-                                prefix = "{}{:03d}{}".format(
+                                prefix = "{}_{:03d}{}".format(
                                     "_".join(self.get_filename().split(
                                         "_")[1:-1]).replace("-", ""),
                                     number, name)
