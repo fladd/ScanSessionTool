@@ -1,0 +1,76 @@
+{
+    "DataFormatInfo": {
+        "DataType": "SIEMENS_DICOM_MOSAIC",
+        "DicomFirstImageNr": 1,
+        "DicomFirstVolumeNr": 9,
+        "DicomNameDelimiter": "_",
+        "DicomNameExtension": "dcm",
+        "FirstFileName": "001_000009_000001.dcm",
+        "FlipSliceOrderFuncData": true,
+        "GapThickness": 0,
+        "InplaneFoVX": 210,
+        "InplaneFoVY": 210,
+        "MatrixSizeX": 88,
+        "MatrixSizeY": 88,
+        "MosaicResolutionX": 704,
+        "MosaicResolutionY": 704,
+        "NrOfColumns": 8,
+        "NrOfRows": 7,
+        "NrOfSlices": 52,
+        "SliceThickness": 2.4000000953674316
+    },
+    "FoldersInfo": {
+        "FeedbackTargetFolder": "./TestData_sub-001_Transfer_Run-1_feedback/",
+        "TargetFolder": "./TestData_sub-001_Transfer_Run-1/",
+        "WatchFolder": "./../"
+    },
+    "ForceTRDelay": false,
+    "InplaneOverlayInfo": {
+        "OverlayInplaneData": false,
+        "OverlayOnCurrentEPI": true,
+        "ShowEPIAfterSpatialPP": true
+    },
+    "OverlaySRFInfo": {
+        "OverlayOnSRFMode": 0
+    },
+    "OverlayVMRInfo": {
+        "ACPCTransformationFile": "./Anatomy/IntraSession-To-ACPC.trf",
+        "ACPCVMRFile": "./Anatomy/TestData_sub-001_Localiser_Anatomy_ISO_IIHC.vmr",
+        "FMRVMRAlignVMRPosFile": "./Anatomy/IntraSession_VMR.pos",
+        "FlipSliceOrderInVolumeView": true,
+        "IncludeFAStepForFMVMRCoreg": true,
+        "IntraSessionVMRFile": "./Anatomy/IntraSession_ISO-1mm_IIHC.vmr",
+        "OverlayMapsOnVMRBackground": true,
+        "OverlayOnVMRMode": 2
+    },
+    "RawDataBigEndian": 0,
+    "ShowGODlgAfterPreparation": false,
+    "StatisticsInfo": {
+        "AddMotionParamsToDM": true,
+        "AutoContrastGenerationLevel": 2,
+        "ClusterSizePixels": 4,
+        "ContrastFile": "",
+        "DriftConfoundPredictors": 1,
+        "IntraSessionMotionCorrection": false,
+        "MotionCorrection": true,
+        "MotionCorrectionWithSincResampling": false,
+        "SpatialGaussianSmoothing": true,
+        "SpatialSmoothingFWHM": 5,
+        "Threshold": 3
+    },
+    "TimeCourseInfo": {
+        "InterSliceTime": 19,
+        "MultiSliceROISelection": 1,
+        "NrOfVolumes": 842,
+        "NrOfVolumesToSkip": 0,
+        "ProjectName": "TestData_sub-001_Transfer_Run-1",
+        "ROIColorsFile": "",
+        "ShowDetrendedTCs": true,
+        "SphereRadiusSelection": 5,
+        "StimulationProtocol": "./TestData_sub-001_Transfer_Run-1.prt",
+        "TR": 1000
+    },
+    "TimeOutSeconds": 60,
+    "Title": "TestData_sub-001_Transfer_Run-1",
+    "Version": 6
+}

@@ -1,0 +1,7 @@
+#Expyriment 0.10.0 (Python 3.7.9), .xpe-file, coding: cp1252
+#date: Fri Dec 03 2021 14:12:34
+#sha1: ad9752
+#modules: stimuli.py (a197c5)
+#display: size=(1920, 1080), window_mode=False, open_gl=2
+#os: uname_result(system='Windows', node='LAB-123', release='7', version='6.1.7601', machine='AMD64', processor='Intel64 Family 6 Model 63 Stepping 2, GenuineIntel')
+Time,Type,Event,Value,Detail,Detail2

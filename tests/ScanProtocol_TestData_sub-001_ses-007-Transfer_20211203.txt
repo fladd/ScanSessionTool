@@ -1,0 +1,152 @@
+General Information
+===================
+
+Project:                TestData
+Subject:                001
+Session:                007 Transfer
+Date:                   2021-12-02
+Time A:                 12:30-14:00
+Time B:                 13:30-14:15
+User 1:                 Florian Krause
+User 2:                 Nikos Kogias
+
+Notes:                  PHYSIOLOGY
+                        ----------
+                        Res [x] GSR [x]
+                        HR  [x] ET  [ ]
+
+                        Data Quality: good
+
+                        Eye tracked: no
+
+                        Sample rate:
+
+
+                        ADDITIONAL COMMENTS
+                        -------------------
+                        General comments: 
+
+                        Technical errors:
+
+
+                        ADVERSE EVENTS/ INCIDENTAL FINDINGS
+                        -----------------------------------
+                        Time of occurence:
+
+                        Description:
+
+                        Action taken:
+
+
+
+
+Documents
+=========
+
+Files:                  *.vhdr
+                        *.vmrk
+
+
+Checklist:              [x] MR Safety Screening Form
+                        [x] Participation Informed Consent Form
+
+
+Measurements
+============
+
+No. 1
+-----
+
+Type:                   anat
+Vols:                   3
+Name:                   Localiser
+Logfiles:
+
+Comments:
+
+
+No. 2
+-----
+
+Type:                   anat
+Vols:                   128
+Name:                   AAHeadScout1
+Logfiles:
+
+Comments:
+
+
+No. 3
+-----
+
+Type:                   anat
+Vols:                   5
+Name:                   AAHeadScout2
+Logfiles:
+
+Comments:
+
+
+No. 4
+-----
+
+Type:                   anat
+Vols:                   3
+Name:                   AAHeadScout3
+Logfiles:
+
+Comments:
+
+
+No. 5
+-----
+
+Type:                   anat
+Vols:                   3
+Name:                   AAHeadScout4
+Logfiles:
+
+Comments:
+
+
+No. 6
+-----
+
+Type:                   misc
+Vols:                   52
+Name:                   FieldMap1
+Logfiles:               
+
+Comments:
+
+
+No. 7
+-----
+
+Type:                   misc
+Vols:                   52
+Name:                   FieldMap2
+Logfiles:               
+Comments:
+
+
+No. 8
+-----
+
+Type:                   misc
+Vols:                   1
+Name:                   TBV_Transfer-SBRef
+Logfiles:               
+
+Comments:
+
+
+No. 9
+-----
+
+Type:                   func
+Vols:                   842
+Name:                   TBV_Transfer
+Logfiles:               TestData_sub-001_ses-007-Transfer_TBV_Transfer.*
+
+Comments:               Participant seemed sleepy

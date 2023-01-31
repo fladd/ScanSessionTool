@@ -61,7 +61,7 @@ a couple of minutes; progress is shown in a green overlay window).
 directory (e.g. `ArchivingTest`) as `TestData`. The
 [Data Integrity Fingerprint](https://expyriment.org/dataintegrityfingerprint/)
 (DIF [SHA-256]) of the `TestData` directory withing the target directory should
-be `556cdb4f011c1ebc36f489ecbf5cafa5292be8ded8837b96d96faecae56ad837`.
+be `f11259b83f6df6f7ed416d856300c7d41250b84e318b501d2743c92a84666a42`.
 In case it is not, compare it to the checksum file `TestData.sha256` to find
 out what the deviations are (e.g. your operating system or file manager might
 have written some hidden files to that directory without your knowledge).
