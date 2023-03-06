@@ -48,7 +48,7 @@ Scan Session Tool was written to be used by neuroscientists, to help them
 increase transparency and reproducibilty of their MRI research by standardizing
 scan session documentation and raw data archiving. The software has already
 been succesfully used during data collection of recent MRI studies (e.g.
-[@krause_active_2019]; [@krause_self-regulation_2021]),
+[@krause_real-time_2017], [@krause_active_2019]; [@krause_self-regulation_2021]),
 and its standardized scan session documentation as well as archiving structure
 are already part of open datasets (e.g. REF). The archiving structure is
 furthermore automatically recognized by BIDScoin ([@zwiers_bidscoin_2021]),
