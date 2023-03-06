@@ -50,11 +50,11 @@ scan session documentation and raw data archiving. The software has already
 been succesfully used during data collection of recent MRI studies (e.g.
 [@krause_real-time_2017], [@krause_active_2019]; [@krause_self-regulation_2021]),
 and its standardized scan session documentation as well as archiving structure
-are already part of open datasets (e.g. REF). The archiving structure is
-furthermore automatically recognized by BIDScoin ([@zwiers_bidscoin_2021]),
-which allows the raw DICOM data archived with Scan Session Tool to be further
-converted to the Brain Imaging Data Structure (BIDS, [@gorgolewski_brain_2016])
-if desired.
+are already part of open datasets (e.g. [@krause_self-regulation_2021_data]).
+The archiving structure is furthermore automatically recognized by BIDScoin
+([@zwiers_bidscoin_2021]), which allows the raw DICOM data archived with
+Scan Session Tool to be further converted to the Brain Imaging Data Structure
+(BIDS, [@gorgolewski_brain_2016]) if desired.
 
 
 # Figures
