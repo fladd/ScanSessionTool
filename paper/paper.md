@@ -40,20 +40,30 @@ measurements).
 
 
 # Statement of need
-TODO: Problem description
 
+There is an urgent need to improve the reproducibility of (functional) MRI
+research through transparent reporting [@noauthor_fostering_2017]. Despite large
+agreement among researchers on the importance of openly sharing not only
+collected raw data (i.e. MR images and related behavioural/physiological recordings) and
+their analysis [@nichols_best_2017], but also the detailed documentation of the data
+collection process [i.e. notes and data about the scan sessions themselves, @borghi_data_2018; @glover_function_2012],
+standardization in this domain is currently lacking. Shared MR images are often only
+made available after transformation into a derivative data format, such as the
+Brain Imaging Data Structure [BIDS, @gorgolewski_brain_2016], and scan session
+documentation is commonly either manually implemented [e.g. with hand written notes, @meissner_head_2020]
+or neglected entirely.
 
-Scan Session Tool was written to be used by neuroscientists, to help them
-increase transparency and reproducibilty of their MRI research by standardizing
-scan session documentation and raw data archiving. The software has already
-been succesfully used during data collection of recent MRI studies [e.g.
+Scan Session Tool was written to fill this gap, and to be used by neuroscientists,
+to help them increase transparency and reproducibilty of their MRI research by
+standardizing scan session documentation and raw data archiving. The software has
+already been succesfully used during data collection of recent MRI studies [e.g.
 @krause_real-time_2017; @luhrs_potential_2019; @krause_active_2019;
 @krause_selfregulation_2021], and its standardized scan session documentation
 as well as archiving structure are already part of open datasets [e.g.
 @krause_selfregulation_2021_data]. The archiving structure is furthermore
 automatically recognized by BIDScoin [@zwiers_bidscoin_2021], which allows the
-raw DICOM data archived with Scan Session Tool to be further converted to the Brain
-Imaging Data Structure [BIDS, @gorgolewski_brain_2016] if desired.
+raw DICOM data archived with Scan Session Tool to be further converted to the popular
+BIDS format if desired.
 
 
 # Figures
