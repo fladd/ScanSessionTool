@@ -21,8 +21,6 @@ bibliography: paper.bib
 
 # Summary
 
-TODO: Short intro?
-
 Scan Session Tool is a cross-platform (Windows, MacOS, Linux) graphical
 application for standardized real-time documentation of (functional) Magnetic
 Resonance Imaging (MRI) scan sessions and automatized archiving of the collected
@@ -43,6 +41,7 @@ measurements).
 
 # Statement of need
 TODO: Problem description
+
 
 Scan Session Tool was written to be used by neuroscientists, to help them
 increase transparency and reproducibilty of their MRI research by standardizing
