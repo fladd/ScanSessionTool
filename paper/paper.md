@@ -35,7 +35,7 @@ automatically organize the raw data (i.e. DICOM images) of all acquired
 measurements, as well as any related logfiles (e.g. stimulation protocols,
 response time recordings, etc.) into a unified hierarchical folder structure for
 archiving purposes (see also \autoref{fig:Figure2}).
-In addition, the software has (optional) sepcial support for BrainVoyager and
+In addition, the software has (optional) special support for BrainVoyager and
 (Turbo-)BrainVoyager (which is commonly used for real-time functional MRI
 measurements).
 
