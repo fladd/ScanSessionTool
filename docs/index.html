@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Scan Session Tool">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/fladd/ScanSessionTool/gh-pages/ScanSessionTool_Screenshot.png">
+    <title>Scan Session Tool by fladd</title>
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Scan Session Tool</h1>
+      <h2 class="project-tagline">(f)MRI scan session documentation and data archiving</h2>
+      <a href="https://github.com/fladd/ScanSessionTool" class="btn">View on GitHub</a>
+      <a href="https://github.com/fladd/ScanSessionTool/releases/latest" class="btn">Download latest version</a>
+    </section>
+
+    <section class="main-content">
+      <p>The Scan Session Tool is a graphical application for documenting (f)MRI scan sessions and automatized data archiving.
+         Information about the scan session itself, used forms and documents, as well as the single measurements can be entered
+         and saved into a protocol file. This information can furthermore be used to copy acquired data (DICOM images as well as
+         optional stimulation protocols and logfiles into a specific hierarchical folder structure for unified archiving
+         purposes, with optional sepcial support for <a href="https://brainvoyager.com/">(Turbo-)BrainVoyager</a>.</p>
+
+<p><img src="https://raw.githubusercontent.com/fladd/ScanSessionTool/gh-pages/ScanSessionTool_Screenshot.png" alt="ScanSessionTool_Screenshot.png" title="Screenshot of Scan Session Tool"></p>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<ol>
+  <li><p>Make sure <a href="http://www.python.org">Python 3</a> (>=3.6, with Tkinter) is installed.</p></li>
+  <li><p>Install pipx:</p>
+  <div><pre><code>python3 -m pip install --user pipx<br />python3 -m pipx ensurepath</code></pre></div>
+  <p>(On Windows you might need to replace <code>python3</code> with <code>py -3</code>).</p>
+  </li>
+  <li><p>Install Scan Session Tool: </p>
+      <div><pre><code>pipx install ScanSessionTool</code></pre></div>
+  </li>
+</ol>
+
+<h1>
+<a id="documentation" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h1>
+  <p>Scan Session Tool can be started with the command <code>scansessiontool</code>.</p>
+
+<h1>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h1>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>The user interface is organized into three different areas, each hol-
+ding different information about the scan session, as well as an additional
+control area for opening and saving session information and for automatically
+archiving acquired data, based on the session information.</p>
+
+<h3>
+<a id="the-general-information-area" class="anchor" href="#the-general-information-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "General Information" area</h3>
+
+<p>This area provides input fields for basic information about the scan session.
+Some of the fields allow for a selection of pre-specified values taken from a
+config file (see below), while others take freely typed characters.
+Fields that are marked with a red background, are mandatory and need to be
+filled in. Fields that are marked with an orange background are automatically
+filled in, but need to be checked.
+The following fields are available:</p>
+
+<pre><code>    "Project"        - The project identifier
+                       (free-type and selection)
+    "Subject"        - The subject number
+                       (001-999)
+                     - The subject type
+                       (free-type and selection)
+    "Session"        - The session number
+                       (001-999)
+                     - The session type
+                       (free-type and selection)
+    "Date"           - The date of the scan session
+                       (free-type, auto-filled)
+    "Time A"         - The main time period (e.g. official scanner booking)
+                       (free-type)
+    "Time B"         - An additional time period (e.g. actual scanner usage)
+                       (free-type)
+    "User 1"         - The main user (e.g. responsible MR operator)
+                       (free-type and selection)
+    "User 2"         - An additional user (e.g. back-up/buddy)
+                       (free-type and selection)
+    "Notes"          - Any additional notes about the session
+                       (free-type)
+
+</code></pre>
+
+<h3>
+<a id="the-documents-area" class="anchor" href="#the-documents-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "Documents" area</h3>
+
+<p>This area provides checkboxes to specify which forms and documents have been
+collected from the participant. Additional documents can be specified in a
+configuration file (see "Config File" section).
+The following checkboxes are available:</p>
+
+<pre><code>    "Files"       - A newline separated list of all session logfiles and ad-
+                    ditional documents; wildcard masks (*) will be completed
+                    during archiving
+                    (free-type)
+    "Checklist"   - Checkboxes to specify which forms and documents have been 
+                    collected from the participant. Additional documents can 
+                    be specified in a configuration file (see "Config File" 
+                    section). The following checkboxes are available:
+                    "MR Safety Screening Form"            - The (f)MRI scree-
+                                                            ning from provi-
+                                                            ded by the scan-
+                                                            ning institution
+                    "Participation Informed Consent Form" - The official MRI 
+                                                            written consent 
+                                                            form
+</code></pre>
+
+<h3>
+<a id="the-measurements-area" class="anchor" href="#the-measurements-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "Measurements" area</h3>
+
+<p>This area provides several input fields for each measurement of the session.
+When starting the application, only one (empty) measurement is shown. Click-
+ing on "Add Measurement" will create additional measurements. Fields that are
+marked with a red background, are mandatory and need to be filled in. Fields
+that are marked with an orange background are automatically filled in, but
+need to be checked.
+The following input fields are available per measurement:</p>
+
+<pre><code>    "No"                   - The number of the measurement
+                             (001-999)
+    "Type"                 - "anatomical", "functional" or "misc"
+                             (selection)
+    "Vols"                 - The number of volumes of the measurement
+                             (free-type)
+    "Name"                 - The name of the measurement
+                             (free-type, selection)
+    "Logfiles"             - A newline separated list of all connected
+                             logfiles; wildcard masks (*) will be completed
+                             during archiving (please note that a stimulation
+                             protocol mask will be included automatically,
+                             based on the session information)
+                             (free-type)
+    "Comments"             - Any additional comments about the measurement
+                             (free-type)
+</code></pre>
+
+<h3>
+<a id="the-control-area" class="anchor" href="#the-control-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>The control area</h3>
+
+<p>The control area consists of the following three buttons:</p>
+
+<pre><code>    "Open"    - Opens previously saved information from a text file
+    "Save"    - Saves the entered session information into a text file
+    "Archive" - Copies acquired data from a specified source folder into a
+                target folder at another specified location. Please note that
+                all data are expected to be within the specified source fol-
+                der. That is, all DICOM files (*.dcm OR *.IMA; with or with-
+                out sub-folders), all stimulation protocols and all logfiles.
+                Optionally, links to the DICOM images in BrainVoyager and
+                Turbo-BrainVoyager formats can be created. Turbo-BrainVoyager
+                files and data will be manipulated to work in the target
+                directory.
+                The data will be copied into the following folder hierarchy:
+                    DICOMs -->
+                      &lt;Project&gt;/sub-&lt;Subject&gt;/ses-&lt;Session&gt;/&lt;Type&gt;/
+                      &lt;No&gt;-&lt;Name&gt;/&lt;DICOM&gt;/
+                    Logfiles -->
+                      &lt;Project&gt;/sub-&lt;Subject&gt;/ses-&lt;Session&gt;/&lt;Type&gt;/
+                      &lt;No&gt;-&lt;Name&gt;/
+                    Files -->
+                      &lt;Project&gt;/sub-&lt;Subject&gt;/ses-&lt;Session&gt;/
+                    BrainVoyager files (links only, optional) -->
+                      &lt;Project&gt;/sub-&lt;Subject&gt;/ses-&lt;Session&gt;/&lt;BV&gt;/
+                    Turbo-BrainVoyager files (links only, optional) -->
+                      &lt;Project&gt;/sub-&lt;Subject&gt;/ses-&lt;Session&gt;/&lt;TBV&gt;/
+                    Scan Session Protocol -->
+                      &lt;Project&gt;/sub-&lt;Subject&gt;/ses-&lt;Session&gt;/
+
+</code></pre>
+
+<h2>
+<a id="config-file" class="anchor" href="#config-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Config File</h2>
+
+<p>A configuration file can be created to pre-define the values to be used as
+selection options for the "Group", "Session", "Certified User", "Backup
+Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
+project basis, as well as additional items in the "Documents" section.
+The Scan Session Tool will look for a configuration file with the name
+"sst.yaml", located in the current working directory or in the $HOME folder.</p>
+
+<p>The syntax is YAML. Here is an example:</p>
+
+<pre><code>Project 1:
+    SubjectTypes:
+        - Group1
+        - Group2
+
+    SessionTypes:
+        - Sess1
+        - Sess2
+
+    Users:
+        - User1
+        - User2
+
+    Backups:
+        - User1
+        - User2
+
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Files: 
+        - "*.txt"
+
+    Checklist: 
+        - Pre-Scan Questionnaire
+        - Post-Scan Questionnaire
+
+    Measurements anatomical:
+        - Name:        Localizer
+          Vols:        3
+
+        - Name:        Anatomy
+          Vols:        192
+
+    Measurements functional:
+        - Name:        Run1
+          Vols:        300
+          Comments:    |
+                       Answer 1:
+
+        - Name:        Run2
+          Vols:        400
+          Comments:    |
+                       Answer 2:
+
+        - Name:        Run3
+          Vols:        200
+          Comments:    |
+                       Answer 3:
+
+    Measurements misc:
+        - Name:        Run1incomplete
+          Vols:
+          Comments:
+
+
+Project 2:
+    SubjectTypes:
+        - GroupA
+        - GroupB
+
+    SessionTypes:
+        - SessA
+        - SessB
+
+    Users:
+        - UserA
+        - UserB
+
+    Backups:
+        - UserA
+        - UserB
+
+    Notes: |
+           Subject details
+           ---------------
+
+           Age:
+           Gender: m[ ] f[ ]
+
+    Files: 
+        - "*.txt"
+
+    Checklist:
+        - Participation Reimbursement Form
+
+    Measurements anatomical:
+        - Name:        Localizer
+          Vols:        3
+
+        - Name:        MPRAGE
+          Vols:        192
+
+    Measurements functional:
+        - Name:        RunA
+          Vols:        300
+          Comments:    |
+                       Answer 1:
+
+        - Name:        RunB
+          Vols:        400
+          Comments:    |
+                       Answer 2:
+
+        - Name:        RunC
+          Vols:        200
+          Comments:    |
+                       Answer 3:
+
+    Measurements misc:
+        - Name:        RunAImcomplete
+          Vols:
+          Comments:
+</code></pre>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/fladd/ScanSessionTool">Scan Session Tool</a> is maintained by <a href="https://github.com/fladd">fladd</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
