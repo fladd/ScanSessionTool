@@ -39,4 +39,5 @@ Scan Session Tool can be started with the command `scansessiontool`.
 Documentation
 -------------
 The full documentation can be found from within the programme, by clicking on
-the "?" button, or by selecting "Scan Session Tool Help" from the Help menu.
+the "?" button, or by selecting "Scan Session Tool Help" from the Help menu,
+as well as at https://fladd.github.io/ScanSessionTool/.
