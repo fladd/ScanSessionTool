@@ -91,7 +91,7 @@ following input fields are available:
                     be specified in a configuration file (see "Config File"
                     section). The following checkboxes are available:
                     "MR Safety Screening Form"            - The (f)MRI scree-
-                                                            ning from provi-
+                                                            ning form provi-
                                                             ded by the scan-
                                                             ning institution
                     "Participation Informed Consent Form" - The official MRI
