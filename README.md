@@ -28,6 +28,7 @@ unified archiving purposes, with optional sepcial support for
 
 Installation
 ------------
+### Using pipx (recommended)
 1. Make sure [Python 3](https://python.org) (>=3.6; with Tkinter) is installed.
 
 2. Install pipx:
@@ -44,6 +45,15 @@ Installation
     pipx install ScanSessionTool
     ```
 
+### Using pip
+1. Make sure [Python 3](https://python.org) (>=3.6; with Tkinter) is installed.
+
+2. Install Scan Session Tool:
+
+   ```
+   python3 -m pip install ScanSessionTool
+   ```
+(On Windows you might need to replace `python3` with `py -3`).
 Usage
 -----
 
