@@ -54,6 +54,7 @@ Installation
    python3 -m pip install ScanSessionTool
    ```
 (On Windows you might need to replace `python3` with `py -3`).
+
 Usage
 -----
 
@@ -64,6 +65,19 @@ Documentation
 The full documentation can be found from within the programme, by clicking on
 the "?" button, or by selecting "Scan Session Tool Help" from the Help menu,
 as well as at https://fladd.github.io/ScanSessionTool/.
+
+Automated tests
+---------------
+Core functionality of Scan Session Tool can be tested automatically.
+To do so, first install all dependencies:
+```
+python -m pip install -r requirements.txt`)
+```
+
+Then, run tests from this directory:
+```
+python -m unittest
+```
 
 Contributing
 ------------

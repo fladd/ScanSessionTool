@@ -11,12 +11,9 @@ import glob
 import shutil
 import platform
 
-if sys.version[0] == '3':
-    from tkinter import *
-    from tkinter.ttk import *
-else:
-    from Tkinter import *
-    from ttk import *
+from tkinter import *
+from tkinter.ttk import *
+
 
 class FixedSizeFrame(Frame):
     """A Tkinter frame with a fixed size."""

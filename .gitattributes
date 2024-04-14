@@ -1,0 +1,14 @@
+# Files that will always have LF line endings (part of test data)
+*.txt text eol=lf
+*.vhdr text eol=lf
+*.vmrk text eol=lf
+*.tbvj text eol=lf
+*.prt text eol=lf
+*.fmr text eol=lf
+*.pos text eol=lf
+*.xpe text eol=lf
+*.xpd text eol=lf
+
+# Never modify these files (part of test data)
+*.dcm binary
+*.IMA binary

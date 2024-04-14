@@ -6,19 +6,15 @@ A set of Tkinter dialogues used in Scan Session Tool.
 
 
 import os
-import sys
+import platform
 
-if sys.version[0] == '3':
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import filedialog as tkFileDialog
-    from tkinter.scrolledtext import ScrolledText
-else:
-    from Tkinter import *
-    from ttk import *
-    import tkFileDialog
-    from ScrolledText import ScrolledText
+from tkinter import *
+from tkinter import _tkinter
+from tkinter.ttk import *
+from tkinter import filedialog as tkFileDialog
+from tkinter.scrolledtext import ScrolledText
 
+from .widgets import FixedSizeFrame
 
 class ArchiveDialogue:
     """Tkinter dialogue showing settings for archiving procedure."""
@@ -107,7 +103,7 @@ class ArchiveDialogue:
         top.focus_force()
         top.wait_visibility()
         top.grab_set()
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             master.wm_attributes("-disabled", True)
         self.master.wait_window(self.top)
 
@@ -149,7 +145,7 @@ class ArchiveDialogue:
                 self.tbv_prefix_var.get())
 
     def destroy(self):
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             self.master.wm_attributes("-disabled", False)
         self.top.grab_release()
         self.top.destroy()
@@ -169,9 +165,12 @@ class BusyDialogue:
     def __init__(self, app):
         self.master = app.master
         top = self.top = Toplevel(self.master, background="#49d042")
-        try:
-            top.attributes('-type', 'splash')
-        except:
+        if platform.system() == "Linux":
+            try:
+                top.attributes('-type', 'splash')
+            except:
+                pass
+        else:
             top.overrideredirect(True)
 
         style = Style()
@@ -196,7 +195,7 @@ class BusyDialogue:
         top.wait_visibility()
         top.grab_set()
         self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             self.master.wm_attributes("-disabled", True)
         self.bring_to_top()
 
@@ -216,7 +215,7 @@ class BusyDialogue:
         self.top.lift()
 
     def destroy(self):
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             self.master.wm_attributes("-disabled", False)
         self.master.focus_set()
         self.master.unbind("<Configure>", self.bind_id)
@@ -249,11 +248,11 @@ class MessageDialogue:
         top.focus_force()
         top.wait_visibility()
         top.grab_set()
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             master.wm_attributes("-disabled", True)
 
     def ok(self):
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             self.master.wm_attributes("-disabled", False)
         self.top.grab_release()
         self.top.destroy()
@@ -285,12 +284,12 @@ class HelpDialogue:
         top.focus_force()
         top.wait_visibility()
         top.grab_set()
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             master.wm_attributes("-disabled", True)
         master.wait_window(top)
 
     def ok(self, *args):
-        if sys.platform == "win32":
+        if platform.system() == "Windows":
             self.master.wm_attributes("-disabled", False)
         self.top.grab_release()
         self.top.destroy()

@@ -5,7 +5,6 @@ A tool for MR scan session documentation and data archiving.
 """
 
 
-import sys
 import os
 import platform
 import time
@@ -15,20 +14,13 @@ import shutil
 import threading
 import multiprocessing
 
-if sys.version[0] == '3':
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import font as tkFont
-    from tkinter import filedialog as tkFileDialog
-    from tkinter import messagebox as tkMessageBox
-    from tkinter.scrolledtext import ScrolledText
-else:
-    from Tkinter import *
-    from ttk import *
-    import tkFont
-    import tkFileDialog
-    import tkMessageBox
-    from ScrolledText import ScrolledText
+from tkinter import *
+from tkinter.ttk import *
+from tkinter import _tkinter
+from tkinter import font as tkFont
+from tkinter import filedialog as tkFileDialog
+from tkinter import messagebox as tkMessageBox
+from tkinter.scrolledtext import ScrolledText
 
 import yaml
 
@@ -49,8 +41,28 @@ from .utilities import (replace,
 class ScanSessionTool(Frame):
     """The main Scan Session Tool Tkinter application."""
 
-    def __init__(self, master=None):
+    def __init__(self, master, run_actions=None):
+        """Initialize the application.
+
+        Parameters
+        ----------
+        master : Tkinter.TK instance
+            the Tk root window
+        run_actions : dict, optional
+            when set, this runs specified actions right after starting and
+            exits when finished; actions to run can be specified in the form
+                "action": [value1, value2, ...]
+            where "action" is the name of a method to run and "valueX" is a
+            value that method usually gets via user interaction; the target
+            method needs to specifically implement this feature (and only few
+            do); currently this feature is mainly used for implementing
+            automated tests; (default=None)
+
+        """
+
         Frame.__init__(self, master)
+
+        self.run_actions = run_actions
 
         font = tkFont.nametofont("TkDefaultFont")
         font.config(family="Arial", size=-13)
@@ -59,6 +71,7 @@ class ScanSessionTool(Frame):
         self.font = (self.default_font, self.default_font_size)
 
         style = Style()
+        style.theme_use("default")
         self.red = "#fc625d"
         self.orange = "#fdbc40"
         style.configure("Blue.TLabel", foreground="royalblue")
@@ -75,7 +88,8 @@ class ScanSessionTool(Frame):
         style.map("Orange.TSpinbox", fieldbackground=[("disabled",
                                                        self.orange)])
 
-        self.menubar = Menu(master)
+        self.master.option_add('*tearOff', FALSE)
+        self.menubar = Menu(self.master)
         if platform.system() == "Darwin":
             modifier = "Command"
             self.apple_menu = Menu(self.menubar, name="apple")
@@ -126,10 +140,12 @@ class ScanSessionTool(Frame):
             label="Scan Session Tool Help",
             command=lambda: HelpDialogue(self.master), accelerator="F1")
         self.master.bind("<F1>", lambda x: HelpDialogue(self.master))
-        master["menu"] = self.menubar
+        self.master["menu"] = self.menubar
 
-        master.rowconfigure(0, weight=1)
-        master.columnconfigure(0, weight=1)
+
+        self.master.resizable(False, False)
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid(sticky="WENS")
@@ -159,6 +175,24 @@ class ScanSessionTool(Frame):
         self.config = {}
         self.load_config()
         self.create_widgets()
+
+        self.set_title()
+        if platform.system() == "Darwin":
+            self.master.bind('<Command-q>', self.quit_callback)
+        self.master.bind('<Escape>', lambda x: self.master.focus())
+        self.bind('<Button-1>', lambda x: self.master.focus())
+        for label in self.nofocus_widgets:
+            label.bind('<Button-1>', lambda x: self.master.focus())
+        self.master.protocol("WM_DELETE_WINDOW", self.quit_callback)
+        self.general_widgets[0].focus()
+        self.disable_save()
+        self.mouseover_callback(True)
+
+        if self.run_actions is not None:
+            for key in run_actions:
+                eval(f"self.{key}()")
+                self.master.update()
+            self.master.destroy()
 
     def create_widgets(self):
         self.top_frame = Frame(self)
@@ -903,16 +937,22 @@ class ScanSessionTool(Frame):
         return filename
 
     def save(self, filename=None, *args):
-        """Save the data."""
+        """Save a protocol file."""
 
-        if filename is None:
-            filename = self.get_filename()
-            f = tkFileDialog.asksaveasfile(mode='w', defaultextension='.txt',
-                                           initialfile=filename)
+        if self.run_actions is not None and "save" in self.run_actions:
+            f = open(self.run_actions["save"][0], 'w')
         else:
-            f = open(filename, 'w')
+            if filename is None:
+                filename = self.get_filename()
+                f = tkFileDialog.asksaveasfile(mode='w',
+                                               defaultextension='.txt',
+                                               initialfile=filename)
+            else:
+                f = open(filename, 'w')
+
         if f is None:
             return
+
         f.write("General Information\n")
         f.write("===================\n")
         f.write("\n")
@@ -921,6 +961,8 @@ class ScanSessionTool(Frame):
                 try:
                     value1 = self.general_vars[pos][0].get().zfill(3)
                     value2 = " " + self.general_vars[pos][1].get()
+                    if pos == 1:
+                        value2 = value2.lstrip(" ")
                 except:
                     value1 = "000"
                     value2 = ""
@@ -931,20 +973,24 @@ class ScanSessionTool(Frame):
                     value = self.general_vars[pos].get()
                 except:
                     value = ""
-                f.write("{0}{1}{2}\n".format(label, " "*(24-len(label)),
-                                             value))
+                if value == "":
+                    f.write("{0}\n".format(label))
+                else:
+                    f.write("{0}{1}{2}\n".format(label, " "*(24-len(label)),
+                                                 value))
 
         f.write("\nNotes:")
-        notes = self.general_widgets[-1].get(1.0, END).split("\n")
-        notes_lines = [x.strip() for x in notes]
-        try:
-            for line_nr, line in enumerate(notes_lines):
-                if line_nr == 0:
-                    f.write("{0}{1}".format(" "*(24-len("Notes:")), line))
-                else:
-                    f.write("\n{0}{1}".format(" "*24, line))
-        except:
-            pass
+        notes = self.general_widgets[-1].get(1.0, END)
+        if notes.strip() != "":
+            notes_lines = [x.strip() for x in notes.split("\n")]
+            try:
+                for line_nr, line in enumerate(notes_lines[:-1]):
+                    if line_nr == 0:
+                        f.write("{0}{1}".format(" "*(24-len("Notes:")), line))
+                    else:
+                        f.write("\n{0}{1}".format(" "*24, line))
+            except:
+                pass
         f.write("\n")
         f.write("\n")
         f.write("\n")
@@ -1000,32 +1046,39 @@ class ScanSessionTool(Frame):
                         value = m[elem].get()
                     except:
                         value = ""
-                f.write("{0}:{1}{2}\n".format(
-                    self.measurement[elem],
-                    " "*(23-len(self.measurement[elem])),
-                    value))
+                if value == "":
+                    f.write("{0}:\n".format(self.measurement[elem]))
+                else:
+                    f.write("{0}:{1}{2}\n".format(
+                        self.measurement[elem],
+                        " "*(23-len(self.measurement[elem])),
+                        value))
 
             f.write("\nComments:")
 
-            comments = m[-1].get(1.0, END).split("\n")
-            comment_lines = [x.strip() for x in comments if x != ""]
-            try:
-                for line_nr, line in enumerate(comment_lines):
-                    if line_nr == 0:
-                        f.write("{0}{1}".format(" "*(24-len("Comments:")),
-                                                line))
-                    else:
-                        f.write("\n{0}{1}".format(" "*24, line))
-            except:
-                pass
+            comments = m[-1].get(1.0, END)
+            if comments.strip("\n") != "":
+                comment_lines = [x.strip() for x in comments.split("\n")]
+                try:
+                    for line_nr, line in enumerate(comment_lines[:-1]):
+                        if line_nr == 0:
+                            f.write("{0}{1}".format(" "*(24-len("Comments:")),
+                                                    line))
+                        else:
+                            f.write("\n{0}{1}".format(" "*24, line))
+                except:
+                    pass
             f.write("\n\n")
         f.close()
         self.disable_save()
 
     def open(self, *args):
-        """Load data."""
+        """Open a protocol file."""
 
-        f = tkFileDialog.askopenfile("r", filetypes=[("text files", ".txt")])
+        if self.run_actions is not None and "open" in self.run_actions:
+            f = open(self.run_actions["open"][0])
+        else:
+            f = tkFileDialog.askopenfile("r", filetypes=[("text files", ".txt")])
         if f is not None:
             current_document = 0
             measurement = False
@@ -1065,7 +1118,7 @@ class ScanSessionTool(Frame):
                                 1.0, END).strip("\n") == "":
                                 self.general_widgets[-1].insert(
                                     END, line[24:].strip())
-                            else:
+                            elif line != "\n":
                                 self.general_widgets[-1].insert(
                                     END, "\n" + line[24:].strip())
                     elif files_block:
@@ -1144,13 +1197,17 @@ class ScanSessionTool(Frame):
                             self.measurements[len(measurement_starts)-
                                               1][-1].insert(END,
                                                             line[24:].strip())
-                        else:
+                        elif line != "\n":
                             self.measurements[len(measurement_starts)-
                                               1][-1].insert(
                                                   END,
                                                   "\n" + line[24:].strip())
 
             self.disable_save()
+        try:
+            f.close()
+        except:
+            pass
 
     def set_title(self, status=None):
         if status is None:
@@ -1159,6 +1216,11 @@ class ScanSessionTool(Frame):
             self.master.title('Scan Session Tool ({0})'.format(status))
 
     def _archive_runs(self, archiving, dialogue):
+        if self.run_actions is not None and "archive" in self.run_actions:
+            run_as_action = True
+        else:
+            run_as_action = False
+
         d, folder, bv_links, tbv_links, tbv_files, tbv_prefix = archiving
         warnings = "\n\n\n"
         project = self.general_vars[0].get()
@@ -1198,13 +1260,17 @@ class ScanSessionTool(Frame):
                 return
 
         dialogue.update(status=["Preparation", "Reading DICOM images..."])
+        if run_as_action:
+            self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
         all_dicoms = []
         for root, _, files in os.walk(d):
             for f in files:
                 if os.path.splitext(f)[-1] in (".dcm", ".IMA"):
                     all_dicoms.append(os.path.join(root, f))
 
-        imap = multiprocessing.Pool().imap_unordered
+        pool = multiprocessing.Pool()
+        imap = pool.imap_unordered
 
         scans = {}  # scans[RUN][VOLUME][ECHO]["protocolname"|"acquisition_nr"|"filename"]
         for counter, dicom in enumerate(imap(readdicom, all_dicoms)):
@@ -1213,6 +1279,9 @@ class ScanSessionTool(Frame):
             dialogue.update(
                 status=["Preparation",
                         "Reading DICOM images...{0}%".format(percentage)])
+            if run_as_action:
+                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
             try:
                 scans[dicom[1]]
             except KeyError:
@@ -1227,6 +1296,7 @@ class ScanSessionTool(Frame):
                 {"protocolname": dicom[4],
                     "acquisition_nr": dicom[2],
                     "filename": dicom[0]}
+        pool.close()
 
         for meas_counter, measurement in enumerate(self.measurements):
             number = int(measurement[0].get())
@@ -1268,6 +1338,9 @@ class ScanSessionTool(Frame):
                 dialogue.update(status=["Measurement {0} ({1} of {2})".format(
                     number, meas_counter+1, len(self.measurements)),
                                         "Copying DICOM files..."])
+                if run_as_action:
+                    self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                 try:
                     dicom_folder = os.path.join(name_folder, "DICOM")
                     if not os.path.exists(dicom_folder):
@@ -1283,6 +1356,9 @@ class ScanSessionTool(Frame):
                                     len(self.measurements)),
                                         "Copying DICOM files...{0}%".format(
                                             percentage)])
+                            if run_as_action:
+                                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                             shutil.copyfile(
                                 scans[number][image][echo]["filename"],
                                 os.path.join(dicom_folder, os.path.split(
@@ -1298,6 +1374,9 @@ class ScanSessionTool(Frame):
                         status=["Measurement {0} ({1} of {2})".format(
                             number, meas_counter+1, len(self.measurements)),
                                 "Creating BrainVoyager links..."])
+                    if run_as_action:
+                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                     try:
                         bv_folder = os.path.join(session_folder, "BV")
                         if not os.path.exists(bv_folder):
@@ -1313,6 +1392,9 @@ class ScanSessionTool(Frame):
                                         len(self.measurements)),
                                             "Creating BrainVoyager links...{0}%".format(
                                                 percentage)])
+                                if run_as_action:
+                                    self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                                 prefix = "{}_{:03d}{}".format(
                                     "_".join(self.get_filename().split(
                                         "_")[1:-1]).replace("-", ""),
@@ -1339,6 +1421,9 @@ class ScanSessionTool(Frame):
                     status=["Measurement {0} ({1} of {2})".format(
                         number, meas_counter+1, len(self.measurements)),
                         "Copying logfiles..."])
+                if run_as_action:
+                    self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                 try:
                     warning = measurement[4].copy_logfiles(d, name_folder)
                     if warning != None:
@@ -1352,6 +1437,9 @@ class ScanSessionTool(Frame):
         if tbv_links == True:
             dialogue.update(status=["Finalization",
                                     "Copying Turbo-BrainVoyager files..."])
+            if run_as_action:
+                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
             try:
                 tbv_folder = os.path.join(session_folder, "TBV")
 
@@ -1375,6 +1463,9 @@ class ScanSessionTool(Frame):
                             "Finalization",
                             "Copying Turbo-BrainVoyager files...{0}%".format(
                                 percentage)])
+                    if run_as_action:
+                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                     shutil.copyfile(src, dst)
 
             except:
@@ -1383,6 +1474,9 @@ class ScanSessionTool(Frame):
             # Create dcm links
             dialogue.update(status=["Finalization",
                                     "Creating Turbo-BrainVoyager links..."])
+            if run_as_action:
+                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
             try:
                 tbv_runs = []
                 files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv"))
@@ -1458,6 +1552,9 @@ class ScanSessionTool(Frame):
                         status=["Finalization",
                                 "Creating Turbo-BrainVoyager links...{0}%".format(
                                     percentage)])
+                    if run_as_action:
+                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                     os.link(link[0], link[1])
 
             except:
@@ -1465,6 +1562,9 @@ class ScanSessionTool(Frame):
 
         # Session Files
         dialogue.update(status=["Finalization", "Copying files..."])
+        if run_as_action:
+            self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
         try:
             warning = self.files.copy_logfiles(d, session_folder)
             if warning != None:
@@ -1490,6 +1590,9 @@ class ScanSessionTool(Frame):
                                                    ".doc",
                                                    ".docx"):
                     dialogue.update()
+                    if run_as_action:
+                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                     all_documents += 1
                     shutil.copy(os.path.abspath(file), session_folder)
 
@@ -1504,6 +1607,7 @@ class ScanSessionTool(Frame):
             self.save(path)
         except:
             warnings += "\nError saving scan protocol\n"
+
         # Confirm archiving
         self.message = "Archived to: {0}".format(os.path.abspath(folder))
         self.message += warnings
@@ -1511,8 +1615,14 @@ class ScanSessionTool(Frame):
     def archive(self, *args):
         """Archive the data."""
 
-        dialogue = ArchiveDialogue(self.master)
-        archiving = dialogue.get()
+        if self.run_actions is not None and "archive" in self.run_actions:
+            archiving = self.run_actions["archive"]
+            run_as_action = True
+        else:
+            dialogue = ArchiveDialogue(self.master)
+
+            archiving = dialogue.get()
+            run_as_action = False
         if archiving[0]:
             if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
                 self.set_title("Busy")
@@ -1520,12 +1630,15 @@ class ScanSessionTool(Frame):
                 self.busy_dialogue = BusyDialogue(self)
                 self.busy_dialogue.update()
                 self.message = ""
-                thread = threading.Thread(target=self._archive_runs,
-                                          args=[archiving[1:],
-                                                self.busy_dialogue])
-                thread.daemon = True
-                thread.start()
-                self.wait_archiving(thread)
+                if run_as_action:
+                    self._archive_runs(archiving[1:], self.busy_dialogue)
+                else:
+                    thread = threading.Thread(target=self._archive_runs,
+                                              args=[archiving[1:],
+                                                    self.busy_dialogue])
+                    thread.daemon = True
+                    thread.start()
+                    self.wait_archiving(thread)
 
     def wait_archiving(self, thread):
         if thread.is_alive():
