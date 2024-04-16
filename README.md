@@ -71,12 +71,12 @@ Automated tests
 Core functionality of Scan Session Tool can be tested automatically.
 To do so, first install all dependencies:
 ```
-python -m pip install -r requirements.txt`)
+python -m pip install -r requirements.txt`
 ```
 
 Then, run tests from this directory:
 ```
-python -m unittest
+python -m unittest -v
 ```
 
 Contributing
