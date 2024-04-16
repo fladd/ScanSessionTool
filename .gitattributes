@@ -1,17 +1,13 @@
-# Auto detect text files and perform LF normalization
-*        text=auto
-
-# Files that will always have LF line endings (part of test data)
-*.txt text eol=lf
-*.vhdr text eol=lf
-*.vmrk text eol=lf
-*.tbvj text eol=lf
-*.prt text eol=lf
-*.fmr text eol=lf
-*.pos text eol=lf
-*.xpe text eol=lf
-*.xpd text eol=lf
-
 # Never modify these files (part of test data)
-*.dcm binary
-*.IMA binary
+tests/TestData*/**/*.txt -text
+tests/TestData*/**/*.vhdr -text
+tests/TestData*/**/*.vmrk -text
+tests/TestData*/**/*.tbvj -text
+tests/TestData*/**/*.prt -text
+tests/TestData*/**/*.fmr -text
+tests/TestData*/**/*.pos -text
+tests/TestData*/**/*.xpe -text
+tests/TestData*/**/*.xpd -text
+
+tests/TestData*/**/*.dcm binary
+tests/TestData*/**/*.IMA binary
