@@ -191,8 +191,6 @@ class ScanSessionTool(Frame):
         if self.run_actions is not None:
             for key in run_actions:
                 eval(f"self.{key}()")
-                self.master.update()
-            self.master.destroy()
 
     def create_widgets(self):
         self.top_frame = Frame(self)
@@ -1261,7 +1259,8 @@ class ScanSessionTool(Frame):
 
         dialogue.update(status=["Preparation", "Reading DICOM images..."])
         if run_as_action:
-            self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+            while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                pass
 
         all_dicoms = []
         for root, _, files in os.walk(d):
@@ -1339,7 +1338,8 @@ class ScanSessionTool(Frame):
                     number, meas_counter+1, len(self.measurements)),
                                         "Copying DICOM files..."])
                 if run_as_action:
-                    self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+                    while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                        pass
 
                 try:
                     dicom_folder = os.path.join(name_folder, "DICOM")
@@ -1375,7 +1375,8 @@ class ScanSessionTool(Frame):
                             number, meas_counter+1, len(self.measurements)),
                                 "Creating BrainVoyager links..."])
                     if run_as_action:
-                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+                        while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                            pass
 
                     try:
                         bv_folder = os.path.join(session_folder, "BV")
@@ -1422,7 +1423,8 @@ class ScanSessionTool(Frame):
                         number, meas_counter+1, len(self.measurements)),
                         "Copying logfiles..."])
                 if run_as_action:
-                    self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+                    while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                        pass
 
                 try:
                     warning = measurement[4].copy_logfiles(d, name_folder)
@@ -1438,7 +1440,8 @@ class ScanSessionTool(Frame):
             dialogue.update(status=["Finalization",
                                     "Copying Turbo-BrainVoyager files..."])
             if run_as_action:
-                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+                while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                    pass
 
             try:
                 tbv_folder = os.path.join(session_folder, "TBV")
@@ -1475,7 +1478,8 @@ class ScanSessionTool(Frame):
             dialogue.update(status=["Finalization",
                                     "Creating Turbo-BrainVoyager links..."])
             if run_as_action:
-                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+                while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                    pass
 
             try:
                 tbv_runs = []
@@ -1563,7 +1567,8 @@ class ScanSessionTool(Frame):
         # Session Files
         dialogue.update(status=["Finalization", "Copying files..."])
         if run_as_action:
-            self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+            while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                pass
 
         try:
             warning = self.files.copy_logfiles(d, session_folder)
@@ -1591,7 +1596,8 @@ class ScanSessionTool(Frame):
                                                    ".docx"):
                     dialogue.update()
                     if run_as_action:
-                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+                        while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                            pass
 
                     all_documents += 1
                     shutil.copy(os.path.abspath(file), session_folder)

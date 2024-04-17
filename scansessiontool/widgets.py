@@ -106,7 +106,7 @@ class AutoScrollbarText(Text):
                                              os.path.split(file_)[-1]))
                     if "*" in logfile:
                         new = new.replace(
-                            logfile, "\n".join(replaced))
+                            logfile, "\n".join(sorted(replaced)))
                         self.delete(1.0, END)
                         self.insert(1.0, new)
 

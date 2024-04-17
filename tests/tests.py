@@ -1,4 +1,6 @@
 import os
+import glob
+import platform
 import unittest
 import tempfile
 import filecmp
@@ -19,7 +21,7 @@ def setUpModule():
     with zipfile.ZipFile(os.path.join(os.path.join(os.path.split(__file__)[0]),
                                       "TestData.zip"), 'r') as z:
         global DATA_DIR
-        DATA_DIR = tempfile.TemporaryDirectory()
+        DATA_DIR = tempfile.TemporaryDirectory(delete=False)
         print("Extracting test data...\n")
         z.extractall(DATA_DIR.name)
 
@@ -28,6 +30,20 @@ def cleanup():
     DATA_DIR.cleanup()
 
 unittest.addModuleCleanup(cleanup)
+
+def change_eol_win2unix(path):
+    txt_files = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".txt"):
+                txt_files.append(os.path.join(root, file))
+
+    for file in txt_files:
+        with open(file, 'rb') as f:
+            content = f.read()
+        content = content.replace(b"\r\n", b"\n")
+        with open(file, 'wb') as f:
+            f.write(content)
 
 
 class TestScanSessionDocumentation(unittest.TestCase):
@@ -38,14 +54,20 @@ class TestScanSessionDocumentation(unittest.TestCase):
             "ScanProtocol_TestData_sub-001_ses-007-Transfer_20211203.txt")
         self.root = Tk()
 
+    def tearDown(self):
+        self.root.destroy()
+
     def test_open_save_scan_protocol(self):
-        with tempfile.NamedTemporaryFile(mode='w') as output:
-            app = ScanSessionTool(self.root,
-                                  run_actions={"open": [self.test_protocol],
-                                               "save": [output.name]})
-            self.assertTrue(
-                filecmp.cmp(self.test_protocol, output.name, shallow=False),
-                "(Re)saved scan protocol file differs from original.")
+        global DATA_DIR
+        new_protocol = os.path.join(DATA_DIR.name, "newprotocol.txt")
+        app = ScanSessionTool(self.root,
+                              run_actions={"open": [self.test_protocol],
+                                           "save": [new_protocol]})
+        with open(self.test_protocol, 'r') as f1:
+            with open(new_protocol, 'r') as f2:
+                self.assertEqual(
+                    f1.read(), f2.read(),
+                    "(Re)saved scan protocol file differs from original.")
 
 
 class TestDataArchiving(unittest.TestCase):
@@ -59,9 +81,12 @@ class TestDataArchiving(unittest.TestCase):
             from_checksums_file=True)
         self.root = Tk()
 
+    def tearDown(self):
+        self.root.destroy()
+
     def test_archive_data_single_folder(self):
         global DATA_DIR
-        with tempfile.TemporaryDirectory() as output:
+        with tempfile.TemporaryDirectory(dir=DATA_DIR.name) as output:
             test_data = os.path.join(DATA_DIR.name, "TestData_1")
             app = ScanSessionTool(self.root,
                                   run_actions={"open": [self.test_protocol],
@@ -69,6 +94,8 @@ class TestDataArchiving(unittest.TestCase):
                                                            output, 1, 1,
                                                            "TBVFiles",
                                                            "TBV_"]})
+            if platform.system() == "Windows":
+                change_eol_win2unix(os.path.join(output, "TestData"))
             dif = DataIntegrityFingerprint(os.path.join(output, "TestData"))
             self.assertEqual(
                 dif.dif, self.checksums_dif.dif,
@@ -76,7 +103,7 @@ class TestDataArchiving(unittest.TestCase):
 
     def test_archive_data_subfolders(self):
         global DATA_DIR
-        with tempfile.TemporaryDirectory() as output:
+        with tempfile.TemporaryDirectory(dir=DATA_DIR.name) as output:
             test_data = os.path.join(DATA_DIR.name, "TestData_2")
             app = ScanSessionTool(self.root,
                                   run_actions={"open": [self.test_protocol],
@@ -84,6 +111,8 @@ class TestDataArchiving(unittest.TestCase):
                                                            output, 1, 1,
                                                            "TBVFiles",
                                                            "TBV_"]})
+            if platform.system() == "Windows":
+                change_eol_win2unix(os.path.join(output, "TestData"))
             dif = DataIntegrityFingerprint(os.path.join(output, "TestData"))
             self.assertEqual(
                 dif.dif, self.checksums_dif.dif,

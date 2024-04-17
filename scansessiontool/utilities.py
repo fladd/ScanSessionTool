@@ -28,8 +28,8 @@ def replace(file_path, pattern, subst):
 
     # Create temp file
     fh, abs_path = mkstemp()
-    new_file = open(abs_path,'w')
-    old_file = open(file_path)
+    new_file = open(abs_path,'w', newline='')
+    old_file = open(file_path, newline='')
     for line in old_file:
         new_file.write(line.replace(pattern, subst))
     # Close temp file
