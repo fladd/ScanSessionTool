@@ -3,7 +3,7 @@
 |        A tool for MR scan session documentation and data archiving        |
 |                                                                           |
 |             Authors: Florian Krause <f.krause@donders.ru.nl>              |
-|                      Nikos Kogias <n.kogias@student.ru.nl>                |
+|                      Nikos Kogias <n.kogias@donders.ru.nl>                |
 |                                                                           |
 + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
 
@@ -35,7 +35,9 @@ unified archiving purposes, with optional sepcial support for
 
 
 
-=================================== Usage ===================================
+=============================== Documentation ===============================
+
+--------------------------------- Interface ---------------------------------
 
 The user interface is organized into three different content areas, each hol-
 ding different information about the scan session, as well as an additional
@@ -286,3 +288,9 @@ Project 2:
         - Name:        RunAImcomplete
           Vols:
           Comments:
+
+================================= Tutorial =================================
+
+For a detailed step-by-step guide on how to use the Scan Session Tool you 
+can follow the link: 
+https://github.com/fladd/ScanSessionTool/tree/master/tutorial/tutorial.md
