@@ -11,6 +11,7 @@ authors:
     orcid: 0000-0002-2754-3692
     affiliation: "1"
   - name: Nikos Kogias
+    orcid: 0000-0002-9692-1503
     affiliation: 1
 affiliations:
  - name: Donders Institute for Brain, Cognition and Behaviour, RadboudUMC, Nijmegen, The Netherlands
@@ -37,7 +38,10 @@ response time recordings, etc.) into a unified hierarchical folder structure for
 archiving purposes (see also \autoref{fig:Figure2}).
 In addition, the software has (optional) special support for BrainVoyager and
 (Turbo-)BrainVoyager (which is commonly used for real-time functional MRI
-measurements).
+measurements). This entails the creation of links to DICOM images using 
+dedicated filename conventions (BrainVoyager and Turbo-BrainVoyager) as well as 
+adapting references to files and data to reflect the archived folder structure 
+(Turbo-BrainVoyager).
 
 
 # Statement of need
@@ -49,11 +53,16 @@ collected raw data (i.e. MR images and related behavioural/physiological
 recordings) and their analysis [@nichols_best_2017], but also the detailed
 documentation of the data collection process [i.e. notes and data about the
 scan sessions themselves, @borghi_data_2018; @glover_function_2012],
-standardization in this domain is currently lacking. Shared MR images are often
-only made available after transformation into a derivative data format, such as
-the Brain Imaging Data Structure [BIDS, @gorgolewski_brain_2016], and scan
-session documentation is commonly either manually implemented [e.g. with hand
-written notes, @meissner_head_2020] or neglected entirely.
+standardization in this domain is currently lacking. Most current approaches 
+focus on automatized reproducible analysis (e.g. https://github.com/ReproNim), 
+and shared MR images often only made available after transformation into a 
+derivative data format, such as the Brain Imaging Data Structure 
+[BIDS, @gorgolewski_brain_2016], with a rich ecosystem of tools being available 
+to accomplish this [e.g. @zwiers_bidscoin_2021, @halchenko_2024_11201247]. 
+Furthermore, to our knowledge, none of the available solutions cover scan session 
+documentation, which currently is often either manually implemented 
+[e.g. with hand written or electronic notes; @meissner_head_2020, castorEDC] or 
+neglected entirely. 
 
 Scan Session Tool was written to fill this gap, and to be used by
 neuroscientists, to help them increase transparency and reproducibilty of their
@@ -66,7 +75,8 @@ openly published data [e.g. @krause_selfregulation_2021_data]. The archiving
 structure is furthermore automatically already recognized by the third-party
 software BIDScoin [since version 3.7.3, @zwiers_bidscoin_2021], which allows the
 raw DICOM data archived with Scan Session Tool to be converted to the popular
-BIDS format if desired (e.g. for standardized preporocessing and analysis). We
+BIDS format if desired (e.g. for standardized preprocessing and analysis). 
+Scan Session Tool also   We
 hope to see further adaptation and increasing integration with other tools and
 standardized workflows (e.g. quality control pipelines, online data
 repositories) in the future. 

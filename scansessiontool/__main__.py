@@ -1,4 +1,11 @@
-from .scansessiontool import run
+import platform
+from tkinter import *
+from tkinter.ttk import *
+
+from .scansessiontool import ScanSessionTool
+
 
 if __name__ == "__main__":
-    run()
+    root = Tk()
+    app = ScanSessionTool(root)
+    app.mainloop()

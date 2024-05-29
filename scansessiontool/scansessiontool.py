@@ -5,7 +5,6 @@ A tool for MR scan session documentation and data archiving.
 """
 
 
-import sys
 import os
 import platform
 import time
@@ -14,589 +13,56 @@ import json
 import shutil
 import threading
 import multiprocessing
-from tempfile import mkstemp
 
-if sys.version[0] == '3':
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter import font as tkFont
-    from tkinter import filedialog as tkFileDialog
-    from tkinter import messagebox as tkMessageBox
-    from tkinter.scrolledtext import ScrolledText
-else:
-    from Tkinter import *
-    from ttk import *
-    import tkFont
-    import tkFileDialog
-    import tkMessageBox
-    from ScrolledText import ScrolledText
+from tkinter import *
+from tkinter.ttk import *
+from tkinter import _tkinter
+from tkinter import font as tkFont
+from tkinter import filedialog as tkFileDialog
+from tkinter import messagebox as tkMessageBox
+from tkinter.scrolledtext import ScrolledText
 
 import yaml
-import pydicom
 
 from .__meta__ import __version__, __date__
+from .widgets import (FixedSizeFrame,
+                      AutoScrollbarText,
+                      VerticalScrolledFrame,
+                      AutocompleteCombobox,
+                      Spinbox)
+from .dialogues import (ArchiveDialogue,
+                        BusyDialogue,
+                        MessageDialogue,
+                        HelpDialogue)
+from .utilities import (replace,
+                        readdicom)
+
+
+class ScanSessionTool(Frame):
+    """The main Scan Session Tool Tkinter application."""
+
+    def __init__(self, master, run_actions=None):
+        """Initialize the application.
+
+        Parameters
+        ----------
+        master : Tkinter.TK instance
+            the Tk root window
+        run_actions : dict, optional
+            when set, this runs specified actions right after starting and
+            exits when finished; actions to run can be specified in the form
+                "action": [value1, value2, ...]
+            where "action" is the name of a method to run and "valueX" is a
+            value that method usually gets via user interaction; the target
+            method needs to specifically implement this feature (and only few
+            do); currently this feature is mainly used for implementing
+            automated tests; (default=None)
+
+        """
 
-
-docs = """
-+ - - - - - - - - - - - - - - Scan Session Tool - - - - - - - - - - - - - - +
-|                                                                           |
-|        A tool for MR scan session documentation and data archiving        |
-|                                                                           |
-|             Authors: Florian Krause <f.krause@donders.ru.nl>              |
-|                      Nikos Kogias <n.kogias@student.ru.nl>                |
-|                                                                           |
-+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-
-
-
-=================================== About ===================================
-
-The Scan Session Tool is a graphical application for documenting (f)MRI scan
-sessions and automatized data archiving. Information about the scan session
-itself, used forms and documents, as well as the single measurements can be
-entered and saved into a protocol file. This information can furthermore be
-used to copy acquired data (DICOM images as well as optional stimulation
-protocols and logfiles into a specific hierarchical folder structure for
-unified archiving purposes, with optional sepcial support for
-(Turbo-)BrainVoyager (https://brainvoyager.com).
-
-
-
-=================================== Usage ===================================
-
-The user interface is organized into three different content areas, each hol-
-ding different information about the scan session, as well as an additional
-control area for opening and saving session information and for automatically
-archiving acquired data, based on the session information.
-
-
------------------------ The "General Information" area ----------------------
-
-This area provides input fields for basic information about the scan session.
-Some of the fields allow for a selection of pre-specified values taken from
-a config file (see below), while others take freely typed characters. Fields
-that are marked with a red background, are mandatory and need to be filled
-in. Fields that are marked with an orange background are automatically filled
-in, but need to be checked.
-The following fields are available:
-    "Project"        - The project identifier
-                       (free-type and selection)
-    "Subject"        - The subject number
-                       (001-999)
-                     - The subject type
-                       (free-type and selection)
-    "Session"        - The session number
-                       (001-999)
-                     - The session type
-                       (free-type and selection)
-    "Date"           - The date of the scan session
-                       (free-type, auto-filled)
-    "Time A"         - The main time period (e.g. official scanner booking)
-                       (free-type)
-    "Time B"         - An additional time period (e.g. actual scanner usage)
-                       (free-type)
-    "User 1"         - The main user (e.g. responsible MR operator)
-                       (free-type and selection)
-    "User 2"         - An additional user (e.g. back-up/buddy)
-                       (free-type and selection)
-    "Notes"          - Any additional notes about the session
-                       (free-type)
-
-
---------------------------- The "Documents" area ----------------------------
-
-This area provides input fields for additional documents that are acquired
-during the session, such as logfiles and behavioural data files, as well as
-questionnaires and forms that are filled in by the participant. The
-following input fields are available:
-    "Files"       - A newline separated list of all session logfiles and ad-
-                    ditional documents; wildcard masks (*) will be completed
-                    during archiving
-                    (free-type)
-    "Checklist"   - Checkboxes to specify which forms and documents have been
-                    collected from the participant. Additional documents can
-                    be specified in a configuration file (see "Config File"
-                    section). The following checkboxes are available:
-                    "MR Safety Screening Form"            - The (f)MRI scree-
-                                                            ning from provi-
-                                                            ded by the scan-
-                                                            ning institution
-                    "Participation Informed Consent Form" - The official MRI
-                                                            written consent
-                                                            form
-
-
-------------------------- The "Measurements" area ---------------------------
-
-This area provides several input fields for each measurement of the session.
-When starting the application, only one (empty) measurement is shown. Click-
-ing on "Add Measurement" will create additional measurements. Fields that are
-marked with a red background, are mandatory and need to be filled in. Fields
-that are marked with an orange background are automatically filled in, but
-need to be checked.
-The following input fields are available per measurement:
-    "No"                   - The number of the measurement
-                             (001-999)
-    "Type"                 - "anat", "func" or "misc"
-                             (selection)
-    "Vols"                 - The number of volumes of the measurement
-                             (free-type)
-    "Name"                 - The name of the measurement
-                             (free-type, selection)
-    "Logfiles"             - A newline separated list of all connected
-                             logfiles; wildcard masks (*) will be completed
-                             during archiving (please note that a stimulation
-                             protocol mask will be included automatically,
-                             based on the session information)
-                             (free-type)
-    "Comments"             - Any additional comments about the measurement
-                             (free-type)
-
-
------------------------------ The control area ------------------------------
-
-The control area consists of the following three buttons:
-    "Open"    - Opens previously saved information from a text file
-    "Save"    - Saves the entered session information into a text file
-    "Archive" - Copies acquired data from a specified source folder into a
-                target folder at another specified location. Please note that
-                all data are expected to be within the specified source fol-
-                der. That is, all DICOM files (*.dcm OR *.IMA; with or with-
-                out sub-folders), all stimulation protocols and all logfiles.
-                Optionally, links to the DICOM images in BrainVoyager and
-                Turbo-BrainVoyager formats can be created. Turbo-BrainVoyager
-                files and data will be manipulated to work in the target
-                directory.
-                The data will be copied into the following folder hierarchy:
-                    DICOMs -->
-                      <Project>/sub-<Subject>/ses-<Session>/<Type>/
-                      <No>-<Name>/<DICOM>/
-                    Logfiles -->
-                      <Project>/sub-<Subject>/ses-<Session>/<Type>/
-                      <No>-<Name>/
-                    Files -->
-                      <Project>/sub-<Subject>/ses-<Session>/
-                    BrainVoyager files (links only, optional) -->
-                      <Project>/sub-<Subject>/ses-<Session>/<BV>/
-                    Turbo-BrainVoyager files (links only, optional) -->
-                      <Project>/sub-<Subject>/ses-<Session>/<TBV>/
-                    Scan Session Protocol -->
-                      <Project>/sub-<Subject>/ses-<Session>/
-
-
-================================ Config File ================================
-
-A configuration file can be created to pre-define the values to be used as
-selection options for the "Subject", "Session", "Certified User", "Backup
-Person", "Notes", the measurement "Name", "Vols" and "Comments" on a per
-project basis, as well as additional items in the "Files" and "Checklist"
-fields of the "Documents" section. The Scan Session Tool will look for a con-
-figuration file with the name "sst.yaml", located in the current working di-
-rectory or in the $HOME folder.
-
-The syntax is YAML. Here is an example:
-
-Project 1:
-    SubjectTypes:
-        - Group1
-        - Group2
-
-    SessionTypes:
-        - Sess1
-        - Sess2
-
-    Users:
-        - User1
-        - User2
-
-    Backups:
-        - User1
-        - User2
-
-    Notes: |
-           Subject details
-           ---------------
-
-           Age:
-           Gender: m[ ] f[ ]
-
-    Files:
-        - "*.txt"
-
-    Checklist:
-        - Pre-Scan Questionnaire
-        - Post-Scan Questionnaire
-
-    Measurements anat:
-        - Name:        Localizer
-          Vols:        3
-
-        - Name:        Anatomy
-          Vols:        192
-
-    Measurements func:
-        - Name:        Run1
-          Vols:        300
-          Comments:    |
-                       Answer 1:
-
-        - Name:        Run2
-          Vols:        400
-          Comments:    |
-                       Answer 2:
-
-        - Name:        Run3
-          Vols:        200
-          Comments:    |
-                       Answer 3:
-
-    Measurements misc:
-        - Name:        Run1incomplete
-          Vols:
-          Comments:
-
-
-Project 2:
-    SubjectTypes:
-        - GroupA
-        - GroupB
-
-    SessionTypes:
-        - SessA
-        - SessB
-
-    Users:
-        - UserA
-        - UserB
-
-    Backups:
-        - UserA
-        - UserB
-
-    Notes: |
-           Subject details
-           ---------------
-
-           Age:
-           Gender: m[ ] f[ ]
-
-    Files:
-        - "*.txt"
-
-    Checklist:
-        - Participation Reimbursement Form
-
-    Measurements anat:
-        - Name:        Localizer
-          Vols:        3
-
-        - Name:        MPRAGE
-          Vols:        192
-
-    Measurements func:
-        - Name:        RunA
-          Vols:        300
-          Comments:    |
-                       Answer 1:
-
-        - Name:        RunB
-          Vols:        400
-          Comments:    |
-                       Answer 2:
-
-        - Name:        RunC
-          Vols:        200
-          Comments:    |
-                       Answer 3:
-
-    Measurements misc:
-        - Name:        RunAImcomplete
-          Vols:
-          Comments:
-"""
-
-def replace(file_path, pattern, subst):
-
-    # Create temp file
-    fh, abs_path = mkstemp()
-    new_file = open(abs_path,'w')
-    old_file = open(file_path)
-    for line in old_file:
-        new_file.write(line.replace(pattern, subst))
-    # Close temp file
-    new_file.close()
-    os.close(fh)
-    old_file.close()
-    # Remove original file
-    os.remove(file_path)
-    # Move new file
-    shutil.move(abs_path, file_path)
-
-
-class FixedSizeFrame(Frame):
-    def __init__(self, master, width, height, **kw):
-        Frame.__init__(self, master, **kw)
-        self["width"] = width
-        self["height"] = height
-        self.grid_propagate(False)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
-
-class AutoScrollbarText(Text):
-    def __init__(self, master=None, **kw):
-        self.frame = Frame(master)
-        self.yvbar = Scrollbar(self.frame)
-        self.yvbar.grid(row=0, column=1, sticky="NS")
-
-        kw.update({'yscrollcommand': self.set_yvbar})
-        Text.__init__(self, self.frame, undo=True, **kw)
-        self.grid(row=0, column=0, sticky="WENS")
-        self.frame.grid_rowconfigure(0, weight=1)
-        self.frame.grid_columnconfigure(0, weight=1)
-        self.yvbar['command'] = self.yview
-
-        self.undo_history = 0
-        if platform.system() == "Darwin":
-            self.bind("<Command-z>", self.undo_dummy)
-            self.bind("<Command-Z>", self.redo)
-        else:
-            self.bind("<Control-z>", self.undo_dummy)
-            self.bind("<Control-Z>", self.redo)
-
-        # Copy geometry methods of self.frame without overriding Text
-        # methods -- hack!
-        text_meths = list(vars(Text).keys())
-        methods = list(vars(Pack).keys()) + list(vars(Grid).keys()) + \
-                list(vars(Place).keys())
-        methods = set(methods).difference(text_meths)
-
-        for m in methods:
-            if m[0] != '_' and m != 'config' and m != 'configure':
-                setattr(self, m, getattr(self.frame, m))
-
-    def undo_dummy(self, *args):
-        if self.edit_modified():
-            self.undo_history += 1
-
-    def redo(self, *args):
-        if self.undo_history > 0:
-            self.edit_redo()
-            self.undo_history -= 1
-
-    def set_yvbar(self, lo, hi):
-        if float(lo) <= 0.0 and float(hi) >= 1.0:
-            # grid_remove is currently missing from Tkinter!
-            self.yvbar.tk.call("grid", "remove", self.yvbar)
-        else:
-            self.yvbar.grid()
-        self.yvbar.set(lo, hi)
-
-    def __str__(self):
-        return str(self.frame)
-
-    def copy_logfiles(self, source, destination):
-        original = self.get(1.0, END)
-        logfiles = original.split("\n")
-        logfiles = [x.strip() for x in logfiles if x != ""]
-        warning = ""
-        new = original
-        for logfile in logfiles:
-            if "*" in logfile:
-                replaced = []
-            try:
-                if logfile != "" and not os.path.isdir(logfile):
-                    files = glob.glob(os.path.join(source, logfile))
-                    if files == []:
-                        raise Exception
-                    for file_ in files:
-                        if not os.path.isdir(file_):
-                            if "*" in logfile:
-                                replaced.append(
-                                    os.path.split(file_)[-1])
-                            shutil.copyfile(
-                                file_,
-                                os.path.join(destination,
-                                             os.path.split(file_)[-1]))
-                    if "*" in logfile:
-                        new = new.replace(
-                            logfile, "\n".join(replaced))
-                        self.delete(1.0, END)
-                        self.insert(1.0, new)
-
-                if logfile != "" and os.path.isdir(os.path.join(source,
-                                                                logfile)):
-                    shutil.copytree(os.path.abspath(os.path.join(source,
-                                                                 logfile)),
-                                    os.path.abspath(os.path.join(destination,
-                                                                 logfile)))
-            except:
-               warning += "\nError copying logfiles " \
-                   "'{}' not found\n".format(logfile)
-        return warning
-
-
-class VerticalScrolledFrame(Frame):
-    """A pure Tkinter scrollable frame that actually works!
-
-    * Use the 'interior' attribute to place widgets inside the scrollable frame
-    * Construct and pack/place/grid normally
-    * This frame only allows vertical scrolling
-
-    """
-    def __init__(self, parent, *args, **kw):
-        Frame.__init__(self, parent, *args, **kw)
-
-        # Create a canvas object and a vertical scrollbar for scrolling it
-        self.vscrollbar = Scrollbar(self, orient=VERTICAL)
-        self.vscrollbar.pack(fill=Y, side=RIGHT, expand=TRUE)
-        self.canvas = Canvas(self, bd=0, highlightthickness=0,
-                        yscrollcommand=self.vscrollbar.set,
-                        width=self.winfo_reqwidth(),
-                        height=self.winfo_reqheight(), background="grey")
-        self.canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
-        self.vscrollbar.config(command=self.canvas.yview)
-
-        # Reset the view
-        self.canvas.xview_moveto(0)
-        self.canvas.yview_moveto(0)
-
-        # Create a frame inside the canvas which will be scrolled with it
-        style = Style()
-        style.configure("Grey.TFrame", background="darkgrey")
-        self.interior = Frame(self.canvas, width=self.winfo_reqwidth(),
-                              style="Grey.TFrame")
-        self.interior.grid_rowconfigure(0, weight=1)
-        self.interior.grid_columnconfigure(0, weight=1)
-        self.interior_id = self.canvas.create_window(0, 0,
-                                                     window=self.interior,
-                                                     anchor=NW)
-
-        self.interior.bind('<Configure>', self._configure_interior)
-
-        self.bind('<Enter>', self.bind_mouse_wheel)
-        self.bind('<Leave>', self.unbind_mouse_wheel)
-
-    def bind_mouse_wheel(self, *args):
-        os = platform.system()
-        self.bind_ids = []
-        if os == "Linux":
-            self.bind_ids.append(self.vscrollbar.bind_all("<4>",
-                                                      self._on_mousewheel))
-            self.bind_ids.append(self.vscrollbar.bind_all("<5>",
-                                                      self._on_mousewheel))
-        else:
-            self.bind_ids.append(self.vscrollbar.bind_all("<MouseWheel>",
-                                                      self._on_mousewheel))
-
-    def unbind_mouse_wheel(self, *args):
-        try:
-            for x in self.bind_ids:
-                os = platform.system()
-                if os == "Linux":
-                    self.vscrollbar.unbind("<4>", x)
-                    self.vscrollbar.unbind("<5>", x)
-                else:
-                    self.vscrollbar.unbind("<MouseWheel>", x)
-        except:
-            pass
-
-    # track changes to the canvas and frame width and sync them,
-    # also updating the scrollbar
-    def _configure_interior(self, event):
-        # Update the scrollbars to match the size of the inner frame
-        if self.interior.winfo_reqheight() < self.winfo_reqheight():
-            size = (self.interior.winfo_reqwidth(),
-                    self.winfo_reqheight())
-        else:
-            size = (self.interior.winfo_reqwidth(),
-                    self.interior.winfo_reqheight())
-        self.canvas.config(scrollregion="0 0 %s %s" % size)
-
-    def _configure_canvas(self, event):
-        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
-            # Update the inner frame's width to fill the canvas
-            self.canvas.itemconfigure(self.interior_id,
-                                      width=self.canvas.winfo_width())
-
-    def _on_mousewheel(self, event):
-        os = platform.system()
-        if os == "Linux":
-            if event.num == 4:
-                self.canvas.yview_scroll(-2, "units")
-            elif event.num == 5:
-                self.canvas.yview_scroll(2, "units")
-        elif os == "Darwin":
-            self.canvas.yview_scroll(-2*event.delta, "units")
-        elif os == "Windows":
-            if sys.version[0] == '3':
-                self.canvas.yview_scroll(-2*(event.delta//120), "units")
-            else:
-                self.canvas.yview_scroll(-2*(event.delta/120), "units")
-
-
-class AutocompleteCombobox(Combobox):
-
-    def set_completion_list(self, completion_list):
-        self._completion_list = sorted(completion_list, key=str.lower)
-        self._hits = []
-        self._hit_index = 0
-        self.position = 0
-        self.bind('<KeyRelease>', self.handle_keyrelease)
-        self['values'] = self._completion_list
-
-    def autocomplete(self, delta=0):
-        if delta:  # delete selection, otherwise we would fix current position
-            self.delete(self.position, END)
-        else:  # set position to end so selection starts where textentry ended
-            self.position = len(self.get())
-        # Collect hits
-        _hits = []
-        for element in self._completion_list:
-            if element.lower().startswith(self.get().lower()):
-                _hits.append(element)
-        # If we have a new hit list, keep this in mind
-        if _hits != self._hits:
-            self._hit_index = 0
-            self._hits = _hits
-        # Only allow cycling if we are in a known hit list
-        if _hits == self._hits and self._hits:
-            self._hit_index = (self._hit_index + delta) % len(self._hits)
-        # Now finally perform the auto completion
-        if self._hits:
-            self.delete(0, END)
-            self.insert(0, self._hits[self._hit_index])
-            self.select_range(self.position, END)
-
-    def handle_keyrelease(self, event):
-        """event handler for the keyrelease event on this widget"""
-        if event.keysym == "BackSpace":
-            self.delete(self.index(INSERT), END)
-            self.position = self.index(END)
-        elif event.keysym == "Left":
-            self.position = self.position - 1  # delete one character
-        elif event.keysym == "Right":
-            self.position = self.index(END)  # go to end (no selection)
-        elif len(event.keysym) == 1:
-            self.autocomplete()
-            # No need for up/down, we'll jump to the popup
-            # list at the position of the autocompletion
-
-class Spinbox(Entry):
-    def __init__(self, master=None, **kw):
-        s = Style()
-        Entry.__init__(self, master, "ttk::spinbox", **kw)
-
-    def current(self, newindex=None):
-        return self.tk.call(self._w, 'current', newindex)
-
-    def set(self, value):
-        return self.tk.call(self._w, 'set', value)
-
-
-class App(Frame):
-    def __init__(self, master=None):
         Frame.__init__(self, master)
+
+        self.run_actions = run_actions
 
         font = tkFont.nametofont("TkDefaultFont")
         font.config(family="Arial", size=-13)
@@ -605,6 +71,7 @@ class App(Frame):
         self.font = (self.default_font, self.default_font_size)
 
         style = Style()
+        style.theme_use("default")
         self.red = "#fc625d"
         self.orange = "#fdbc40"
         style.configure("Blue.TLabel", foreground="royalblue")
@@ -621,7 +88,8 @@ class App(Frame):
         style.map("Orange.TSpinbox", fieldbackground=[("disabled",
                                                        self.orange)])
 
-        self.menubar = Menu(master)
+        self.master.option_add('*tearOff', FALSE)
+        self.menubar = Menu(self.master)
         if platform.system() == "Darwin":
             modifier = "Command"
             self.apple_menu = Menu(self.menubar, name="apple")
@@ -672,10 +140,12 @@ class App(Frame):
             label="Scan Session Tool Help",
             command=lambda: HelpDialogue(self.master), accelerator="F1")
         self.master.bind("<F1>", lambda x: HelpDialogue(self.master))
-        master["menu"] = self.menubar
+        self.master["menu"] = self.menubar
 
-        master.rowconfigure(0, weight=1)
-        master.columnconfigure(0, weight=1)
+
+        self.master.resizable(False, False)
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid(sticky="WENS")
@@ -705,6 +175,22 @@ class App(Frame):
         self.config = {}
         self.load_config()
         self.create_widgets()
+
+        self.set_title()
+        if platform.system() == "Darwin":
+            self.master.bind('<Command-q>', self.quit_callback)
+        self.master.bind('<Escape>', lambda x: self.master.focus())
+        self.bind('<Button-1>', lambda x: self.master.focus())
+        for label in self.nofocus_widgets:
+            label.bind('<Button-1>', lambda x: self.master.focus())
+        self.master.protocol("WM_DELETE_WINDOW", self.quit_callback)
+        self.general_widgets[0].focus()
+        self.disable_save()
+        self.mouseover_callback(True)
+
+        if self.run_actions is not None:
+            for key in run_actions:
+                eval(f"self.{key}()")
 
     def create_widgets(self):
         self.top_frame = Frame(self)
@@ -1449,16 +935,22 @@ class App(Frame):
         return filename
 
     def save(self, filename=None, *args):
-        """Save the data."""
+        """Save a protocol file."""
 
-        if filename is None:
-            filename = self.get_filename()
-            f = tkFileDialog.asksaveasfile(mode='w', defaultextension='.txt',
-                                           initialfile=filename)
+        if self.run_actions is not None and "save" in self.run_actions:
+            f = open(self.run_actions["save"][0], 'w')
         else:
-            f = open(filename, 'w')
+            if filename is None:
+                filename = self.get_filename()
+                f = tkFileDialog.asksaveasfile(mode='w',
+                                               defaultextension='.txt',
+                                               initialfile=filename)
+            else:
+                f = open(filename, 'w')
+
         if f is None:
             return
+
         f.write("General Information\n")
         f.write("===================\n")
         f.write("\n")
@@ -1467,6 +959,8 @@ class App(Frame):
                 try:
                     value1 = self.general_vars[pos][0].get().zfill(3)
                     value2 = " " + self.general_vars[pos][1].get()
+                    if pos == 1:
+                        value2 = value2.lstrip(" ")
                 except:
                     value1 = "000"
                     value2 = ""
@@ -1477,20 +971,24 @@ class App(Frame):
                     value = self.general_vars[pos].get()
                 except:
                     value = ""
-                f.write("{0}{1}{2}\n".format(label, " "*(24-len(label)),
-                                             value))
+                if value == "":
+                    f.write("{0}\n".format(label))
+                else:
+                    f.write("{0}{1}{2}\n".format(label, " "*(24-len(label)),
+                                                 value))
 
         f.write("\nNotes:")
-        notes = self.general_widgets[-1].get(1.0, END).split("\n")
-        notes_lines = [x.strip() for x in notes]
-        try:
-            for line_nr, line in enumerate(notes_lines):
-                if line_nr == 0:
-                    f.write("{0}{1}".format(" "*(24-len("Notes:")), line))
-                else:
-                    f.write("\n{0}{1}".format(" "*24, line))
-        except:
-            pass
+        notes = self.general_widgets[-1].get(1.0, END)
+        if notes.strip() != "":
+            notes_lines = [x.strip() for x in notes.split("\n")]
+            try:
+                for line_nr, line in enumerate(notes_lines[:-1]):
+                    if line_nr == 0:
+                        f.write("{0}{1}".format(" "*(24-len("Notes:")), line))
+                    else:
+                        f.write("\n{0}{1}".format(" "*24, line))
+            except:
+                pass
         f.write("\n")
         f.write("\n")
         f.write("\n")
@@ -1546,32 +1044,39 @@ class App(Frame):
                         value = m[elem].get()
                     except:
                         value = ""
-                f.write("{0}:{1}{2}\n".format(
-                    self.measurement[elem],
-                    " "*(23-len(self.measurement[elem])),
-                    value))
+                if value == "":
+                    f.write("{0}:\n".format(self.measurement[elem]))
+                else:
+                    f.write("{0}:{1}{2}\n".format(
+                        self.measurement[elem],
+                        " "*(23-len(self.measurement[elem])),
+                        value))
 
             f.write("\nComments:")
 
-            comments = m[-1].get(1.0, END).split("\n")
-            comment_lines = [x.strip() for x in comments if x != ""]
-            try:
-                for line_nr, line in enumerate(comment_lines):
-                    if line_nr == 0:
-                        f.write("{0}{1}".format(" "*(24-len("Comments:")),
-                                                line))
-                    else:
-                        f.write("\n{0}{1}".format(" "*24, line))
-            except:
-                pass
+            comments = m[-1].get(1.0, END)
+            if comments.strip("\n") != "":
+                comment_lines = [x.strip() for x in comments.split("\n")]
+                try:
+                    for line_nr, line in enumerate(comment_lines[:-1]):
+                        if line_nr == 0:
+                            f.write("{0}{1}".format(" "*(24-len("Comments:")),
+                                                    line))
+                        else:
+                            f.write("\n{0}{1}".format(" "*24, line))
+                except:
+                    pass
             f.write("\n\n")
         f.close()
         self.disable_save()
 
     def open(self, *args):
-        """Load data."""
+        """Open a protocol file."""
 
-        f = tkFileDialog.askopenfile("r", filetypes=[("text files", ".txt")])
+        if self.run_actions is not None and "open" in self.run_actions:
+            f = open(self.run_actions["open"][0])
+        else:
+            f = tkFileDialog.askopenfile("r", filetypes=[("text files", ".txt")])
         if f is not None:
             current_document = 0
             measurement = False
@@ -1611,7 +1116,7 @@ class App(Frame):
                                 1.0, END).strip("\n") == "":
                                 self.general_widgets[-1].insert(
                                     END, line[24:].strip())
-                            else:
+                            elif line != "\n":
                                 self.general_widgets[-1].insert(
                                     END, "\n" + line[24:].strip())
                     elif files_block:
@@ -1690,13 +1195,17 @@ class App(Frame):
                             self.measurements[len(measurement_starts)-
                                               1][-1].insert(END,
                                                             line[24:].strip())
-                        else:
+                        elif line != "\n":
                             self.measurements[len(measurement_starts)-
                                               1][-1].insert(
                                                   END,
                                                   "\n" + line[24:].strip())
 
             self.disable_save()
+        try:
+            f.close()
+        except:
+            pass
 
     def set_title(self, status=None):
         if status is None:
@@ -1705,6 +1214,11 @@ class App(Frame):
             self.master.title('Scan Session Tool ({0})'.format(status))
 
     def _archive_runs(self, archiving, dialogue):
+        if self.run_actions is not None and "archive" in self.run_actions:
+            run_as_action = True
+        else:
+            run_as_action = False
+
         d, folder, bv_links, tbv_links, tbv_files, tbv_prefix = archiving
         warnings = "\n\n\n"
         project = self.general_vars[0].get()
@@ -1744,21 +1258,29 @@ class App(Frame):
                 return
 
         dialogue.update(status=["Preparation", "Reading DICOM images..."])
+        if run_as_action:
+            while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                pass
+
         all_dicoms = []
         for root, _, files in os.walk(d):
             for f in files:
                 if os.path.splitext(f)[-1] in (".dcm", ".IMA"):
                     all_dicoms.append(os.path.join(root, f))
 
-        imap = multiprocessing.Pool().imap_unordered
+        pool = multiprocessing.Pool()
+        imap = pool.imap_unordered
 
         scans = {}  # scans[RUN][VOLUME][ECHO]["protocolname"|"acquisition_nr"|"filename"]
-        for counter, dicom in enumerate(imap(_readdicom, all_dicoms)):
+        for counter, dicom in enumerate(imap(readdicom, all_dicoms)):
             percentage = int(
                 round((float(counter) + 1) / len(all_dicoms) * 100))
             dialogue.update(
                 status=["Preparation",
                         "Reading DICOM images...{0}%".format(percentage)])
+            if run_as_action:
+                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
             try:
                 scans[dicom[1]]
             except KeyError:
@@ -1773,6 +1295,7 @@ class App(Frame):
                 {"protocolname": dicom[4],
                     "acquisition_nr": dicom[2],
                     "filename": dicom[0]}
+        pool.close()
 
         for meas_counter, measurement in enumerate(self.measurements):
             number = int(measurement[0].get())
@@ -1814,6 +1337,10 @@ class App(Frame):
                 dialogue.update(status=["Measurement {0} ({1} of {2})".format(
                     number, meas_counter+1, len(self.measurements)),
                                         "Copying DICOM files..."])
+                if run_as_action:
+                    while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                        pass
+
                 try:
                     dicom_folder = os.path.join(name_folder, "DICOM")
                     if not os.path.exists(dicom_folder):
@@ -1829,6 +1356,9 @@ class App(Frame):
                                     len(self.measurements)),
                                         "Copying DICOM files...{0}%".format(
                                             percentage)])
+                            if run_as_action:
+                                self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                             shutil.copyfile(
                                 scans[number][image][echo]["filename"],
                                 os.path.join(dicom_folder, os.path.split(
@@ -1844,6 +1374,10 @@ class App(Frame):
                         status=["Measurement {0} ({1} of {2})".format(
                             number, meas_counter+1, len(self.measurements)),
                                 "Creating BrainVoyager links..."])
+                    if run_as_action:
+                        while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                            pass
+
                     try:
                         bv_folder = os.path.join(session_folder, "BV")
                         if not os.path.exists(bv_folder):
@@ -1859,6 +1393,9 @@ class App(Frame):
                                         len(self.measurements)),
                                             "Creating BrainVoyager links...{0}%".format(
                                                 percentage)])
+                                if run_as_action:
+                                    self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                                 prefix = "{}_{:03d}{}".format(
                                     "_".join(self.get_filename().split(
                                         "_")[1:-1]).replace("-", ""),
@@ -1885,6 +1422,10 @@ class App(Frame):
                     status=["Measurement {0} ({1} of {2})".format(
                         number, meas_counter+1, len(self.measurements)),
                         "Copying logfiles..."])
+                if run_as_action:
+                    while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                        pass
+
                 try:
                     warning = measurement[4].copy_logfiles(d, name_folder)
                     if warning != None:
@@ -1898,6 +1439,10 @@ class App(Frame):
         if tbv_links == True:
             dialogue.update(status=["Finalization",
                                     "Copying Turbo-BrainVoyager files..."])
+            if run_as_action:
+                while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                    pass
+
             try:
                 tbv_folder = os.path.join(session_folder, "TBV")
 
@@ -1921,6 +1466,9 @@ class App(Frame):
                             "Finalization",
                             "Copying Turbo-BrainVoyager files...{0}%".format(
                                 percentage)])
+                    if run_as_action:
+                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                     shutil.copyfile(src, dst)
 
             except:
@@ -1929,6 +1477,10 @@ class App(Frame):
             # Create dcm links
             dialogue.update(status=["Finalization",
                                     "Creating Turbo-BrainVoyager links..."])
+            if run_as_action:
+                while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                    pass
+
             try:
                 tbv_runs = []
                 files = glob.glob(os.path.join(tbv_folder, tbv_files, "*.tbv"))
@@ -2004,6 +1556,9 @@ class App(Frame):
                         status=["Finalization",
                                 "Creating Turbo-BrainVoyager links...{0}%".format(
                                     percentage)])
+                    if run_as_action:
+                        self.master.tk.dooneevent(_tkinter.DONT_WAIT)
+
                     os.link(link[0], link[1])
 
             except:
@@ -2011,6 +1566,10 @@ class App(Frame):
 
         # Session Files
         dialogue.update(status=["Finalization", "Copying files..."])
+        if run_as_action:
+            while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                pass
+
         try:
             warning = self.files.copy_logfiles(d, session_folder)
             if warning != None:
@@ -2036,6 +1595,10 @@ class App(Frame):
                                                    ".doc",
                                                    ".docx"):
                     dialogue.update()
+                    if run_as_action:
+                        while self.master.tk.dooneevent(_tkinter.DONT_WAIT):
+                            pass
+
                     all_documents += 1
                     shutil.copy(os.path.abspath(file), session_folder)
 
@@ -2050,6 +1613,7 @@ class App(Frame):
             self.save(path)
         except:
             warnings += "\nError saving scan protocol\n"
+
         # Confirm archiving
         self.message = "Archived to: {0}".format(os.path.abspath(folder))
         self.message += warnings
@@ -2057,8 +1621,14 @@ class App(Frame):
     def archive(self, *args):
         """Archive the data."""
 
-        dialogue = ArchiveDialogue(self.master)
-        archiving = dialogue.get()
+        if self.run_actions is not None and "archive" in self.run_actions:
+            archiving = self.run_actions["archive"]
+            run_as_action = True
+        else:
+            dialogue = ArchiveDialogue(self.master)
+
+            archiving = dialogue.get()
+            run_as_action = False
         if archiving[0]:
             if os.path.isdir(archiving[1]) and os.path.isdir(archiving[2]):
                 self.set_title("Busy")
@@ -2066,12 +1636,15 @@ class App(Frame):
                 self.busy_dialogue = BusyDialogue(self)
                 self.busy_dialogue.update()
                 self.message = ""
-                thread = threading.Thread(target=self._archive_runs,
-                                          args=[archiving[1:],
-                                                self.busy_dialogue])
-                thread.daemon = True
-                thread.start()
-                self.wait_archiving(thread)
+                if run_as_action:
+                    self._archive_runs(archiving[1:], self.busy_dialogue)
+                else:
+                    thread = threading.Thread(target=self._archive_runs,
+                                              args=[archiving[1:],
+                                                    self.busy_dialogue])
+                    thread.daemon = True
+                    thread.start()
+                    self.wait_archiving(thread)
 
     def wait_archiving(self, thread):
         if thread.is_alive():
@@ -2081,308 +1654,3 @@ class App(Frame):
             self.set_title()
             MessageDialogue(self.master, self.message)
             self.measurements_frame.bind_mouse_wheel()
-
-
-class ArchiveDialogue:
-
-    def __init__(self, master):
-        self.master = master
-        top = self.top = Toplevel(master, background="grey85")
-        top.title("Archive")
-        top.resizable(False, False)
-
-        self.data_frame = LabelFrame(top, text="Data", padding=(5,5))
-        self.data_frame.grid(row=0, column=0, sticky="NSWE", padx=10, pady=10)
-        self.data_frame.grid_columnconfigure(1, weight=1)
-        self.source_label = Label(self.data_frame, text="Source:")
-        self.source_label.grid(row=0, column=0, sticky="E", padx=(0, 3),
-                               pady=3)
-        self.source_var = StringVar()
-        self.source_entry = Entry(self.data_frame, width=50,
-                                  textvariable=self.source_var)
-        self.source_entry["state"] = "readonly"
-        self.source_entry.grid(row=0, column=1, sticky="W")
-        self.source_button = Button(self.data_frame, text="Browse",
-                                    command=self.set_source)
-        self.source_button.grid(row=0, column=3, sticky="E")
-        self.target_label = Label(self.data_frame, text="Target:")
-        self.target_label.grid(row=1, column=0, sticky="E", padx=(0, 3),
-                               pady=3)
-        self.target_var = StringVar()
-        self.target_entry = Entry(self.data_frame, width=50,
-                                  textvariable=self.target_var)
-        self.target_entry["state"] = "readonly"
-        self.target_entry.grid(row=1, column=1, sticky="W")
-        self.target_button = Button(self.data_frame, text="Browse",
-                                    command=self.set_target)
-        self.target_button.grid(row=1, column=3, sticky="E")
-
-        self.options_frame = LabelFrame(top, text="Options", padding=(5,5))
-        self.options_frame.grid(row=1, column=0, sticky="NSWE", padx=10)
-        self.options_frame.grid_columnconfigure(1, weight=1)
-        self.bv_links_var = IntVar()
-        self.bv_links_var.set(0)
-        self.bv_links_checkbox = Checkbutton(self.options_frame,
-                                             text="Create BrainVoyager links",
-                                             var=self.bv_links_var)
-        self.bv_links_checkbox.grid(row=0, column=0, sticky="W")
-        self.tbv_links_var = IntVar()
-        self.tbv_links_var.set(0)
-        self.tbv_links_checkbox = Checkbutton(
-            self.options_frame,
-            text="Create Turbo-BrainVoyager links",
-            var=self.tbv_links_var,
-            command=self.activate_tbv)
-        self.tbv_links_checkbox.grid(row=1, column=0, sticky="W")
-        self.tbv_files_label = Label(self.options_frame,
-                                     text="TBV files directory name:")
-        self.tbv_files_label["state"] = DISABLED
-        self.tbv_files_label.grid(row=2, column=0, sticky="E", padx=(0, 3))
-        self.tbv_files_var = StringVar()
-        self.tbv_files_entry = Entry(self.options_frame,
-                                     textvariable=self.tbv_files_var)
-        self.tbv_files_var.set("TBVFiles")
-        self.tbv_files_entry["state"] = DISABLED
-        self.tbv_files_entry.grid(row=2, column=1, sticky="WE")
-        self.tbv_prefix_label = Label(self.options_frame,
-                                      text="Run prefix:")
-        self.tbv_prefix_label["state"] = DISABLED
-        self.tbv_prefix_label.grid(row=3, column=0, sticky="E", padx=(0, 3))
-        self.tbv_prefix_var = StringVar()
-        self.tbv_prefix_entry = Entry(self.options_frame,
-                                      textvariable=self.tbv_prefix_var)
-        self.tbv_prefix_var.set("TBV_")
-        self.tbv_prefix_entry["state"] = DISABLED
-        self.tbv_prefix_entry.grid(row=3, column=1, sticky="WE")
-
-        self.okay_button = Button(top, text="GO", command=self.archive)
-        self.okay_button["state"] = DISABLED
-        self.okay_button.grid(row=2, column=0, pady=10)
-        self.okay = False
-
-        top.protocol("WM_DELETE_WINDOW", self.cancel)
-        top.bind("<Escape>", self.cancel)
-
-        top.geometry("+%d+%d" % (master.winfo_rootx(), master.winfo_rooty()))
-
-        top.transient(self.master)
-        top.focus_force()
-        top.wait_visibility()
-        top.grab_set()
-        if sys.platform == "win32":
-            master.wm_attributes("-disabled", True)
-        self.master.wait_window(self.top)
-
-    def activate_tbv(self):
-        if self.tbv_links_var.get() == 1:
-            self.tbv_files_label["state"] = NORMAL
-            self.tbv_files_entry["state"] = NORMAL
-            self.tbv_prefix_label["state"] = NORMAL
-            self.tbv_prefix_entry["state"] = NORMAL
-        else:
-            self.tbv_files_label["state"] = DISABLED
-            self.tbv_files_entry["state"] = DISABLED
-            self.tbv_prefix_label["state"] = DISABLED
-            self.tbv_prefix_entry["state"] = DISABLED
-
-    def set_source(self):
-        d = tkFileDialog.askdirectory(parent=self.top,
-            title="Select directory containing all raw data")
-        if d not in ("", ()):
-            self.source_var.set(os.path.abspath(d))
-        if self.source_var.get() != "" and self.target_var.get() != "":
-            self.okay_button["state"] = NORMAL
-
-    def set_target(self):
-        d = tkFileDialog.askdirectory(parent=self.top,
-            title="Select target directory to archive data to")
-        if d != "":
-            self.target_var.set(os.path.abspath(d))
-        if self.source_var.get() != "" and self.target_var.get() != "":
-            self.okay_button["state"] = NORMAL
-
-    def get(self):
-        return (self.okay,
-                self.source_var.get(),
-                self.target_var.get(),
-                self.bv_links_var.get(),
-                self.tbv_links_var.get(),
-                self.tbv_files_var.get(),
-                self.tbv_prefix_var.get())
-
-    def destroy(self):
-        if sys.platform == "win32":
-            self.master.wm_attributes("-disabled", False)
-        self.top.grab_release()
-        self.top.destroy()
-
-    def cancel(self, *args):
-        self.okay = False
-        self.destroy()
-
-    def archive(self):
-        self.okay = True
-        self.destroy()
-
-
-class BusyDialogue:
-
-    def __init__(self, app):
-        self.master = app.master
-        top = self.top = Toplevel(self.master, background="#49d042")
-        try:
-            top.attributes('-type', 'splash')
-        except:
-            top.overrideredirect(True)
-
-        style = Style()
-        style.configure("Black.TFrame", background="#49d042")
-        style.configure("White.TLabel", background="#49d042")
-        self.frame = FixedSizeFrame(top, width=300, height=100,
-                                    style="Black.TFrame")
-        self.frame.grid()
-        self.status1 = StringVar()
-        self.label1 = Label(self.frame, textvariable=self.status1,
-                           style="White.TLabel", justify=CENTER)
-        self.label1['font'] = (app.default_font, app.default_font_size, "bold")
-        self.label1.grid(row=0, column=0, padx=10, pady=(10,0))
-        self.status2 = StringVar()
-        self.label2 = Label(self.frame, textvariable=self.status2,
-                           style="White.TLabel", justify=CENTER)
-        self.label2['font'] = ("Arial", -13, "normal")
-        self.label2.grid(row=1, column=0, padx=10, pady=(0,25))
-
-        top.transient(self.master)
-        top.focus_set()
-        top.wait_visibility()
-        top.grab_set()
-        self.bind_id = self.master.bind("<Configure>", self.bring_to_top)
-        if sys.platform == "win32":
-            self.master.wm_attributes("-disabled", True)
-        self.bring_to_top()
-
-    def update(self, event=None, status=None):
-
-        if status is not None:
-            self.status1.set(status[0])
-            self.status2.set(status[1])
-
-    def bring_to_top(self, *args):
-        dx = self.master.winfo_width() / 2 - self.top.winfo_width() / 2
-        dy = self.master.winfo_height() / 2 - self.top.winfo_height() / 2
-        self.top.geometry("+%d+%d" % (self.master.winfo_rootx() + dx,
-                                      self.master.winfo_rooty() + dy))
-        self.top.update_idletasks()
-        self.top.focus_set()
-        self.top.lift()
-
-    def destroy(self):
-        if sys.platform == "win32":
-            self.master.wm_attributes("-disabled", False)
-        self.master.focus_set()
-        self.master.unbind("<Configure>", self.bind_id)
-        self.top.destroy()
-
-
-class MessageDialogue:
-
-    def __init__(self, master, message):
-        self.master = master
-        top = self.top = Toplevel(master, background="grey85")
-        top.title("Archiving Report")
-        top.resizable(False, False)
-
-        self.text = ScrolledText(top, width=77)
-        self.text.pack()
-        self.text.insert(END, message)
-        self.text["state"] = "disabled"
-
-        b = Button(top, text="OK", command=self.ok)
-        b.pack(pady=10)
-
-        top.protocol("WM_DELETE_WINDOW", self.ok)
-        top.bind("<Escape>", self.ok)
-
-        top.geometry("+%d+%d" % (master.winfo_rootx(), master.winfo_rooty()))
-
-        top.transient(self.master)
-        top.focus_force()
-        top.wait_visibility()
-        top.grab_set()
-        if sys.platform == "win32":
-            master.wm_attributes("-disabled", True)
-
-    def ok(self):
-        if sys.platform == "win32":
-            self.master.wm_attributes("-disabled", False)
-        self.top.grab_release()
-        self.top.destroy()
-
-
-class HelpDialogue:
-
-    def __init__(self, master):
-        self.master = master
-        top = self.top = Toplevel(master, background="grey85")
-        top.title("Help")
-        top.resizable(False, False)
-
-        self.text = ScrolledText(top, width=77)
-        self.text.pack()
-        self.text.insert(END, docs)
-        self.text["state"] = "disabled"
-        b = Button(top, text="OK", command=self.ok)
-        b.pack(pady=5)
-
-        top.protocol("WM_DELETE_WINDOW", self.ok)
-        top.bind("<Escape>", self.ok)
-
-        top.geometry("+%d+%d" % (master.winfo_rootx(), master.winfo_rooty()))
-
-        top.transient(self.master)
-        top.focus_force()
-        top.wait_visibility()
-        top.grab_set()
-        if sys.platform == "win32":
-            master.wm_attributes("-disabled", True)
-        master.wait_window(top)
-
-    def ok(self, *args):
-        if sys.platform == "win32":
-            self.master.wm_attributes("-disabled", False)
-        self.top.grab_release()
-        self.top.destroy()
-
-
-def _readdicom(filename):
-    dicom = pydicom.filereader.read_file(filename, stop_before_pixels=True)
-    return [filename, dicom.SeriesNumber, dicom.AcquisitionNumber,
-            dicom.InstanceNumber, dicom.ProtocolName, dicom.EchoNumbers]
-
-def _copyfile(source_dict, target_folder):
-    shutil.copyfile(source_dict["filename"], os.path.join(
-            target_folder, os.path.split(source_dict["filename"])[-1]))
-
-def run():
-    root = Tk()
-    style = Style()
-    style.theme_use("default")
-    root.resizable(False, False)
-    root.option_add('*tearOff', FALSE)
-    app = App(master=root)
-    app.set_title()
-    if platform.system() == "Darwin":
-        root.bind('<Command-q>', app.quit_callback)
-    root.bind('<Escape>', lambda x: app.master.focus())
-    app.bind('<Button-1>', lambda x: app.master.focus())
-    for label in app.nofocus_widgets:
-        label.bind('<Button-1>', lambda x: app.master.focus())
-    root.protocol("WM_DELETE_WINDOW", app.quit_callback)
-    app.general_widgets[0].focus()
-    app.disable_save()
-    app.mouseover_callback(True)
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    run()
