@@ -1,4 +1,4 @@
-### Example usage
+# ScanSessionTool example usage tutorial
 Follow the instructions for an example usage of the ScanSessionTool graphical interface. The instructions will guide you through recording scan session information, saving to a scan protocol file, as well as archiving the session data.
 
 **General information**
