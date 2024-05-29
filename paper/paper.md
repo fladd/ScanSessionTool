@@ -58,7 +58,7 @@ focus on automatized reproducible analysis (e.g. https://github.com/ReproNim),
 and shared MR images often only made available after transformation into a 
 derivative data format, such as the Brain Imaging Data Structure 
 [BIDS, @gorgolewski_brain_2016], with a rich ecosystem of tools being available 
-to accomplish this [e.g. @zwiers_bidscoin_2021; @halchenko_2024_11201247]. 
+to accomplish this [e.g. @halchenko_2024_11201247; @zwiers_bidscoin_2021]. 
 Furthermore, to our knowledge, none of the available solutions cover scan session 
 documentation, which currently is often either manually implemented 
 with hand written notes [@meissner_head_2020], with Electronic Data Capture 
