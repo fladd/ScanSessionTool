@@ -2,7 +2,7 @@
 Follow the instructions for an example usage of the Scan Session Tool graphical interface. The instructions will guide you through recording scan session information, saving to a scan protocol file, as well as archiving the session data.
 
 **General information**
-1. Download the [TestData.zip](https://github.com/fladd/ScanSessionTool/tree/master/tests/TestData.zip) folder and extract the contents locally. This folder contains an example dataset with Localizer, AAHeadScout, FieldMap, and TBV_Transfer scans. The data are organised either in separate folders per acquired sequence number (`TestData_1`) or in a single folder containing all scans  (`TestData_2`). Scan Session Tool can handle either data format. An adjusted settings file (`sst.yaml`) is also available.  
+1. Download the [TestData.zip](https://github.com/fladd/ScanSessionTool/raw/master/tests/TestData.zip) folder and extract the contents locally. This folder contains an example dataset with Localizer, AAHeadScout, FieldMap, and TBV_Transfer scans. The data are organised either in separate folders per acquired sequence number (`TestData_1`) or in a single folder containing all scans  (`TestData_2`). Scan Session Tool can handle either data format. An adjusted settings file (`sst.yaml`) is also available.  
 2. In your terminal navigate to the unzipped folder and start the program by typing `scansessiontool`. 
 3. To populate the fields and options with predefined values from the settings file a project must be selected in the “Project” field. Select “TestData” from the dropdown menu.
 
