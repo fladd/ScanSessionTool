@@ -293,4 +293,4 @@ Project 2:
 
 For a detailed step-by-step guide on how to use the Scan Session Tool you 
 can follow the link: 
-https://github.com/fladd/ScanSessionTool/tree/master/tutorial/tutorial.md
+https://github.com/fladd/ScanSessionTool/tutorial/
