@@ -1,5 +1,5 @@
-# ScanSessionTool example usage tutorial
-Follow the instructions for an example usage of the ScanSessionTool graphical interface. The instructions will guide you through recording scan session information, saving to a scan protocol file, as well as archiving the session data.
+# Scan Session Tool example usage tutorial
+Follow the instructions for an example usage of the Scan Session Tool graphical interface. The instructions will guide you through recording scan session information, saving to a scan protocol file, as well as archiving the session data.
 
 **General information**
 1. Download the [TestData.zip](https://github.com/fladd/ScanSessionTool/tree/master/tests/TestData.zip) folder and extract the contents locally. This folder contains an example dataset with Localizer, AAHeadScout, FieldMap, and TBV_Transfer scans. The data are organised either in separate folders per acquired sequence number (`TestData_1`) or in a single folder containing all scans  (`TestData_2`). Scan Session Tool can handle either data format. An adjusted settings file (`sst.yaml`) is also available.  
