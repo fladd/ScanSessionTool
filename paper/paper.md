@@ -58,11 +58,11 @@ focus on automatized reproducible analysis (e.g. https://github.com/ReproNim),
 and shared MR images often only made available after transformation into a 
 derivative data format, such as the Brain Imaging Data Structure 
 [BIDS, @gorgolewski_brain_2016], with a rich ecosystem of tools being available 
-to accomplish this [e.g. @zwiers_bidscoin_2021, @halchenko_2024_11201247]. 
+to accomplish this [e.g. @zwiers_bidscoin_2021; @halchenko_2024_11201247]. 
 Furthermore, to our knowledge, none of the available solutions cover scan session 
 documentation, which currently is often either manually implemented 
-[e.g. with hand written or electronic notes; @meissner_head_2020, castorEDC] or 
-neglected entirely. 
+with hand written notes [@meissner_head_2020], with Electronic Data Capture 
+systems (e.g. https://www.castoredc.com/) or neglected entirely. 
 
 Scan Session Tool was written to fill this gap, and to be used by
 neuroscientists, to help them increase transparency and reproducibilty of their
@@ -75,8 +75,7 @@ openly published data [e.g. @krause_selfregulation_2021_data]. The archiving
 structure is furthermore automatically already recognized by the third-party
 software BIDScoin [since version 3.7.3, @zwiers_bidscoin_2021], which allows the
 raw DICOM data archived with Scan Session Tool to be converted to the popular
-BIDS format if desired (e.g. for standardized preprocessing and analysis). 
-Scan Session Tool also   We
+BIDS format if desired (e.g. for standardized preprocessing and analysis). We
 hope to see further adaptation and increasing integration with other tools and
 standardized workflows (e.g. quality control pipelines, online data
 repositories) in the future. 
