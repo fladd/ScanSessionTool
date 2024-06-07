@@ -21,7 +21,7 @@ def setUpModule():
     z = zipfile.ZipFile(os.path.join(os.path.join(os.path.split(__file__)[0]),
                                       "TestData.zip"), 'r')
     global DATA_DIR
-    DATA_DIR = tempfile.TemporaryDirectory(delete=False)
+    DATA_DIR = tempfile.TemporaryDirectory()
     print("Extracting test data...\n")
     z.extractall(DATA_DIR.name)
 
