@@ -18,12 +18,12 @@ from scansessiontool.scansessiontool import ScanSessionTool
 DATA_DIR = None
 
 def setUpModule():
-    with zipfile.ZipFile(os.path.join(os.path.join(os.path.split(__file__)[0]),
-                                      "TestData.zip"), 'r') as z:
-        global DATA_DIR
-        DATA_DIR = tempfile.TemporaryDirectory(delete=False)
-        print("Extracting test data...\n")
-        z.extractall(DATA_DIR.name)
+    z = zipfile.ZipFile(os.path.join(os.path.join(os.path.split(__file__)[0]),
+                                      "TestData.zip"), 'r')
+    global DATA_DIR
+    DATA_DIR = tempfile.TemporaryDirectory(delete=False)
+    print("Extracting test data...\n")
+    z.extractall(DATA_DIR.name)
 
 def cleanup():
     global DATA_DIR
