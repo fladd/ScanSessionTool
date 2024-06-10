@@ -906,7 +906,8 @@ class ScanSessionTool(Frame):
         elif os.path.exists(os.path.join(os.path.expanduser("~"), "sst.yaml")):
             path = os.path.expanduser("~")
         else:
-            path = None
+            if os.path.isfile(os.path.join(os.path.split(__file__)[0], "sst.yaml")):
+                path = os.path.split(__file__)[0]
         if path is not None:
             with open(os.path.join(path, "sst.yaml")) as f:
                 self.config = yaml.safe_load(f)
