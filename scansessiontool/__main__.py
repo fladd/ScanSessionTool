@@ -5,7 +5,10 @@ from tkinter.ttk import *
 from .scansessiontool import ScanSessionTool
 
 
-if __name__ == "__main__":
+def run():
     root = Tk()
     app = ScanSessionTool(root)
     app.mainloop()
+
+if __name__ == "__main__":
+    run()
