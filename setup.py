@@ -35,6 +35,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages = ['scansessiontool'],
+    package_data = {'scansessiontool': ['scansessiontool/help.txt']}
     python_requires=">=3.6",
     setup_requires = ['wheel'],
     install_requires = ['pyYAML',
