@@ -25,14 +25,14 @@ Project 1:
         - Pre-Scan Questionnaire
         - Post-Scan Questionnaire
 
-    Measurements anatomical:
+    Measurements anat:
         - Name:        Localizer
           Vols:        3
 
         - Name:        Anatomy
           Vols:        192
 
-    Measurements functional:
+    Measurements func:
         - Name:        Run1
           Vols:        300
           Comments:    |
@@ -80,14 +80,14 @@ Project 2:
     Checklist:
         - Participation Reimbursement Form
 
-    Measurements anatomical:
+    Measurements anat:
         - Name:        Localizer
           Vols:        3
 
         - Name:        MPRAGE
           Vols:        192
 
-    Measurements functional:
+    Measurements func:
         - Name:        RunA
           Vols:        300
           Comments:    |
