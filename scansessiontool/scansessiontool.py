@@ -64,6 +64,16 @@ class ScanSessionTool(Frame):
 
         self.run_actions = run_actions
 
+        # Change application icon
+        if platform.system() == "Windows":
+            self.master.iconbitmap(os.path.abspath(os.path.join(
+                os.path.split(__file__)[0], "sst_icon.ico")))
+        else:
+            self.master.tk.call(
+                'wm', 'iconphoto', self.master._w,
+                PhotoImage(file=os.path.abspath(os.path.join(
+                    os.path.split(__file__)[0], "sst_icon.png"))))
+
         font = tkFont.nametofont("TkDefaultFont")
         font.config(family="Arial", size=-13)
         self.default_font = font.cget("family")
