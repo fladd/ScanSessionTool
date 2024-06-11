@@ -64,6 +64,8 @@ class ScanSessionTool(Frame):
 
         self.run_actions = run_actions
 
+        self.master.withdraw()
+
         # Change application icon
         if platform.system() == "Windows":
             self.master.iconbitmap(os.path.abspath(os.path.join(
@@ -194,6 +196,10 @@ class ScanSessionTool(Frame):
         for label in self.nofocus_widgets:
             label.bind('<Button-1>', lambda x: self.master.focus())
         self.master.protocol("WM_DELETE_WINDOW", self.quit_callback)
+        self.master.update()
+        self.master.deiconify()
+        self.master.lift()
+        self.master.focus_force()
         self.general_widgets[0].focus()
         self.disable_save()
         self.mouseover_callback(True)
