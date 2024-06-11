@@ -35,7 +35,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages = ['scansessiontool'],
-    package_data = {'scansessiontool': ['help.txt', 'sst.yaml']},
+    package_data = {'scansessiontool': ['help.txt', 'sst.yaml', 'sst_icon.ico']},
     python_requires=">=3.6",
     setup_requires = ['wheel'],
     install_requires = ['pyYAML',
