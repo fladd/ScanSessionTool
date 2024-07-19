@@ -23,16 +23,16 @@ bibliography: paper.bib
 # Summary
 
 Scan Session Tool is a cross-platform (Windows, MacOS, Linux) graphical
-application for standardized real-time documentation of (functional) Magnetic
-Resonance Imaging (MRI) scan sessions and automatized archiving of the
+application for standardised real-time documentation of (functional) Magnetic
+Resonance Imaging (MRI) scan sessions and automatised archiving of the
 collected (raw) data. The software allows session information (i.e. metadata,
 project- and subject-specific notes/documents, as well as a detailed log of
 acquired MRI measurements) to be entered in a fast and convenient way during a
 session (see also \autoref{fig:Figure1}) and to be saved into a human- and
 machine-readable protocol file (in YAML format) that facilitates both sharing
-with other researchers and integration into automatized procedures.
+with other researchers and integration into automatised procedures.
 Scan Session Tool can furthermore use this scan session documentation itself to
-automatically organize the raw data (i.e. DICOM images) of all acquired
+automatically organise the raw data (i.e. DICOM images) of all acquired
 measurements, as well as any related logfiles (e.g. stimulation protocols,
 response time recordings, etc.) into a unified hierarchical folder structure for
 archiving purposes (see also \autoref{fig:Figure2}).
@@ -53,8 +53,8 @@ collected raw data (i.e. MR images and related behavioural/physiological
 recordings) and their analysis [@nichols_best_2017], but also the detailed
 documentation of the data collection process [i.e. notes and data about the
 scan sessions themselves, @borghi_data_2018; @glover_function_2012],
-standardization in this domain is currently lacking. Most current approaches 
-focus on automatized reproducible analysis (e.g. https://github.com/ReproNim), 
+standardisation in this domain is currently lacking. Most current approaches 
+focus on automatised reproducible analysis (e.g. https://github.com/ReproNim), 
 and shared MR images often only made available after transformation into a 
 derivative data format, such as the Brain Imaging Data Structure 
 [BIDS, @gorgolewski_brain_2016], with a rich ecosystem of tools being available 
@@ -65,19 +65,19 @@ with hand written notes [@meissner_head_2020], with Electronic Data Capture
 systems (e.g. https://www.castoredc.com/) or neglected entirely. 
 
 Scan Session Tool was written to fill this gap, and to be used by
-neuroscientists, to help them increase transparency and reproducibilty of their
+neuroscientists, to help them increase transparency and reproducibility of their
 MRI research by standardizing scan session documentation and raw data archiving.
-The software has already been succesfully used during data collection of several
+The software has already been successfully used during data collection of several
 fMRI studies [e.g. @krause_real-time_2017; @luhrs_potential_2019;
-@krause_active_2019; @krause_selfregulation_2021], and its standardized scan
+@krause_active_2019; @krause_selfregulation_2021], and its standardised scan
 session documentation as well as archiving structure have been made part of
 openly published data [e.g. @krause_selfregulation_2021_data]. The archiving
-structure is furthermore automatically already recognized by the third-party
+structure is furthermore automatically already recognised by the third-party
 software BIDScoin [since version 3.7.3, @zwiers_bidscoin_2021], which allows the
 raw DICOM data archived with Scan Session Tool to be converted to the popular
-BIDS format if desired (e.g. for standardized preprocessing and analysis). We
+BIDS format if desired (e.g. for standardised preprocessing and analysis). We
 hope to see further adaptation and increasing integration with other tools and
-standardized workflows (e.g. quality control pipelines, online data
+standardised workflows (e.g. quality control pipelines, online data
 repositories) in the future. 
 
 
