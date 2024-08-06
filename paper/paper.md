@@ -66,7 +66,7 @@ systems (e.g. https://www.castoredc.com/) or neglected entirely.
 
 Scan Session Tool was written to fill this gap, and to be used by
 neuroscientists, to help them increase transparency and reproducibility of their
-MRI research by standardizing scan session documentation and raw data archiving.
+MRI research by standardising scan session documentation and raw data archiving.
 The software has already been successfully used during data collection of several
 fMRI studies [e.g. @krause_real-time_2017; @luhrs_potential_2019;
 @krause_active_2019; @krause_selfregulation_2021], and its standardised scan
