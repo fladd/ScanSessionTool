@@ -87,6 +87,8 @@ repositories) in the future.
 
 ![Example of resulting folder structure after archiving data with Scan Session Tool.\label{fig:Figure2}](ArchivingStructureExample.png)
 
+# Acknowledgements
+We would like to thank Michael Lührs and Judith Eck for their valuable feedback in the initial phase of development. F.K. was financially supported by grants from the European Commission (602186, 682591, 777084) during various phases of development.
 
 # References
 
